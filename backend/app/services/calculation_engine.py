@@ -1,0 +1,239 @@
+"""
+GHG Protocol uyumlu emisyon hesaplama motoru.
+Kaynaklar: GHG Protocol, DEFRA 2024, TEİAŞ 2024, IPCC AR6.
+"""
+from dataclasses import dataclass, field
+from typing import Optional
+
+# ─── Emisyon faktörleri ────────────────────────────────────────────────────────
+EMISSION_FACTORS: dict[str, float] = {
+    # Türkiye ulusal elektrik şebeke faktörü (TEİAŞ)
+    "electricity_TR_grid_2024": 0.4166,   # kg CO₂e/kWh
+    "electricity_TR_grid_2023": 0.4489,
+    "electricity_TR_grid_2022": 0.4816,
+    "electricity_UK_grid_2024": 0.2117,   # UK DESNZ 2024
+
+    # Yakıtlar (GHG Protocol)
+    "natural_gas":    2.0404,  # kg CO₂e/m³
+    "diesel":         2.6762,  # kg CO₂e/litre
+    "lpg":            1.6318,  # kg CO₂e/kg
+    "coal_bituminous": 2.4248, # kg CO₂e/kg
+    "coal_lignite":   1.1000,
+
+    # Kara taşımacılığı (DEFRA 2024)
+    "car_petrol":     0.17049, # kg CO₂e/km
+    "car_diesel":     0.16394,
+    "company_vehicle_avg": 0.16800,
+
+    # Hava yolculuğu (DEFRA 2024)
+    "flight_shorthaul": 0.15530,  # kg CO₂e/kişi-km
+    "flight_longhaul":  0.19085,
+
+    # Atık (DEFRA 2024)
+    "waste_landfill": 0.5858,  # kg CO₂e/kg
+    "waste_recycled": 0.0213,
+}
+
+SECTOR_BENCHMARKS: dict[str, float] = {
+    "banking":      2.4,   # tCO₂e/çalışan
+    "cement":     320.0,
+    "energy":      45.0,
+    "construction": 8.5,
+    "retail":       4.2,
+    "insurance":    2.1,
+    "manufacturing": 12.3,
+    "refinery":    180.0,
+}
+
+
+@dataclass
+class EmissionInput:
+    company_id: str
+    year: int
+    reporting_boundary: str = "operational_control"
+    sector: str = "manufacturing"
+    electricity_source: str = "grid"
+
+    # Kapsam 1
+    natural_gas_m3: Optional[float] = None
+    diesel_liters: Optional[float] = None
+    lpg_kg: Optional[float] = None
+    coal_tons: Optional[float] = None
+    company_vehicles_km: Optional[float] = None
+
+    # Kapsam 2
+    electricity_kwh: float = 0.0
+    steam_gj: Optional[float] = None
+
+    # Kapsam 3
+    business_travel_flight_km: Optional[float] = None
+    employee_commute_km: Optional[float] = None
+    waste_tons: Optional[float] = None
+
+    # Bankacılık
+    financed_emissions_co2e: Optional[float] = None
+
+    # Çimento
+    clinker_tons: Optional[float] = None
+    cement_production_tons: Optional[float] = None
+
+
+@dataclass
+class EmissionResult:
+    scope1_co2e: float
+    scope2_location_co2e: float
+    scope2_market_co2e: float
+    scope3_co2e: float
+    total_co2e: float
+    breakdown: dict[str, float] = field(default_factory=dict)
+    methodology_notes: list[str] = field(default_factory=list)
+
+
+def _factor(year: int, source: str) -> float:
+    key = f"electricity_TR_grid_{year}"
+    return EMISSION_FACTORS.get(key, EMISSION_FACTORS["electricity_TR_grid_2024"])
+
+
+def calculate_scope1(data: EmissionInput) -> tuple[float, dict[str, float]]:
+    breakdown: dict[str, float] = {}
+
+    if data.natural_gas_m3:
+        v = data.natural_gas_m3 * EMISSION_FACTORS["natural_gas"] / 1000
+        breakdown["Doğalgaz"] = round(v, 3)
+
+    if data.diesel_liters:
+        v = data.diesel_liters * EMISSION_FACTORS["diesel"] / 1000
+        breakdown["Dizel"] = round(v, 3)
+
+    if data.lpg_kg:
+        v = data.lpg_kg * EMISSION_FACTORS["lpg"] / 1000
+        breakdown["LPG"] = round(v, 3)
+
+    if data.coal_tons:
+        v = data.coal_tons * EMISSION_FACTORS["coal_bituminous"]
+        breakdown["Kömür"] = round(v, 3)
+
+    if data.company_vehicles_km:
+        v = data.company_vehicles_km * EMISSION_FACTORS["company_vehicle_avg"] / 1000
+        breakdown["Şirket araçları"] = round(v, 3)
+
+    total = sum(breakdown.values())
+    return round(total, 3), breakdown
+
+
+def calculate_scope2(data: EmissionInput) -> tuple[float, float]:
+    grid_factor = _factor(data.year, data.electricity_source)
+    location_based = round(data.electricity_kwh * grid_factor / 1000, 3)
+
+    if data.electricity_source == "renewable_certificate":
+        market_based = 0.0
+    else:
+        market_based = location_based
+
+    return location_based, market_based
+
+
+def calculate_scope3(data: EmissionInput) -> tuple[float, dict[str, float]]:
+    breakdown: dict[str, float] = {}
+
+    if data.business_travel_flight_km:
+        v = data.business_travel_flight_km * EMISSION_FACTORS["flight_shorthaul"] / 1000
+        breakdown["İş seyahati (uçuş)"] = round(v, 3)
+
+    if data.employee_commute_km:
+        v = data.employee_commute_km * EMISSION_FACTORS["car_petrol"] / 1000
+        breakdown["Çalışan ulaşımı"] = round(v, 3)
+
+    if data.waste_tons:
+        v = data.waste_tons * EMISSION_FACTORS["waste_landfill"]
+        breakdown["Atık"] = round(v, 3)
+
+    # Bankacılık — finanse edilmiş emisyonlar (PCAF Kapsam 3, Kategori 15)
+    if data.financed_emissions_co2e:
+        breakdown["Finanse edilmiş emisyonlar (PCAF)"] = round(data.financed_emissions_co2e, 3)
+
+    total = sum(breakdown.values())
+    return round(total, 3), breakdown
+
+
+def calculate_emissions(data: EmissionInput) -> EmissionResult:
+    scope1, s1_breakdown = calculate_scope1(data)
+    scope2_loc, scope2_mkt = calculate_scope2(data)
+    scope3, s3_breakdown = calculate_scope3(data)
+
+    total = round(scope1 + scope2_loc + scope3, 3)
+
+    breakdown = {
+        "Kapsam 1": {**s1_breakdown, "_toplam": scope1},
+        "Kapsam 2 (konum)": scope2_loc,
+        "Kapsam 2 (piyasa)": scope2_mkt,
+        "Kapsam 3": {**s3_breakdown, "_toplam": scope3},
+    }
+
+    notes = [
+        f"TEİAŞ {data.year} Türkiye şebeke faktörü: {_factor(data.year, data.electricity_source)} kgCO₂e/kWh",
+        "GHG Protocol Corporate Standard uygulandı",
+        "DEFRA 2024 emisyon faktörleri kullanıldı",
+    ]
+
+    return EmissionResult(
+        scope1_co2e=scope1,
+        scope2_location_co2e=scope2_loc,
+        scope2_market_co2e=scope2_mkt,
+        scope3_co2e=scope3,
+        total_co2e=total,
+        breakdown=breakdown,
+        methodology_notes=notes,
+    )
+
+
+# ─── TSRS uyumluluk skoru ─────────────────────────────────────────────────────
+def calculate_tsrs_compliance(report_data: dict) -> dict:
+    """
+    TSRS 1 & 2 zorunlu maddelere göre uyumluluk skoru hesapla.
+    16 gerçek rapordan çıkarılan kontrol listesi.
+    """
+    checks = {
+        # YÖNETİŞİM — TSRS 1 §14-16
+        "governance_body_oversight":     report_data.get("has_board_oversight", False),
+        "governance_management_role":    report_data.get("has_management_role", False),
+        "governance_incentives":         report_data.get("has_incentive_mechanisms", False),
+
+        # STRATEJİ — TSRS 1 §18-25
+        "strategy_risks_opportunities":  report_data.get("has_risks_opportunities", False),
+        "strategy_time_horizons":        report_data.get("has_time_horizons", False),
+        "strategy_business_model":       report_data.get("has_business_model", False),
+        "strategy_scenario_analysis":    report_data.get("has_scenario_analysis", False),
+        "strategy_transition_plan":      report_data.get("has_transition_plan", False),
+
+        # RİSK YÖNETİMİ — TSRS 1 §26-28
+        "risk_identification_process":   report_data.get("has_risk_process", False),
+        "risk_integration":              report_data.get("has_risk_integration", False),
+
+        # METRİK VE HEDEFLER — TSRS 2 §29-36
+        "metrics_scope1":                report_data.get("scope1_co2e") is not None,
+        "metrics_scope2_location":       report_data.get("scope2_location") is not None,
+        "metrics_scope2_market":         report_data.get("scope2_market") is not None,
+        "metrics_scope3":                report_data.get("has_scope3_analysis", False),
+        "metrics_energy":                report_data.get("has_energy_metrics", False),
+        "metrics_cross_industry":        report_data.get("has_cross_industry_metrics", False),
+        "metrics_sector_specific":       report_data.get("has_sector_metrics", False),
+        "targets_climate":               report_data.get("has_climate_targets", False),
+
+        # EK
+        "annex_tsrs_index":              report_data.get("has_tsrs_index", False),
+        "annex_assurance":               report_data.get("has_assurance_statement", False),
+    }
+
+    passed = sum(1 for v in checks.values() if v)
+    total = len(checks)
+    score = round(passed / total * 100)
+    grade = "A" if score >= 90 else "B" if score >= 75 else "C" if score >= 60 else "D"
+
+    return {
+        "total_score": score,
+        "passed": passed,
+        "total_checks": total,
+        "missing": [k for k, v in checks.items() if not v],
+        "grade": grade,
+    }
