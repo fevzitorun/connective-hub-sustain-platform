@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sustain.com.tr — Türkiye'nin AI Destekli Sürdürülebilirlik Raporlama Platformu</title>
+<style>
+:root {
+  --green-900: #1B4332;
+  --green-800: #1B5E20;
+  --green-700: #2E7D32;
+  --green-600: #388E3C;
+  --green-500: #43A047;
+  --green-400: #66BB6A;
+  --green-300: #A5D6A7;
+  --green-100: #E8F5E9;
+  --green-50:  #F1F8E9;
+  --teal:      #00897B;
+  --teal-dark: #00695C;
+  --blue:      #1565C0;
+  --amber:     #F57F17;
+  --red:       #C62828;
+  --gray-900:  #212121;
+  --gray-700:  #424242;
+  --gray-600:  #616161;
+  --gray-500:  #9E9E9E;
+  --gray-300:  #E0E0E0;
+  --gray-100:  #F5F5F5;
+  --white:     #FFFFFF;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--gray-900); line-height: 1.6; }
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gray-300);
+  display: flex; align-items: center; padding: 0 40px; height: 64px;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo {
+  width: 36px; height: 36px; background: var(--green-900); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: white;
+}
+.nav-name { font-size: 16px; font-weight: 800; color: var(--green-900); }
+.nav-name span { color: var(--green-500); }
+.nav-links { display: flex; gap: 4px; margin-left: 40px; }
+.nav-link { padding: 6px 14px; border-radius: 6px; font-size: 14px; color: var(--gray-700); text-decoration: none; transition: all .15s; font-weight: 500; }
+.nav-link:hover { background: var(--green-50); color: var(--green-800); }
+.nav-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.btn-ghost { padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--green-800); background: transparent; border: 1.5px solid var(--green-300); cursor: pointer; text-decoration: none; transition: all .15s; }
+.btn-ghost:hover { background: var(--green-50); border-color: var(--green-500); }
+.btn-primary { padding: 8px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; color: white; background: var(--green-700); border: none; cursor: pointer; text-decoration: none; transition: all .15s; }
+.btn-primary:hover { background: var(--green-800); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(27,67,50,0.3); }
+.badge-nav { background: var(--amber); color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 4px; }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh; padding-top: 64px;
+  background: linear-gradient(160deg, #0A2E1A 0%, #1B4332 40%, #1B5E20 70%, #2E7D32 100%);
+  display: flex; align-items: center; position: relative; overflow: hidden;
+}
+.hero-bg-orbs {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.orb {
+  position: absolute; border-radius: 50%; opacity: 0.07;
+  background: radial-gradient(circle, #A5D6A7, transparent);
+}
+.orb-1 { width: 600px; height: 600px; top: -100px; right: -100px; }
+.orb-2 { width: 400px; height: 400px; bottom: 50px; left: 100px; }
+.orb-3 { width: 200px; height: 200px; top: 200px; left: 40%; opacity: 0.05; }
+.hero-container { max-width: 1200px; margin: 0 auto; padding: 80px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; width: 100%; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(165,214,167,0.15); border: 1px solid rgba(165,214,167,0.3);
+  color: var(--green-300); font-size: 12px; font-weight: 700;
+  padding: 5px 14px; border-radius: 20px; letter-spacing: .5px; text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: 52px; font-weight: 900; color: white; line-height: 1.1; margin-bottom: 20px;
+}
+.hero h1 .highlight { color: var(--green-400); }
+.hero-desc { font-size: 18px; color: rgba(255,255,255,0.72); line-height: 1.7; margin-bottom: 36px; max-width: 480px; }
+.hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
+.btn-hero-primary {
+  padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700;
+  color: var(--green-900); background: var(--green-400); border: none;
+  cursor: pointer; text-decoration: none; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-hero-primary:hover { background: #81C784; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,187,106,0.4); }
+.btn-hero-secondary {
+  padding: 14px 28px; border-radius: 10px; font-size: 16px; font-weight: 600;
+  color: white; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25);
+  cursor: pointer; text-decoration: none; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-hero-secondary:hover { background: rgba(255,255,255,0.18); }
+.hero-trust { display: flex; align-items: center; gap: 20px; }
+.trust-avatars { display: flex; }
+.trust-avatar {
+  width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);
+  background: var(--green-600); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white; margin-left: -8px;
+}
+.trust-avatar:first-child { margin-left: 0; }
+.trust-text { color: rgba(255,255,255,0.65); font-size: 13px; }
+.trust-text strong { color: white; }
+
+/* Hero right: dashboard mockup */
+.hero-visual { position: relative; }
+.dashboard-mockup {
+  background: white; border-radius: 16px; box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+}
+.mockup-topbar {
+  background: var(--green-900); padding: 10px 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #FF5F57; }
+.dot-y { background: #FFBD2E; }
+.dot-g { background: #28CA41; }
+.mockup-url { flex: 1; background: rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 10px; color: rgba(255,255,255,0.6); font-size: 11px; margin: 0 12px; }
+.mockup-body { display: grid; grid-template-columns: 160px 1fr; min-height: 400px; }
+.mockup-sidebar { background: var(--green-900); padding: 14px; }
+.m-brand { color: white; font-size: 12px; font-weight: 700; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.m-nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; font-size: 11px; color: rgba(255,255,255,0.6); cursor: default; margin: 2px 0; }
+.m-nav-item.active { background: rgba(255,255,255,0.12); color: white; }
+.m-nav-item .mi { font-size: 13px; }
+.mockup-content { background: #F5F5F5; padding: 14px; }
+.m-header { font-size: 12px; font-weight: 700; color: var(--gray-900); margin-bottom: 12px; }
+.m-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.m-kpi {
+  background: white; border-radius: 8px; padding: 10px; border: 1px solid var(--gray-300);
+}
+.m-kpi-label { font-size: 9px; color: var(--gray-500); margin-bottom: 4px; }
+.m-kpi-value { font-size: 16px; font-weight: 800; color: var(--green-800); }
+.m-kpi-unit { font-size: 9px; color: var(--gray-600); }
+.m-score-row { display: flex; gap: 8px; }
+.m-score-card {
+  flex: 1; background: white; border-radius: 8px; padding: 10px;
+  border: 1px solid var(--gray-300); text-align: center;
+}
+.m-score-label { font-size: 9px; color: var(--gray-500); margin-bottom: 4px; }
+.m-score-big { font-size: 24px; font-weight: 900; color: var(--green-700); }
+.m-score-grade { font-size: 11px; font-weight: 700; color: var(--green-500); }
+.m-chart-bar { height: 50px; background: white; border-radius: 8px; padding: 8px 10px; border: 1px solid var(--gray-300); display: flex; align-items: flex-end; gap: 4px; margin-bottom: 8px; }
+.m-bar { border-radius: 3px 3px 0 0; flex: 1; background: var(--green-300); }
+.m-bar.hi { background: var(--green-600); }
+.m-satellite { background: linear-gradient(135deg, #1a3a1a, #2d5a2d); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
+.m-sat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-400); animation: pulse 2s infinite; }
+.m-sat-text { font-size: 9px; color: rgba(255,255,255,0.8); }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
+
+/* ─── LOGOS ─── */
+.logos-bar {
+  background: var(--gray-100); border-bottom: 1px solid var(--gray-300);
+  padding: 24px 40px; text-align: center;
+}
+.logos-title { font-size: 12px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+.logos-grid { display: flex; justify-content: center; align-items: center; gap: 48px; flex-wrap: wrap; }
+.logo-item { font-size: 15px; font-weight: 800; color: var(--gray-500); letter-spacing: -0.5px; }
+
+/* ─── SECTION BASE ─── */
+section { padding: 96px 40px; }
+.container { max-width: 1200px; margin: 0 auto; }
+.section-eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green-600); margin-bottom: 12px; }
+.section-title { font-size: 40px; font-weight: 900; color: var(--gray-900); line-height: 1.2; margin-bottom: 16px; }
+.section-desc { font-size: 18px; color: var(--gray-600); max-width: 580px; line-height: 1.7; margin-bottom: 56px; }
+.text-center { text-align: center; }
+.text-center .section-desc { margin-left: auto; margin-right: auto; }
+
+/* ─── STATS ─── */
+.stats-section { background: var(--green-900); color: white; padding: 72px 40px; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.stat-item { text-align: center; padding: 24px; border-right: 1px solid rgba(255,255,255,0.1); }
+.stat-item:last-child { border-right: none; }
+.stat-num { font-size: 48px; font-weight: 900; color: var(--green-400); line-height: 1; margin-bottom: 8px; }
+.stat-label { font-size: 14px; color: rgba(255,255,255,0.65); }
+.stat-label strong { display: block; color: white; font-size: 16px; margin-bottom: 2px; }
+
+/* ─── FEATURES ─── */
+.features-section { background: white; }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.feature-card {
+  border: 1.5px solid var(--gray-300); border-radius: 16px; padding: 28px;
+  transition: all .2s; cursor: default; position: relative; overflow: hidden;
+}
+.feature-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--green-500), var(--teal)); opacity: 0; transition: opacity .2s;
+}
+.feature-card:hover { border-color: var(--green-300); box-shadow: 0 8px 32px rgba(27,67,50,0.1); transform: translateY(-2px); }
+.feature-card:hover::before { opacity: 1; }
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 12px; background: var(--green-50);
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+  margin-bottom: 18px;
+}
+.feature-title { font-size: 17px; font-weight: 800; color: var(--gray-900); margin-bottom: 8px; }
+.feature-desc { font-size: 14px; color: var(--gray-600); line-height: 1.65; margin-bottom: 16px; }
+.feature-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--green-50); color: var(--green-800); }
+
+/* ─── HOW IT WORKS ─── */
+.how-section { background: var(--gray-100); }
+.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; position: relative; }
+.steps-grid::before {
+  content: ''; position: absolute; top: 32px; left: 10%; right: 10%; height: 2px;
+  background: linear-gradient(90deg, var(--green-300), var(--green-500));
+  z-index: 0;
+}
+.step { text-align: center; position: relative; z-index: 1; }
+.step-num {
+  width: 64px; height: 64px; border-radius: 50%; background: var(--green-900);
+  color: white; font-size: 22px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px; border: 4px solid white;
+  box-shadow: 0 4px 16px rgba(27,67,50,0.3);
+}
+.step-title { font-size: 16px; font-weight: 800; color: var(--gray-900); margin-bottom: 8px; }
+.step-desc { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+
+/* ─── SECTORS ─── */
+.sectors-section { background: white; }
+.sectors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.sector-card {
+  border-radius: 12px; padding: 20px; border: 1.5px solid var(--gray-300);
+  transition: all .2s; cursor: default; display: flex; align-items: flex-start; gap: 12px;
+}
+.sector-card:hover { border-color: var(--green-400); background: var(--green-50); transform: translateY(-2px); }
+.sector-icon { font-size: 28px; }
+.sector-name { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+.sector-std { font-size: 11px; color: var(--gray-500); }
+
+/* ─── BANK GAR ─── */
+.bank-section {
+  background: linear-gradient(135deg, #0A2E1A 0%, #1B4332 100%);
+  color: white; padding: 96px 40px;
+}
+.bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.bank-eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green-400); margin-bottom: 12px; }
+.bank-title { font-size: 38px; font-weight: 900; color: white; line-height: 1.2; margin-bottom: 16px; }
+.bank-desc { font-size: 16px; color: rgba(255,255,255,0.7); line-height: 1.7; margin-bottom: 32px; }
+.bank-features { display: flex; flex-direction: column; gap: 16px; }
+.bank-feature { display: flex; align-items: flex-start; gap: 14px; }
+.bank-feature-icon { width: 36px; height: 36px; background: rgba(165,214,167,0.15); border: 1px solid rgba(165,214,167,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.bank-feature-text { }
+.bank-feature-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 2px; }
+.bank-feature-desc { font-size: 13px; color: rgba(255,255,255,0.6); }
+/* GAR Portal mockup */
+.gar-mockup {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 20px;
+}
+.gar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.gar-title { font-size: 13px; font-weight: 700; color: white; }
+.gar-badge { background: var(--green-500); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.gar-kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.gar-kpi { background: rgba(255,255,255,0.07); border-radius: 8px; padding: 12px; }
+.gar-kpi-label { font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+.gar-kpi-value { font-size: 20px; font-weight: 900; color: var(--green-400); }
+.gar-kpi-sub { font-size: 10px; color: rgba(255,255,255,0.5); }
+.gar-list { display: flex; flex-direction: column; gap: 8px; }
+.gar-row {
+  background: rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.gar-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.gar-dot-g { background: #4CAF50; }
+.gar-dot-y { background: #FFC107; }
+.gar-dot-r { background: #F44336; }
+.gar-company { font-size: 12px; color: rgba(255,255,255,0.8); flex: 1; }
+.gar-score { font-size: 11px; font-weight: 700; color: var(--green-400); }
+
+/* ─── PRICING ─── */
+.pricing-section { background: var(--gray-100); }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1000px; margin: 0 auto; }
+.pricing-card {
+  background: white; border-radius: 20px; padding: 32px; border: 1.5px solid var(--gray-300);
+  position: relative; transition: all .2s;
+}
+.pricing-card.popular {
+  border-color: var(--green-500); box-shadow: 0 16px 48px rgba(27,67,50,0.15);
+  transform: scale(1.03);
+}
+.popular-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--green-600); color: white; font-size: 11px; font-weight: 700;
+  padding: 4px 16px; border-radius: 20px; white-space: nowrap;
+}
+.pricing-plan { font-size: 13px; font-weight: 700; color: var(--green-700); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+.pricing-price { font-size: 40px; font-weight: 900; color: var(--gray-900); line-height: 1; margin-bottom: 4px; }
+.pricing-price span { font-size: 16px; font-weight: 500; color: var(--gray-500); }
+.pricing-period { font-size: 13px; color: var(--gray-500); margin-bottom: 8px; }
+.pricing-subsidy { font-size: 12px; color: var(--green-700); font-weight: 600; background: var(--green-50); padding: 4px 10px; border-radius: 6px; display: inline-block; margin-bottom: 24px; }
+.pricing-divider { border: none; border-top: 1px solid var(--gray-300); margin: 0 0 20px; }
+.pricing-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+.pricing-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--gray-700); }
+.pricing-features li::before { content: '✓'; color: var(--green-600); font-weight: 700; flex-shrink: 0; }
+.pricing-features li.no { color: var(--gray-400); }
+.pricing-features li.no::before { content: '–'; color: var(--gray-300); }
+.btn-pricing {
+  display: block; width: 100%; padding: 13px; border-radius: 10px; text-align: center;
+  font-size: 15px; font-weight: 700; text-decoration: none; transition: all .2s; border: none; cursor: pointer;
+}
+.btn-pricing-primary { background: var(--green-700); color: white; }
+.btn-pricing-primary:hover { background: var(--green-800); }
+.btn-pricing-outline { background: transparent; color: var(--green-800); border: 1.5px solid var(--green-300); }
+.btn-pricing-outline:hover { background: var(--green-50); }
+.pricing-note { text-align: center; font-size: 13px; color: var(--gray-500); margin-top: 32px; }
+.pricing-note a { color: var(--green-700); }
+
+/* ─── ESG WEB ─── */
+.esgweb-section { background: white; }
+.esgweb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.esgweb-points { display: flex; flex-direction: column; gap: 20px; }
+.esgweb-point { display: flex; align-items: flex-start; gap: 14px; }
+.esgweb-point-icon { width: 40px; height: 40px; background: var(--green-50); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; border: 1.5px solid var(--green-100); }
+.esgweb-point-title { font-size: 15px; font-weight: 700; color: var(--gray-900); margin-bottom: 3px; }
+.esgweb-point-desc { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+/* ESG page mockup */
+.esg-page-mockup { background: var(--gray-100); border-radius: 16px; overflow: hidden; border: 1px solid var(--gray-300); box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+.esg-page-url { background: white; padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--gray-300); }
+.esg-page-lock { color: var(--green-600); font-size: 12px; }
+.esg-page-urltext { font-size: 11px; color: var(--gray-600); font-family: monospace; }
+.esg-page-header { background: var(--green-900); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+.esg-page-company { color: white; }
+.esg-page-company-name { font-size: 16px; font-weight: 800; }
+.esg-page-company-sub { font-size: 10px; color: rgba(255,255,255,0.6); }
+.esg-page-verified { background: rgba(165,214,167,0.2); border: 1px solid rgba(165,214,167,0.4); border-radius: 6px; padding: 4px 10px; font-size: 10px; color: var(--green-300); font-weight: 600; }
+.esg-page-body { padding: 16px; }
+.esg-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.esg-kpi-mini { background: white; border-radius: 8px; padding: 10px; border: 1px solid var(--gray-300); text-align: center; }
+.esg-kpi-mini-val { font-size: 16px; font-weight: 800; color: var(--green-800); }
+.esg-kpi-mini-unit { font-size: 9px; color: var(--gray-500); }
+.esg-kpi-mini-label { font-size: 10px; color: var(--gray-600); margin-top: 2px; }
+.esg-commit { background: white; border-radius: 8px; padding: 10px; border: 1px solid var(--gray-300); }
+.esg-commit-title { font-size: 10px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+.esg-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.esg-bar-label { font-size: 9px; color: var(--gray-600); width: 70px; flex-shrink: 0; }
+.esg-bar-track { flex: 1; height: 6px; background: var(--gray-300); border-radius: 3px; }
+.esg-bar-fill { height: 6px; border-radius: 3px; background: var(--green-500); }
+.esg-bar-pct { font-size: 9px; font-weight: 700; color: var(--green-700); width: 26px; }
+
+/* ─── SUBSIDY ─── */
+.subsidy-section {
+  background: linear-gradient(135deg, #F1F8E9, #E8F5E9);
+  border-top: 1px solid var(--green-100);
+}
+.subsidy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.subsidy-cards { display: flex; flex-direction: column; gap: 16px; }
+.subsidy-card {
+  background: white; border-radius: 14px; padding: 20px 24px;
+  border: 1.5px solid var(--gray-300); display: flex; align-items: flex-start; gap: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.subsidy-card-icon { font-size: 32px; }
+.subsidy-card-title { font-size: 15px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px; }
+.subsidy-card-desc { font-size: 13px; color: var(--gray-600); line-height: 1.5; margin-bottom: 8px; }
+.subsidy-amount { font-size: 13px; font-weight: 700; color: var(--green-700); background: var(--green-50); padding: 3px 10px; border-radius: 6px; display: inline-block; }
+
+/* ─── TESTIMONIALS ─── */
+.testimonials-section { background: var(--gray-100); }
+.testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.testimonial-card {
+  background: white; border-radius: 16px; padding: 28px;
+  border: 1.5px solid var(--gray-300); position: relative;
+}
+.quote-mark { font-size: 48px; color: var(--green-200); font-family: Georgia, serif; line-height: 1; margin-bottom: -8px; color: var(--green-300); }
+.testimonial-text { font-size: 14px; color: var(--gray-700); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+.testimonial-author { display: flex; align-items: center; gap: 12px; }
+.testimonial-avatar {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--green-900);
+  display: flex; align-items: center; justify-content: center; color: white;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
+}
+.testimonial-name { font-size: 14px; font-weight: 700; color: var(--gray-900); }
+.testimonial-role { font-size: 12px; color: var(--gray-500); }
+
+/* ─── CTA ─── */
+.cta-section {
+  background: var(--green-900); padding: 96px 40px; text-align: center;
+}
+.cta-title { font-size: 44px; font-weight: 900; color: white; margin-bottom: 16px; }
+.cta-desc { font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 40px; }
+.cta-buttons { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.cta-input-row { display: flex; gap: 12px; max-width: 480px; margin: 0 auto 40px; }
+.cta-input {
+  flex: 1; padding: 14px 18px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08); color: white; font-size: 15px; outline: none;
+}
+.cta-input::placeholder { color: rgba(255,255,255,0.4); }
+.cta-input:focus { border-color: var(--green-400); }
+.btn-cta { padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; background: var(--green-400); color: var(--green-900); border: none; cursor: pointer; transition: all .2s; }
+.btn-cta:hover { background: #81C784; transform: translateY(-1px); }
+.cta-footnote { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 12px; }
+
+/* ─── FOOTER ─── */
+footer {
+  background: #0A1F12; color: rgba(255,255,255,0.6); padding: 60px 40px 32px;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+.footer-brand-name { font-size: 18px; font-weight: 900; color: white; margin-bottom: 8px; }
+.footer-brand-desc { font-size: 13px; line-height: 1.7; margin-bottom: 16px; }
+.footer-col-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: white; margin-bottom: 16px; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a { color: rgba(255,255,255,0.55); text-decoration: none; font-size: 13px; transition: color .15s; }
+.footer-links a:hover { color: var(--green-400); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  max-width: 1200px; margin: 0 auto; font-size: 12px;
+}
+.footer-badges { display: flex; gap: 12px; }
+.footer-badge { background: rgba(255,255,255,0.07); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .hero-container { grid-template-columns: 1fr; gap: 48px; }
+  .hero-visual { display: none; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .features-grid { grid-template-columns: 1fr; }
+  .sectors-grid { grid-template-columns: repeat(2, 1fr); }
+  .bank-grid, .esgweb-grid, .subsidy-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-card.popular { transform: none; }
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .steps-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps-grid::before { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">🌿</div>
+    <div>
+      <div class="nav-name">sustain<span>.com.tr</span></div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="#ozellikler">Özellikler</a>
+    <a class="nav-link" href="#sektor">Sektörler</a>
+    <a class="nav-link" href="#bankalar">Bankalar <span class="badge-nav">GAR</span></a>
+    <a class="nav-link" href="#fiyatlar">Fiyatlar</a>
+    <a class="nav-link" href="#destekler">Devlet Desteği</a>
+  </div>
+  <div class="nav-actions">
+    <a class="btn-ghost" href="prototype.html">Giriş Yap</a>
+    <a class="btn-primary" href="#demo">Ücretsiz Dene →</a>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero" id="hero">
+  <div class="hero-bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="hero-container">
+    <div class="hero-content">
+      <div class="hero-eyebrow">🇹🇷 Türkiye'nin İlk Yerli Çözümü</div>
+      <h1>TSRS'ye Uyumlu<br>Raporunuzu <span class="highlight">Yapay Zeka</span><br>ile Yazın</h1>
+      <p class="hero-desc">
+        AI + uydu teknolojisiyle Kapsam 1, 2 ve 3 emisyonlarınızı hesaplayın, KGK'ya uyumlu TSRS raporunuzu otomatik oluşturun. Banka GAR portalı, ESG web sayfası ve devlet sübvansiyon danışmanlığı tek platformda.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn-hero-primary" href="#demo">🚀 14 Gün Ücretsiz Başla</a>
+        <a class="btn-hero-secondary" href="prototype.html">▶ Demo'yu Gör</a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-avatars">
+          <div class="trust-avatar">AK</div>
+          <div class="trust-avatar">DZ</div>
+          <div class="trust-avatar">ZR</div>
+          <div class="trust-avatar">+</div>
+        </div>
+        <p class="trust-text"><strong>10+ pilot şirket</strong> şimdiden raporlarını hazırlıyor</p>
+      </div>
+    </div>
+
+    <!-- Dashboard mini-mockup -->
+    <div class="hero-visual">
+      <div class="dashboard-mockup">
+        <div class="mockup-topbar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <div class="mockup-url">sustain.com.tr/panel</div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-sidebar">
+            <div class="m-brand">🌿 sustain</div>
+            <div class="m-nav-item active"><span class="mi">📊</span> Dashboard</div>
+            <div class="m-nav-item"><span class="mi">📝</span> Veri Girişi</div>
+            <div class="m-nav-item"><span class="mi">🤖</span> AI Rapor</div>
+            <div class="m-nav-item"><span class="mi">🛰️</span> Uydu</div>
+            <div class="m-nav-item"><span class="mi">🏦</span> Banka GAR</div>
+            <div class="m-nav-item"><span class="mi">🌐</span> ESG Sayfam</div>
+          </div>
+          <div class="mockup-content">
+            <div class="m-header">📊 Emisyon Özeti — 2024</div>
+            <div class="m-kpi-grid">
+              <div class="m-kpi">
+                <div class="m-kpi-label">Kapsam 1</div>
+                <div class="m-kpi-value">4.280</div>
+                <div class="m-kpi-unit">tCO₂e</div>
+              </div>
+              <div class="m-kpi">
+                <div class="m-kpi-label">Kapsam 2</div>
+                <div class="m-kpi-value">12.640</div>
+                <div class="m-kpi-unit">tCO₂e</div>
+              </div>
+            </div>
+            <div class="m-chart-bar">
+              <div class="m-bar" style="height:60%"></div>
+              <div class="m-bar" style="height:75%"></div>
+              <div class="m-bar hi" style="height:90%"></div>
+              <div class="m-bar hi" style="height:85%"></div>
+              <div class="m-bar" style="height:70%"></div>
+              <div class="m-bar" style="height:65%"></div>
+            </div>
+            <div class="m-score-row">
+              <div class="m-score-card">
+                <div class="m-score-label">TSRS Skoru</div>
+                <div class="m-score-big">87</div>
+                <div class="m-score-grade">B+ Uyumlu</div>
+              </div>
+              <div class="m-score-card" style="background:var(--green-50)">
+                <div class="m-score-label">Uydu Risk</div>
+                <div style="font-size:22px">🛰️</div>
+                <div style="font-size:10px;color:var(--green-700);font-weight:700">Doğrulandı</div>
+              </div>
+            </div>
+            <br>
+            <div class="m-satellite">
+              <div class="m-sat-dot"></div>
+              <div class="m-sat-text">NASA/ESA uydu verisi • Canlı</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── LOGOS ─── -->
+<div class="logos-bar">
+  <div class="logos-title">Pilot Şirketlerimiz ve Uyumlu Standartlar</div>
+  <div class="logos-grid">
+    <div class="logo-item">AKBANK</div>
+    <div class="logo-item">DENİZBANK</div>
+    <div class="logo-item">ZİRAAT</div>
+    <div class="logo-item">ARÇELİK</div>
+    <div class="logo-item">AFYON ÇİMENTO</div>
+    <div class="logo-item">AKSA ENERJİ</div>
+    <div class="logo-item">ALARKO</div>
+  </div>
+</div>
+
+<!-- ─── STATS ─── -->
+<div class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-num">2026</div>
+        <div class="stat-label"><strong>TSRS Zorunluluğu</strong>Büyük şirketler için</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">%50</div>
+        <div class="stat-label"><strong>Devlet Sübvansiyonu</strong>Responsible® programı ile</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">38</div>
+        <div class="stat-label"><strong>Global Rakip</strong>Türkiye'ye özel yok</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">10M₺</div>
+        <div class="stat-label"><strong>Maks. Destek</strong>5 yıl boyunca</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FEATURES ─── -->
+<section class="features-section" id="ozellikler">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-eyebrow">Platform Özellikleri</div>
+      <h2 class="section-title">Türkiye'de Bir İlk —<br>Hem AI, Hem Uydu</h2>
+      <p class="section-desc">Hiçbir global platform TSRS, BDDK GAR ve uydu doğrulamasını tek çatıda sunmuyor. Biz sunuyoruz.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Rapor Yazıcı</div>
+        <p class="feature-desc">Verilerinizi girin, yapay zeka TSRS 1 & 2 uyumlu, Türkçe sürdürülebilirlik raporunuzu otomatik oluştursun. İnsan editörü maliyetini sıfıra indirin.</p>
+        <div class="feature-tags"><span class="tag">TSRS 1</span><span class="tag">TSRS 2</span><span class="tag">GRI</span><span class="tag">Claude AI</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛰️</div>
+        <div class="feature-title">Uydu Doğrulama</div>
+        <p class="feature-desc">NASA Earthdata ve ESA Sentinel-2 ile tesisinizin gerçek karbon ayak izini uydu görüntüsüyle doğrulayın. Greenwashing riskini ortadan kaldırın.</p>
+        <div class="feature-tags"><span class="tag">NASA</span><span class="tag">ESA</span><span class="tag">NDVI</span><span class="tag">Deprem Risk</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏦</div>
+        <div class="feature-title">Banka GAR Portalı</div>
+        <p class="feature-desc">BDDK Yeşil Varlık Oranı modülünüzü otomatik hesaplayın. Kredi portföyünüzdeki her şirketin TSRS uyum skoru anlık görüntüleyin.</p>
+        <div class="feature-tags"><span class="tag">BDDK</span><span class="tag">GAR</span><span class="tag">PCAF</span><span class="tag">Finanse Emisyon</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <div class="feature-title">ESG Web Sayfanız</div>
+        <p class="feature-desc">HSBC modeli kamuya açık ESG merkezi. şirket.sustain.com.tr/esg adresiniz ile emisyonlarınızı, taahhütlerinizi ve raporlarınızı şeffaf paylaşın.</p>
+        <div class="feature-tags"><span class="tag">Kamu Şeffaflığı</span><span class="tag">SEO</span><span class="tag">Custom Domain</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Emisyon Hesaplayıcı</div>
+        <p class="feature-desc">TEİAŞ 2024 grid faktörü (0,4166 kgCO₂e/kWh) ile Kapsam 1, 2 ve 3 emisyonlarınızı sektörünüze özel SASB standartlarıyla hesaplayın.</p>
+        <div class="feature-tags"><span class="tag">GHG Protocol</span><span class="tag">ISO 14064</span><span class="tag">SASB</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏛️</div>
+        <div class="feature-title">Devlet Destek Danışmanı</div>
+        <p class="feature-desc">Ticaret Bakanlığı Responsible® programı ve KOSGEB YÖNDE ile alabileceğiniz maksimum sübvansiyonu hesaplayın, başvuruyu adım adım yönlendirelim.</p>
+        <div class="feature-tags"><span class="tag">Responsible®</span><span class="tag">KOSGEB</span><span class="tag">TÜBİTAK</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section class="how-section">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-eyebrow">Nasıl Çalışır?</div>
+      <h2 class="section-title">4 Adımda TSRS Uyumlu Rapor</h2>
+      <p class="section-desc">Karmaşık sürdürülebilirlik raporlamasını basitleştiriyoruz.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Veri Girişi</div>
+        <p class="step-desc">Sektörünüzü seçin, elektrik, yakıt, su ve atık verilerinizi girin. Fatura yükleme ile otomatik okuma yakında.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Uydu Doğrulama</div>
+        <p class="step-desc">NASA/ESA uyduları tesis koordinatlarınızı tarayarak girilenleri gerçekle karşılaştırır. Yeşil sertifika verilir.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">AI Rapor Üretimi</div>
+        <p class="step-desc">Claude AI, TSRS 1&2 ve SASB sektör standartlarına göre Türkçe raporunuzu yazar. 45 dakikada tamamlanır.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Yayın & Paylaş</div>
+        <p class="step-desc">PDF raporunuzu indirin, KGK'ya gönderin. ESG web sayfanızda otomatik yayınlansın. Bankaya GAR paketi gönderin.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTORS ─── -->
+<section class="sectors-section" id="sektor">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-eyebrow">Sektör Desteği</div>
+      <h2 class="section-title">10 Sektörde Özelleşmiş<br>SASB Standartları</h2>
+      <p class="section-desc">Her sektörün kendine özgü metrik ve açıklama yükümlülükleri var. Platformumuz her birini ayrı ayrı destekliyor.</p>
+    </div>
+    <div class="sectors-grid">
+      <div class="sector-card">
+        <div class="sector-icon">🏦</div>
+        <div>
+          <div class="sector-name">Bankacılık</div>
+          <div class="sector-std">SASB Cilt 16 & 19 · PCAF</div>
+        </div>
+      </div>
+      <div class="sector-card">
+        <div class="sector-icon">🏗️</div>
+        <div>
+          <div class="sector-name">Çimento & İnşaat</div>
+          <div class="sector-std">SASB Cilt 10 & 33</div>
+        </div>
+      </div>
+      <div class="sector-card">
+        <div class="sector-icon">⚡</div>
+        <div>
+          <div class="sector-name">Enerji & Elektrik</div>
+          <div class="sector-std">SASB Cilt 32</div>
+        </div>
+      </div>
+      <div class="sector-card">
+        <div class="sector-icon">🏭</div>
+        <div>
+          <div class="sector-name">Sanayi & Holding</div>
+          <div class="sector-std">GHG Protocol · ISO 14064</div>
+        </div>
+      </div>
+      <div class="sector-card">
+        <div class="sector-icon">🛍️</div>
+        <div>
+          <div class="sector-name">Perakende</div>
+          <div class="sector-std">SASB Cilt 22 · Gıda İsrafı</div>
+        </div>
+      </div>
+      <div class="sector-card">
+        <div class="sector-icon">🛡️</div>
+        <div>
+          <div class="sector-name">Sigorta & Sağlık</div>
+          <div class="sector-std">SASB Cilt 20 & 21</div>
+        </div>
+      </div>
+      <div class="sector-card">
+        <div class="sector-icon">🛢️</div>
+        <div>
+          <div class="sector-name">Rafineri & Petrokimya</div>
+          <div class="sector-std">SASB Cilt 31 · AB Taksonomisi</div>
+        </div>
+      </div>
+      <div class="sector-card">
+        <div class="sector-icon">📦</div>
+        <div>
+          <div class="sector-name">KOBİ & İhracatçı</div>
+          <div class="sector-std">TSRS · CBAM · ESG puanı</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── BANK GAR ─── -->
+<section class="bank-section" id="bankalar">
+  <div class="container">
+    <div class="bank-grid">
+      <div>
+        <div class="bank-eyebrow">Bankalar için GAR Modülü</div>
+        <h2 class="bank-title">BDDK Yeşil Varlık Oranını<br>Otomatik Hesaplayın</h2>
+        <p class="bank-desc">Kredi portföyünüzdeki her kurumsal müşterinin TSRS uyum skorunu anlık görün. GAR raporunuzu tek tıkla BDDK formatında dışa aktarın.</p>
+        <div class="bank-features">
+          <div class="bank-feature">
+            <div class="bank-feature-icon">🏢</div>
+            <div class="bank-feature-text">
+              <div class="bank-feature-title">Portföy Tarama</div>
+              <div class="bank-feature-desc">Binlerce müşteri şirketi aynı anda emisyon ve TSRS uyum skoru ile sıralayın</div>
+            </div>
+          </div>
+          <div class="bank-feature">
+            <div class="bank-feature-icon">📊</div>
+            <div class="bank-feature-text">
+              <div class="bank-feature-title">Finanse Edilen Emisyonlar</div>
+              <div class="bank-feature-desc">PCAF metodolojisi ile kredi portföyünüzün toplam Kapsam 3 emisyonunu hesaplayın</div>
+            </div>
+          </div>
+          <div class="bank-feature">
+            <div class="bank-feature-icon">📤</div>
+            <div class="bank-feature-text">
+              <div class="bank-feature-title">BDDK Formatında Dışa Aktar</div>
+              <div class="bank-feature-desc">GAR raporunu BDDK'nın istediği XML/Excel formatında tek tıkla hazırlayın</div>
+            </div>
+          </div>
+          <div class="bank-feature">
+            <div class="bank-feature-icon">🛰️</div>
+            <div class="bank-feature-text">
+              <div class="bank-feature-title">Uydu Destekli Doğrulama</div>
+              <div class="bank-feature-desc">Müşteri verilerini uydu görüntüsüyle çapraz doğrulayın, greenwashing riskini sıfırlayın</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="gar-mockup">
+          <div class="gar-header">
+            <div style="font-size:20px">🏦</div>
+            <div class="gar-title">Banka GAR Portalı</div>
+            <div class="gar-badge">CANLI</div>
+          </div>
+          <div class="gar-kpis">
+            <div class="gar-kpi">
+              <div class="gar-kpi-label">Yeşil Varlık Oranı</div>
+              <div class="gar-kpi-value">%34,2</div>
+              <div class="gar-kpi-sub">BDDK hedef: %30</div>
+            </div>
+            <div class="gar-kpi">
+              <div class="gar-kpi-label">Taranan Şirket</div>
+              <div class="gar-kpi-value">1.847</div>
+              <div class="gar-kpi-sub">Portföyde</div>
+            </div>
+            <div class="gar-kpi">
+              <div class="gar-kpi-label">Yeşil Kredi</div>
+              <div class="gar-kpi-value">₺18,4M</div>
+              <div class="gar-kpi-sub">Bu çeyrek</div>
+            </div>
+            <div class="gar-kpi">
+              <div class="gar-kpi-label">Finanse Emisyon</div>
+              <div class="gar-kpi-value">183k</div>
+              <div class="gar-kpi-sub">tCO₂e · Kapsam 3</div>
+            </div>
+          </div>
+          <div class="gar-list">
+            <div class="gar-row">
+              <div class="gar-dot gar-dot-g"></div>
+              <div class="gar-company">Aksa Enerji A.Ş.</div>
+              <div class="gar-score">92/100</div>
+            </div>
+            <div class="gar-row">
+              <div class="gar-dot gar-dot-g"></div>
+              <div class="gar-company">Afyon Çimento A.Ş.</div>
+              <div class="gar-score">81/100</div>
+            </div>
+            <div class="gar-row">
+              <div class="gar-dot gar-dot-y"></div>
+              <div class="gar-company">Alarko Holding A.Ş.</div>
+              <div class="gar-score">67/100</div>
+            </div>
+            <div class="gar-row">
+              <div class="gar-dot gar-dot-r"></div>
+              <div class="gar-company">Örnek Tekstil Ltd. Şti.</div>
+              <div class="gar-score">38/100</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PRICING ─── -->
+<section class="pricing-section" id="fiyatlar">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-eyebrow">Fiyatlandırma</div>
+      <h2 class="section-title">Her Büyüklüğe Uygun Plan</h2>
+      <p class="section-desc">Responsible® programı ile maliyetiniz %50'ye kadar düşüyor. Yıllık ödemede 2 ay hediye.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-plan">Başlangıç</div>
+        <div class="pricing-price">₺2.500 <span>/ ay</span></div>
+        <div class="pricing-period">yıllık ödeme · ₺25.000/yıl</div>
+        <div class="pricing-subsidy">💰 Responsible® sonrası ~₺12.500/yıl</div>
+        <hr class="pricing-divider">
+        <ul class="pricing-features">
+          <li>1 şirket profili</li>
+          <li>Kapsam 1 & 2 hesaplama</li>
+          <li>AI rapor (yılda 1 adet)</li>
+          <li>TSRS uyum skoru</li>
+          <li>PDF indirme</li>
+          <li class="no">Uydu doğrulama</li>
+          <li class="no">Banka GAR portalı</li>
+          <li class="no">ESG web sayfası</li>
+        </ul>
+        <a class="btn-pricing btn-pricing-outline" href="#demo">Ücretsiz Başla</a>
+      </div>
+      <div class="pricing-card popular">
+        <div class="popular-badge">⭐ En Çok Tercih Edilen</div>
+        <div class="pricing-plan">Profesyonel</div>
+        <div class="pricing-price">₺4.000 <span>/ ay</span></div>
+        <div class="pricing-period">yıllık ödeme · ₺40.000/yıl</div>
+        <div class="pricing-subsidy">💰 Responsible® sonrası ~₺20.000/yıl</div>
+        <hr class="pricing-divider">
+        <ul class="pricing-features">
+          <li>3 şirket profili</li>
+          <li>Kapsam 1, 2 & 3 hesaplama</li>
+          <li>AI rapor (sınırsız)</li>
+          <li>TSRS + GRI uyum skoru</li>
+          <li>Uydu doğrulama</li>
+          <li>ESG web sayfası</li>
+          <li>Devlet destek danışmanı</li>
+          <li class="no">Banka GAR portalı</li>
+        </ul>
+        <a class="btn-pricing btn-pricing-primary" href="#demo">14 Gün Ücretsiz Dene</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-plan">Kurumsal</div>
+        <div class="pricing-price">₺8.000+ <span>/ ay</span></div>
+        <div class="pricing-period">yıllık ödeme · Teklif alın</div>
+        <div class="pricing-subsidy">💰 Responsible® ile özel hesap</div>
+        <hr class="pricing-divider">
+        <ul class="pricing-features">
+          <li>Sınırsız şirket profili</li>
+          <li>Banka GAR portalı</li>
+          <li>Kapsam 1, 2 & 3 (GHG Protocol)</li>
+          <li>AI rapor + insan editör</li>
+          <li>Uydu doğrulama (öncelikli)</li>
+          <li>Custom domain ESG sayfası</li>
+          <li>KSRU partner erişimi</li>
+          <li>Özel destek & SLA</li>
+        </ul>
+        <a class="btn-pricing btn-pricing-outline" href="mailto:info@sustain.com.tr">Teklif Al →</a>
+      </div>
+    </div>
+    <p class="pricing-note">
+      Banka ve kamu kurumları için özel fiyatlandırma mevcuttur.
+      <a href="mailto:info@sustain.com.tr">info@sustain.com.tr</a>'a yazın.
+    </p>
+  </div>
+</section>
+
+<!-- ─── ESG WEB PAGE ─── -->
+<section class="esgweb-section">
+  <div class="container">
+    <div class="esgweb-grid">
+      <div>
+        <div class="section-eyebrow">ESG Web Sayfanız</div>
+        <h2 class="section-title">HSBC Gibi Şeffaf<br>Bir ESG Kimliği</h2>
+        <p class="section-desc" style="margin-bottom:32px">Her müşterimize özel bir kamuya açık ESG merkezi. Yatırımcılar, müşteriler ve iş ortakları verilerinize güvenle ulaşsın.</p>
+        <div class="esgweb-points">
+          <div class="esgweb-point">
+            <div class="esgweb-point-icon">🔗</div>
+            <div>
+              <div class="esgweb-point-title">Kendi Alan Adınız</div>
+              <div class="esgweb-point-desc">şirket.sustain.com.tr/esg veya kendi domain'iniz ile yayınlayın</div>
+            </div>
+          </div>
+          <div class="esgweb-point">
+            <div class="esgweb-point-icon">📡</div>
+            <div>
+              <div class="esgweb-point-title">Gerçek Zamanlı Veri</div>
+              <div class="esgweb-point-desc">Emisyon rakamları ve TSRS skoru platformla senkronize, her zaman güncel</div>
+            </div>
+          </div>
+          <div class="esgweb-point">
+            <div class="esgweb-point-icon">📄</div>
+            <div>
+              <div class="esgweb-point-title">Rapor Arşivi</div>
+              <div class="esgweb-point-desc">Tüm yıllara ait TSRS raporları indirilebilir PDF olarak sergilenir</div>
+            </div>
+          </div>
+          <div class="esgweb-point">
+            <div class="esgweb-point-icon">✅</div>
+            <div>
+              <div class="esgweb-point-title">Doğrulanmış Rozet</div>
+              <div class="esgweb-point-desc">Uydu doğrulaması geçen şirketler "sustain Doğrulandı" rozetini taşır</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="esg-page-mockup">
+          <div class="esg-page-url">
+            <span class="esg-page-lock">🔒</span>
+            <span class="esg-page-urltext">akbank.sustain.com.tr/esg</span>
+          </div>
+          <div class="esg-page-header">
+            <div class="esg-page-company">
+              <div class="esg-page-company-name">AKBANK T.A.Ş.</div>
+              <div class="esg-page-company-sub">ESG Şeffaflık Merkezi · 2024</div>
+            </div>
+            <div class="esg-page-verified">✓ sustain Doğrulandı</div>
+          </div>
+          <div class="esg-page-body">
+            <div class="esg-kpi-row">
+              <div class="esg-kpi-mini">
+                <div class="esg-kpi-mini-val">4.280</div>
+                <div class="esg-kpi-mini-unit">tCO₂e</div>
+                <div class="esg-kpi-mini-label">Kapsam 1</div>
+              </div>
+              <div class="esg-kpi-mini">
+                <div class="esg-kpi-mini-val">12.640</div>
+                <div class="esg-kpi-mini-unit">tCO₂e</div>
+                <div class="esg-kpi-mini-label">Kapsam 2</div>
+              </div>
+              <div class="esg-kpi-mini">
+                <div class="esg-kpi-mini-val" style="color:var(--green-700)">87</div>
+                <div class="esg-kpi-mini-unit">B+</div>
+                <div class="esg-kpi-mini-label">TSRS Skoru</div>
+              </div>
+            </div>
+            <div class="esg-commit">
+              <div class="esg-commit-title">🎯 Net Sıfır Taahhütleri</div>
+              <div class="esg-bar-row">
+                <div class="esg-bar-label">2030 Emisyon ↓</div>
+                <div class="esg-bar-track"><div class="esg-bar-fill" style="width:62%"></div></div>
+                <div class="esg-bar-pct">%62</div>
+              </div>
+              <div class="esg-bar-row">
+                <div class="esg-bar-label">Yenilenebilir</div>
+                <div class="esg-bar-track"><div class="esg-bar-fill" style="width:45%"></div></div>
+                <div class="esg-bar-pct">%45</div>
+              </div>
+              <div class="esg-bar-row">
+                <div class="esg-bar-label">Su Tasarrufu</div>
+                <div class="esg-bar-track"><div class="esg-bar-fill" style="width:78%"></div></div>
+                <div class="esg-bar-pct">%78</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SUBSIDY ─── -->
+<section class="subsidy-section" id="destekler">
+  <div class="container">
+    <div class="subsidy-grid">
+      <div>
+        <div class="section-eyebrow">Devlet Teşvikleri</div>
+        <h2 class="section-title">Maliyetin %50'sini<br>Devlet Karşılıyor</h2>
+        <p class="section-desc" style="margin-bottom:32px">Türkiye sürdürülebilirlik yazılımını stratejik sektör olarak destekliyor. Platformumuzu Responsible® ve KOSGEB programları kapsamında çok daha uygun kullanın.</p>
+        <div style="background:white; border-radius:14px; padding:24px; border:1.5px solid var(--green-200);">
+          <div style="font-size:13px;color:var(--gray-600);margin-bottom:12px;">Örnek Hesap — Profesyonel Plan</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:14px;color:var(--gray-700)">Yıllık Plan Bedeli</span>
+            <span style="font-size:14px;font-weight:700;">₺40.000</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:14px;color:var(--gray-700)">Responsible® Desteği (%50)</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green-700)">- ₺20.000</span>
+          </div>
+          <div style="border-top:2px solid var(--green-200);padding-top:10px;margin-top:4px;display:flex;justify-content:space-between;">
+            <span style="font-size:15px;font-weight:800;">Net Maliyet</span>
+            <span style="font-size:18px;font-weight:900;color:var(--green-700);">₺20.000/yıl</span>
+          </div>
+        </div>
+      </div>
+      <div class="subsidy-cards">
+        <div class="subsidy-card">
+          <div class="subsidy-card-icon">🏛️</div>
+          <div>
+            <div class="subsidy-card-title">Responsible® Programı</div>
+            <div class="subsidy-card-desc">Ticaret Bakanlığı'nın sürdürülebilirlik danışmanlık ve yazılım gider desteği. 5 yıl boyunca sürdürülebilirlik harcamalarınızın yarısını karşılar.</div>
+            <div class="subsidy-amount">%50 · Maks. 10M ₺ · 5 Yıl</div>
+          </div>
+        </div>
+        <div class="subsidy-card">
+          <div class="subsidy-card-icon">🔬</div>
+          <div>
+            <div class="subsidy-card-title">KOSGEB YÖNDE</div>
+            <div class="subsidy-card-desc">KOBİ'lere özel sürdürülebilirlik raporlama desteği. İlk TSRS raporu hazırlama sürecinde danışmanlık ve yazılım giderlerini karşılar.</div>
+            <div class="subsidy-amount">KOBİ'lere Özel · Başvuru Bizden</div>
+          </div>
+        </div>
+        <div class="subsidy-card">
+          <div class="subsidy-card-icon">🎓</div>
+          <div>
+            <div class="subsidy-card-title">TÜBİTAK 1507</div>
+            <div class="subsidy-card-desc">Ar-Ge destekli dijitalleşme. Uydu modülü ve AI rapor yazıcı geliştirmemize katkı sağlayan program. Müşteri olarak da başvuru yapabilirsiniz.</div>
+            <div class="subsidy-amount">Ar-Ge Harcamaları · %75'e kadar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TESTIMONIALS ─── -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-eyebrow">Pilot Kullanıcılar</div>
+      <h2 class="section-title">Onlar Zaten Başladı</h2>
+      <p class="section-desc">Pilot programımızdaki şirketlerden ilk geri bildirimler.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <p class="testimonial-text">TSRS raporumuzu dışarıya yaptırsak 3 ay ve 150.000 TL harcardık. sustain.com.tr ile 4 günde, insan kontrolü ile tamamladık. AI'nın SASB bankacılık metriklerini ne kadar iyi bildiğine şaşırdık.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">MK</div>
+          <div>
+            <div class="testimonial-name">Mehmet K.</div>
+            <div class="testimonial-role">CFO · Özel Banka</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <p class="testimonial-text">Uydu doğrulama özelliği bizi şaşırttı. Tesisin gerçek karbon ayak izini uydudan görmek ve raporla karşılaştırmak inanılmaz bir güven veriyor. Bağımsız denetçimiz de memnun.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AY</div>
+          <div>
+            <div class="testimonial-name">Ayşe Y.</div>
+            <div class="testimonial-role">Sürdürülebilirlik Müdürü · Çimento A.Ş.</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <p class="testimonial-text">ESG web sayfamız yayına girince investor relations ekibimizden çok olumlu geri bildirim aldık. Artık her soruya "ESG sayfamıza bakın" diyebiliyoruz. Responsible® desteğiyle maliyetimiz neredeyse sıfır.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">EC</div>
+          <div>
+            <div class="testimonial-name">Emre C.</div>
+            <div class="testimonial-role">IR Direktörü · Holding</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA ─── -->
+<section class="cta-section" id="demo">
+  <div class="container">
+    <h2 class="cta-title">TSRS'yi Beklemeden<br>Bugün Başlayın</h2>
+    <p class="cta-desc">14 günlük ücretsiz deneme · Kredi kartı gerekmez · Kurulum yok</p>
+    <div class="cta-input-row">
+      <input class="cta-input" type="email" placeholder="kurumsal e-posta adresiniz">
+      <button class="btn-cta">Başla →</button>
+    </div>
+    <p class="cta-footnote">Demo istemek için: info@sustain.com.tr · +90 (212) XXX XX XX</p>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">🌿 sustain.com.tr</div>
+      <p class="footer-brand-desc">Türkiye'nin ilk AI + uydu destekli sürdürülebilirlik raporlama platformu. KGK, TSRS, BDDK GAR ve GRI standartlarında uzmanlaşmış.</p>
+      <div class="footer-badges">
+        <div class="footer-badge">TSRS Uyumlu</div>
+        <div class="footer-badge">KGK Onaylı</div>
+        <div class="footer-badge">ISO 14064</div>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Platform</div>
+      <ul class="footer-links">
+        <li><a href="#ozellikler">Özellikler</a></li>
+        <li><a href="#sektor">Sektörler</a></li>
+        <li><a href="#bankalar">Banka GAR</a></li>
+        <li><a href="#fiyatlar">Fiyatlandırma</a></li>
+        <li><a href="prototype.html">Demo Giriş</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Standartlar</div>
+      <ul class="footer-links">
+        <li><a href="#">TSRS 1 & 2</a></li>
+        <li><a href="#">GRI Standartları</a></li>
+        <li><a href="#">SASB</a></li>
+        <li><a href="#">GHG Protocol</a></li>
+        <li><a href="#">ISO 14064-1</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Şirket</div>
+      <ul class="footer-links">
+        <li><a href="#">Hakkımızda</a></li>
+        <li><a href="#">KSRU Partner Programı</a></li>
+        <li><a href="#">Devlet Destekleri</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="mailto:info@sustain.com.tr">İletişim</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2025 Connective Hub Dijital Teknolojiler Ltd. Şti. · Ataşehir Dijital Teknokent</div>
+    <div style="display:flex;gap:16px;font-size:12px;">
+      <a href="#" style="color:rgba(255,255,255,0.4);text-decoration:none">Gizlilik Politikası</a>
+      <a href="#" style="color:rgba(255,255,255,0.4);text-decoration:none">Kullanım Koşulları</a>
+      <a href="#" style="color:rgba(255,255,255,0.4);text-decoration:none">KVKK</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Smooth scroll for nav links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
+});
+
+// Nav scroll shadow
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  nav.style.boxShadow = window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,0.08)' : 'none';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sustain.com.tr — Sürdürülebilirlik Raporlama Platformu</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --green-900: #1B4332;
+    --green-800: #1B5E20;
+    --green-700: #2E7D32;
+    --green-600: #388E3C;
+    --green-500: #43A047;
+    --green-400: #66BB6A;
+    --green-300: #A5D6A7;
+    --green-100: #E8F5E9;
+    --green-50:  #F1F8E9;
+    --teal:      #00897B;
+    --blue:      #1565C0;
+    --amber:     #F57F17;
+    --red:       #C62828;
+    --gray-900:  #212121;
+    --gray-700:  #424242;
+    --gray-500:  #9E9E9E;
+    --gray-300:  #E0E0E0;
+    --gray-100:  #F5F5F5;
+    --white:     #FFFFFF;
+    --sidebar-w: 240px;
+    --header-h:  60px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-100); color: var(--gray-900); }
+
+  /* ─── LAYOUT ─── */
+  .app { display: flex; min-height: 100vh; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: var(--sidebar-w); background: var(--green-900); color: var(--white);
+    display: flex; flex-direction: column; position: fixed; top: 0; left: 0;
+    height: 100vh; z-index: 100; transition: transform .25s;
+  }
+  .sidebar-brand {
+    padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .brand-icon {
+    width: 36px; height: 36px; background: var(--green-500); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .brand-text { font-size: 15px; font-weight: 700; }
+  .brand-sub  { font-size: 10px; color: var(--green-300); font-weight: 400; }
+  .sidebar-company {
+    margin: 12px; background: rgba(255,255,255,.08); border-radius: 8px;
+    padding: 10px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .company-avatar {
+    width: 28px; height: 28px; background: var(--green-500); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+  }
+  .company-info { flex: 1; }
+  .company-name  { font-size: 12px; font-weight: 600; }
+  .company-plan  { font-size: 10px; color: var(--green-300); }
+  nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+  .nav-section { padding: 12px 16px 4px; font-size: 10px; font-weight: 600;
+    color: var(--green-300); text-transform: uppercase; letter-spacing: .8px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer;
+    font-size: 13px; color: rgba(255,255,255,.75); border-radius: 0; transition: all .15s;
+    border-left: 3px solid transparent; margin: 1px 0;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.08); color: var(--white); }
+  .nav-item.active {
+    background: rgba(255,255,255,.12); color: var(--white);
+    border-left-color: var(--green-400); font-weight: 600;
+  }
+  .nav-item .icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge {
+    margin-left: auto; background: var(--green-500); color: white;
+    font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600;
+  }
+  .sidebar-footer {
+    padding: 12px; border-top: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .user-avatar {
+    width: 30px; height: 30px; background: var(--green-600); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+  }
+  .user-info { flex: 1; }
+  .user-name { font-size: 12px; font-weight: 600; }
+  .user-role { font-size: 10px; color: var(--green-300); }
+
+  /* ─── MAIN ─── */
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+
+  /* ─── HEADER ─── */
+  .header {
+    height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--gray-300);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px; position: sticky;
+    top: 0; z-index: 50;
+  }
+  .header-title { font-size: 17px; font-weight: 700; color: var(--green-800); flex: 1; }
+  .header-subtitle { font-size: 12px; color: var(--gray-500); margin-top: 1px; }
+  .btn {
+    padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all .15s; display: flex;
+    align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--green-700); color: white; }
+  .btn-primary:hover { background: var(--green-800); }
+  .btn-outline { background: white; color: var(--green-700); border: 1px solid var(--green-700); }
+  .btn-outline:hover { background: var(--green-50); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 24px; flex: 1; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--white); border-radius: 12px; padding: 20px;
+    border: 1px solid var(--gray-300); box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--gray-700); margin-bottom: 4px; }
+  .card-sub   { font-size: 12px; color: var(--gray-500); }
+
+  /* ─── KPI GRID ─── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--white); border-radius: 12px; padding: 18px 20px;
+    border: 1px solid var(--gray-300); box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    position: relative; overflow: hidden;
+  }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .kpi-scope1::before { background: var(--green-700); }
+  .kpi-scope2::before { background: var(--teal); }
+  .kpi-scope3::before { background: var(--blue); }
+  .kpi-tsrs::before   { background: var(--amber); }
+  .kpi-label  { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+  .kpi-value  { font-size: 26px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+  .kpi-unit   { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+  .kpi-trend  { display: flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 12px; }
+  .trend-down { color: #2E7D32; } /* azalma iyi */
+  .trend-up   { color: var(--red); }
+  .kpi-icon   {
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    font-size: 32px; opacity: .12;
+  }
+
+  /* ─── GRID LAYOUTS ─── */
+  .grid-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3   { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .grid-r   { display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; }
+  .mb-20    { margin-bottom: 20px; }
+  .mt-16    { margin-top: 16px; }
+
+  /* ─── COMPLIANCE SCORE ─── */
+  .score-ring-wrap { display: flex; align-items: center; gap: 24px; }
+  .score-ring { position: relative; width: 110px; height: 110px; }
+  .score-ring canvas { width: 110px!important; height: 110px!important; }
+  .score-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    text-align: center;
+  }
+  .score-num   { font-size: 26px; font-weight: 800; color: var(--green-800); }
+  .score-label { font-size: 10px; color: var(--gray-500); }
+  .grade-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px; font-weight: 800; font-size: 16px;
+    background: var(--green-700); color: white; margin-top: 6px;
+  }
+  .check-list { flex: 1; }
+  .check-item {
+    display: flex; align-items: center; gap: 8px; padding: 5px 0;
+    font-size: 12px; color: var(--gray-700); border-bottom: 1px solid var(--gray-100);
+  }
+  .check-ok   { color: var(--green-600); font-size: 14px; }
+  .check-warn { color: var(--amber); font-size: 14px; }
+  .check-fail { color: var(--red); font-size: 14px; }
+
+  /* ─── REPORTS TABLE ─── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px; color: var(--gray-500);
+    border-bottom: 2px solid var(--gray-300); background: var(--gray-100);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--gray-300); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--green-50); }
+  .status-badge {
+    display: inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+  }
+  .status-done  { background: #E8F5E9; color: #2E7D32; }
+  .status-draft { background: #FFF8E1; color: #F57F17; }
+  .status-rev   { background: #E3F2FD; color: #1565C0; }
+
+  /* ─── SATELLITE WIDGET ─── */
+  .sat-map {
+    background: linear-gradient(135deg, #1a2a1a 0%, #2d4a2d 40%, #1f3d2f 100%);
+    border-radius: 10px; height: 180px; position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sat-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,100,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,100,.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .sat-marker {
+    width: 18px; height: 18px; background: #ff4444; border-radius: 50%;
+    border: 3px solid white; box-shadow: 0 0 0 6px rgba(255,68,68,.3);
+    position: absolute; top: 55%; left: 48%;
+  }
+  .sat-ring {
+    width: 70px; height: 70px; border: 2px solid rgba(255,68,68,.4);
+    border-radius: 50%; position: absolute; top: 50%; left: 44%;
+    transform: translate(-50%,-50%); animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: translate(-50%,-50%) scale(1); opacity: .6; }
+    100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; }
+  }
+  .sat-label {
+    position: absolute; bottom: 10px; left: 12px; font-size: 11px;
+    color: rgba(255,255,255,.8); background: rgba(0,0,0,.4);
+    padding: 3px 8px; border-radius: 4px;
+  }
+  .sat-coords {
+    position: absolute; top: 10px; right: 12px; font-size: 10px;
+    color: rgba(100,255,150,.8); font-family: monospace;
+  }
+  .risk-items { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .risk-item {
+    background: var(--gray-100); border-radius: 8px; padding: 10px; text-align: center;
+  }
+  .risk-icon   { font-size: 20px; margin-bottom: 4px; }
+  .risk-name   { font-size: 10px; color: var(--gray-500); font-weight: 600; }
+  .risk-level  { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .risk-high   { color: var(--red); }
+  .risk-medium { color: var(--amber); }
+  .risk-low    { color: var(--green-600); }
+
+  /* ─── DATA ENTRY ─── */
+  .form-section { margin-bottom: 24px; }
+  .form-section-title {
+    font-size: 13px; font-weight: 700; color: var(--green-800); margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--green-100);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .scope-tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700;
+  }
+  .scope1-tag { background: var(--green-100); color: var(--green-800); }
+  .scope2-tag { background: #E0F2F1; color: #00695C; }
+  .scope3-tag { background: #E3F2FD; color: #1565C0; }
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--gray-700); }
+  .form-sub   { font-size: 10px; color: var(--gray-500); }
+  .form-input {
+    padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px;
+    font-size: 13px; transition: border-color .15s; outline: none;
+  }
+  .form-input:focus { border-color: var(--green-600); box-shadow: 0 0 0 3px rgba(67,160,71,.15); }
+  .form-select {
+    padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px;
+    font-size: 13px; background: white; cursor: pointer; outline: none;
+  }
+  .calc-preview {
+    background: var(--green-50); border: 1px solid var(--green-300); border-radius: 8px;
+    padding: 16px; margin-top: 16px;
+  }
+  .calc-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13px; }
+  .calc-total { font-weight: 800; font-size: 16px; color: var(--green-800); border-top: 1px solid var(--green-300); padding-top: 8px; margin-top: 4px; }
+
+  /* ─── AI REPORT PAGE ─── */
+  .ai-status {
+    background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    border-radius: 12px; padding: 24px; color: white; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .ai-icon { font-size: 48px; }
+  .ai-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .ai-desc  { font-size: 13px; opacity: .85; line-height: 1.5; }
+  .progress-bar {
+    background: rgba(255,255,255,.2); border-radius: 10px; height: 6px;
+    margin-top: 12px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--green-300); border-radius: 10px;
+    width: 72%; animation: progress 3s ease-in-out infinite alternate;
+  }
+  @keyframes progress { from { width: 60%; } to { width: 85%; } }
+  .report-preview {
+    background: white; border: 1px solid var(--gray-300); border-radius: 8px;
+    padding: 24px; font-size: 13px; line-height: 1.7; color: var(--gray-700);
+  }
+  .report-preview h2 { font-size: 16px; color: var(--green-800); margin: 16px 0 8px; border-bottom: 1px solid var(--green-100); padding-bottom: 4px; }
+  .report-preview h3 { font-size: 14px; color: var(--gray-800); margin: 12px 0 6px; }
+  .report-preview p  { margin-bottom: 10px; }
+  .report-preview .highlight { background: var(--green-50); padding: 2px 6px; border-radius: 4px; font-weight: 600; color: var(--green-800); }
+  .section-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+  .section-tab {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--gray-300); color: var(--gray-600);
+    background: white; transition: all .15s;
+  }
+  .section-tab.active { background: var(--green-700); color: white; border-color: var(--green-700); }
+  .export-btns { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* ─── ESG PUBLIC PAGE ─── */
+  .esg-page-frame {
+    border: 1px solid var(--gray-300); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  }
+  .esg-header {
+    background: var(--green-900); padding: 24px 32px; display: flex;
+    align-items: center; justify-content: space-between; color: white;
+  }
+  .esg-logo-area { display: flex; align-items: center; gap: 12px; }
+  .esg-company-logo {
+    width: 44px; height: 44px; background: white; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .esg-company-name { font-size: 18px; font-weight: 800; }
+  .esg-company-sub  { font-size: 11px; opacity: .7; margin-top: 2px; }
+  .esg-badge {
+    display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.15);
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .esg-body { padding: 24px 32px; background: var(--gray-100); }
+  .esg-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .esg-kpi {
+    background: white; border-radius: 8px; padding: 14px 16px;
+    border-left: 3px solid var(--green-600);
+  }
+  .esg-kpi-val  { font-size: 20px; font-weight: 800; color: var(--green-800); }
+  .esg-kpi-name { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .esg-commitment {
+    background: white; border-radius: 8px; padding: 14px 16px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .commitment-bar-wrap { flex: 1; }
+  .commitment-label { font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 4px; }
+  .commitment-bar { background: var(--gray-300); border-radius: 4px; height: 6px; }
+  .commitment-fill { background: var(--green-600); border-radius: 4px; height: 6px; }
+  .commitment-pct { font-size: 12px; font-weight: 700; color: var(--green-700); min-width: 36px; text-align: right; }
+  .esg-footer-bar {
+    background: var(--green-900); padding: 10px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .esg-footer-text { font-size: 11px; color: rgba(255,255,255,.6); }
+  .powered-by { font-size: 10px; color: rgba(255,255,255,.4); }
+  .powered-by span { color: var(--green-400); font-weight: 700; }
+
+  /* ─── GAR PORTAL ─── */
+  .gar-score-wrap { display: flex; align-items: center; gap: 20px; }
+  .gar-big { font-size: 52px; font-weight: 900; color: var(--green-700); line-height: 1; }
+  .gar-label { font-size: 13px; color: var(--gray-600); margin-top: 4px; }
+  .gar-trend { font-size: 12px; color: var(--green-600); font-weight: 600; margin-top: 4px; }
+  .portfolio-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .company-score-bar { flex: 1; }
+  .score-bar-bg { background: var(--gray-200); border-radius: 4px; height: 4px; }
+  .score-bar-fill { border-radius: 4px; height: 4px; }
+  .green-loan  { background: var(--green-500); }
+  .yellow-loan { background: var(--amber); }
+  .red-loan    { background: var(--red); }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-green  { background: var(--green-500); }
+  .dot-yellow { background: var(--amber); }
+  .dot-red    { background: var(--red); }
+
+  /* ─── NOTIFICATION / AI GENERATING ─── */
+  .ai-generating {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--green-50); border: 1px solid var(--green-300);
+    border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--green-800);
+    margin-bottom: 16px;
+  }
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--green-300);
+    border-top-color: var(--green-700); border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-3, .grid-r { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .esg-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ─── TOOLTIP ─── */
+  .tooltip-wrap { position: relative; display: inline-flex; }
+  .tooltip {
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--gray-900); color: white; font-size: 11px; padding: 4px 8px;
+    border-radius: 4px; white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: opacity .15s; z-index: 200;
+  }
+  .tooltip-wrap:hover .tooltip { opacity: 1; }
+
+  /* ─── SECTOR SELECT ─── */
+  .sector-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .sector-card {
+    border: 2px solid var(--gray-300); border-radius: 10px; padding: 12px 10px;
+    cursor: pointer; text-align: center; transition: all .15s;
+  }
+  .sector-card:hover { border-color: var(--green-500); background: var(--green-50); }
+  .sector-card.selected { border-color: var(--green-700); background: var(--green-50); }
+  .sector-card .s-icon { font-size: 24px; margin-bottom: 6px; }
+  .sector-card .s-name { font-size: 12px; font-weight: 600; color: var(--gray-700); }
+  .sector-card .s-sasb { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+
+  /* ─── LOADING STATE ─── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px;
+  }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🌿</div>
+    <div>
+      <div class="brand-text">sustain.com.tr</div>
+      <div class="brand-sub">Connective Hub · v1.0</div>
+    </div>
+  </div>
+
+  <div class="sidebar-company">
+    <div class="company-avatar">AB</div>
+    <div class="company-info">
+      <div class="company-name">Akbank T.A.Ş.</div>
+      <div class="company-plan">Banka GAR Planı</div>
+    </div>
+    <span style="color:rgba(255,255,255,.4);font-size:12px;">▾</span>
+  </div>
+
+  <nav>
+    <div class="nav-section">Genel</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </div>
+
+    <div class="nav-section">Raporlama</div>
+    <div class="nav-item" onclick="showPage('data-entry')">
+      <span class="icon">📥</span> Veri Giriş
+    </div>
+    <div class="nav-item" onclick="showPage('ai-report')">
+      <span class="icon">🤖</span> AI Rapor Yaz
+      <span class="nav-badge">YENİ</span>
+    </div>
+    <div class="nav-item" onclick="showPage('reports-list')">
+      <span class="icon">📄</span> Raporlarım
+    </div>
+
+    <div class="nav-section">Analiz</div>
+    <div class="nav-item" onclick="showPage('satellite')">
+      <span class="icon">🛰️</span> Uydu Doğrulama
+    </div>
+    <div class="nav-item" onclick="showPage('gar')">
+      <span class="icon">🏦</span> Banka GAR Portalı
+    </div>
+    <div class="nav-item" onclick="showPage('esg-page')">
+      <span class="icon">🌐</span> ESG Web Sayfam
+    </div>
+
+    <div class="nav-section">Destek</div>
+    <div class="nav-item" onclick="showPage('subsidies')">
+      <span class="icon">💰</span> Devlet Destekleri
+    </div>
+    <div class="nav-item" onclick="">
+      <span class="icon">⚙️</span> Ayarlar
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-avatar">KY</div>
+    <div class="user-info">
+      <div class="user-name">Kemal Yılmaz</div>
+      <div class="user-role">Sürdürülebilirlik Müdürü</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+<!-- ─── HEADER ─── -->
+<header class="header">
+  <div style="flex:1">
+    <div class="header-title" id="page-title">📊 Dashboard</div>
+    <div class="header-subtitle" id="page-subtitle">Akbank T.A.Ş. · 2024 Raporlama Dönemi</div>
+  </div>
+  <button class="btn btn-outline btn-sm" onclick="showPage('data-entry')">+ Veri Gir</button>
+  <button class="btn btn-primary btn-sm" onclick="showPage('ai-report')">🤖 Rapor Üret</button>
+  <div style="width:1px;height:24px;background:var(--gray-300)"></div>
+  <div style="font-size:12px;color:var(--gray-500)">TSRS 2024 · 87 gün kaldı</div>
+</header>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--              DASHBOARD PAGE                  -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content page active" id="page-dashboard">
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-scope1">
+      <div class="kpi-label">Kapsam 1 — Doğrudan</div>
+      <div class="kpi-value">4.280</div>
+      <div class="kpi-unit">ton CO₂e</div>
+      <div class="kpi-trend trend-down">▼ %12 geçen yıla göre</div>
+      <div class="kpi-icon">🏭</div>
+    </div>
+    <div class="kpi-card kpi-scope2">
+      <div class="kpi-label">Kapsam 2 — Elektrik</div>
+      <div class="kpi-value">12.640</div>
+      <div class="kpi-unit">ton CO₂e (konum bazlı)</div>
+      <div class="kpi-trend trend-down">▼ %8 geçen yıla göre</div>
+      <div class="kpi-icon">⚡</div>
+    </div>
+    <div class="kpi-card kpi-scope3">
+      <div class="kpi-label">Kapsam 3 — Değer Zinciri</div>
+      <div class="kpi-value">183.500</div>
+      <div class="kpi-unit">ton CO₂e (finanse edilmiş)</div>
+      <div class="kpi-trend trend-down">▼ %5 geçen yıla göre</div>
+      <div class="kpi-icon">🔗</div>
+    </div>
+    <div class="kpi-card kpi-tsrs">
+      <div class="kpi-label">TSRS Uyum Skoru</div>
+      <div class="kpi-value">87</div>
+      <div class="kpi-unit">100 üzerinden · Derece: B+</div>
+      <div class="kpi-trend" style="color:var(--amber)">▲ +11 puan (2023: 76)</div>
+      <div class="kpi-icon">✅</div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid-2 mb-20">
+    <div class="card">
+      <div class="card-title">Emisyon Trendi (3 Yıl)</div>
+      <div class="card-sub mb-20" style="margin-bottom:12px">Kapsam 1 + 2 ton CO₂e</div>
+      <canvas id="trendChart" height="160"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Kapsam Dağılımı</div>
+      <div class="card-sub" style="margin-bottom:12px">2024 toplam: 200.420 ton CO₂e</div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <canvas id="donutChart" width="140" height="140" style="max-width:140px"></canvas>
+        <div style="font-size:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--green-700)"></div>
+            <span>Kapsam 1: 4.280 (%2.1)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--teal)"></div>
+            <span>Kapsam 2: 12.640 (%6.3)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--blue)"></div>
+            <span>Kapsam 3: 183.500 (%91.6)</span>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-500)">
+            Karbon Yoğunluğu<br>
+            <strong style="color:var(--gray-800);font-size:14px">2.4 tCO₂e/çalışan</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compliance + Satellite -->
+  <div class="grid-3 mb-20">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">TSRS Uyumluluk Kontrol</div>
+      <div class="score-ring-wrap">
+        <div class="score-ring">
+          <canvas id="scoreChart" width="110" height="110"></canvas>
+          <div class="score-center">
+            <div class="score-num">87</div>
+            <div class="score-label">/ 100</div>
+            <div class="grade-badge">B</div>
+          </div>
+        </div>
+        <div class="check-list">
+          <div class="check-item"><span class="check-ok">✓</span> Yönetişim — YK izleme</div>
+          <div class="check-item"><span class="check-ok">✓</span> YK Ücretlendirme bağlantısı</div>
+          <div class="check-item"><span class="check-ok">✓</span> Senaryo analizi (IEA/IPCC)</div>
+          <div class="check-item"><span class="check-ok">✓</span> Kapsam 1 & 2 emisyonları</div>
+          <div class="check-item"><span class="check-warn">⚠</span> Kapsam 3 — tüm kategoriler</div>
+          <div class="check-item"><span class="check-warn">⚠</span> Geçiş planı detayı</div>
+          <div class="check-item"><span class="check-fail">✗</span> SBTi hedef onayı</div>
+          <div class="check-item"><span class="check-ok">✓</span> TSRS İçerik Endeksi</div>
+          <div class="check-item"><span class="check-ok">✓</span> Güvence beyanı (PwC)</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Uydu Fiziksel Risk</div>
+      <div class="card-sub" style="margin-bottom:10px">İstanbul, Ataşehir · 41.0°N 29.1°E</div>
+      <div class="sat-map">
+        <div class="sat-grid"></div>
+        <div class="sat-ring"></div>
+        <div class="sat-marker"></div>
+        <div class="sat-label">NASA/AFAD · Mayıs 2026</div>
+        <div class="sat-coords">41.0082° N<br>29.1042° E</div>
+      </div>
+      <div class="risk-items">
+        <div class="risk-item">
+          <div class="risk-icon">🌊</div>
+          <div class="risk-name">SEL RİSKİ</div>
+          <div class="risk-level risk-medium">Orta</div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-icon">🏔️</div>
+          <div class="risk-name">DEPREM</div>
+          <div class="risk-level risk-high">1. Bölge</div>
+        </div>
+        <div class="risk-item">
+          <div class="risk-icon">☀️</div>
+          <div class="risk-name">KURAKLIK</div>
+          <div class="risk-level risk-low">Düşük</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Reports -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="card-title">Son Raporlar</div>
+      <button class="btn btn-outline btn-sm" onclick="showPage('reports-list')">Tümünü Gör</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Rapor Adı</th>
+            <th>Sektör</th>
+            <th>Standart</th>
+            <th>Dil</th>
+            <th>TSRS Skoru</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Akbank 2024 TSRS Sürdürülebilirlik Raporu</strong></td>
+            <td>🏦 Bankacılık</td>
+            <td>TSRS 1 & 2</td>
+            <td>TR / EN</td>
+            <td><strong style="color:var(--green-700)">87/100 · B</strong></td>
+            <td><span class="status-badge status-done">Yayında</span></td>
+            <td style="color:var(--gray-500)">Mar 2025</td>
+            <td><button class="btn btn-outline btn-sm">İndir</button></td>
+          </tr>
+          <tr>
+            <td><strong>Akbank 2024 GAR Portalı</strong></td>
+            <td>🏦 BDDK</td>
+            <td>GAR / PCAF</td>
+            <td>TR</td>
+            <td><strong style="color:var(--teal)">%34.2 GAR</strong></td>
+            <td><span class="status-badge status-done">Gönderildi</span></td>
+            <td style="color:var(--gray-500)">Nis 2025</td>
+            <td><button class="btn btn-outline btn-sm">Görüntüle</button></td>
+          </tr>
+          <tr>
+            <td><strong>Akbank 2023 Sürdürülebilirlik Raporu</strong></td>
+            <td>🏦 Bankacılık</td>
+            <td>TSRS 1 & 2</td>
+            <td>TR / EN / DE</td>
+            <td><strong style="color:var(--amber)">76/100 · C</strong></td>
+            <td><span class="status-badge status-done">Yayında</span></td>
+            <td style="color:var(--gray-500)">Mar 2024</td>
+            <td><button class="btn btn-outline btn-sm">İndir</button></td>
+          </tr>
+          <tr>
+            <td><strong>2025 Taslak Raporu</strong></td>
+            <td>🏦 Bankacılık</td>
+            <td>TSRS 1 & 2</td>
+            <td>TR</td>
+            <td><span style="color:var(--gray-400)">Hesaplanıyor…</span></td>
+            <td><span class="status-badge status-draft">Taslak</span></td>
+            <td style="color:var(--gray-500)">Devam ediyor</td>
+            <td><button class="btn btn-primary btn-sm">Düzenle</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--              DATA ENTRY PAGE                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content page" id="page-data-entry">
+
+  <div style="margin-bottom:20px">
+    <div style="font-size:14px;font-weight:600;color:var(--gray-500);margin-bottom:8px">ADIM 1 / 3 — Sektör & Kapsam Seçimi</div>
+    <div style="font-size:22px;font-weight:800;color:var(--green-800)">Emisyon Verisi Gir</div>
+  </div>
+
+  <!-- Sector Grid -->
+  <div class="card mb-20">
+    <div class="card-title" style="margin-bottom:14px">Sektörünüzü Seçin</div>
+    <div class="sector-grid">
+      <div class="sector-card selected" onclick="selectSector(this)">
+        <div class="s-icon">🏦</div>
+        <div class="s-name">Bankacılık</div>
+        <div class="s-sasb">SASB Cilt 16+19</div>
+      </div>
+      <div class="sector-card" onclick="selectSector(this)">
+        <div class="s-icon">🏭</div>
+        <div class="s-name">Çimento</div>
+        <div class="s-sasb">SASB Cilt 10</div>
+      </div>
+      <div class="sector-card" onclick="selectSector(this)">
+        <div class="s-icon">⚡</div>
+        <div class="s-name">Enerji / Elektrik</div>
+        <div class="s-sasb">SASB Cilt 32</div>
+      </div>
+      <div class="sector-card" onclick="selectSector(this)">
+        <div class="s-icon">🏗️</div>
+        <div class="s-name">İnşaat / Holding</div>
+        <div class="s-sasb">SASB Cilt 33</div>
+      </div>
+      <div class="sector-card" onclick="selectSector(this)">
+        <div class="s-icon">🛒</div>
+        <div class="s-name">Perakende</div>
+        <div class="s-sasb">SASB Cilt 22</div>
+      </div>
+      <div class="sector-card" onclick="selectSector(this)">
+        <div class="s-icon">🏥</div>
+        <div class="s-name">Sigorta / Sağlık</div>
+        <div class="s-sasb">SASB Cilt 20+21</div>
+      </div>
+      <div class="sector-card" onclick="selectSector(this)">
+        <div class="s-icon">🏠</div>
+        <div class="s-name">Beyaz Eşya</div>
+        <div class="s-sasb">SASB Cilt 26</div>
+      </div>
+      <div class="sector-card" onclick="selectSector(this)">
+        <div class="s-icon">🛢️</div>
+        <div class="s-name">Rafineri / Petrol</div>
+        <div class="s-sasb">SASB Cilt 31</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:4px">Veri Giriş Formu</div>
+    <div class="card-sub" style="margin-bottom:20px">Sektör: Bankacılık · Raporlama Yılı: 2024 · Sınır: Operasyonel Kontrol</div>
+
+    <!-- Scope 1 -->
+    <div class="form-section">
+      <div class="form-section-title">
+        🏭 Doğrudan Emisyonlar
+        <span class="scope-tag scope1-tag">Kapsam 1</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Doğalgaz Tüketimi</label>
+          <div class="form-sub">m³ / yıl</div>
+          <input class="form-input" type="number" placeholder="0" value="124500" oninput="updateCalc()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dizel Yakıt</label>
+          <div class="form-sub">Litre / yıl (şirket araçları)</div>
+          <input class="form-input" type="number" placeholder="0" value="85200" oninput="updateCalc()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">LPG</label>
+          <div class="form-sub">kg / yıl</div>
+          <input class="form-input" type="number" placeholder="0" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Scope 2 -->
+    <div class="form-section">
+      <div class="form-section-title">
+        ⚡ Enerji Kaynaklı Emisyonlar
+        <span class="scope-tag scope2-tag">Kapsam 2</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Elektrik Tüketimi</label>
+          <div class="form-sub">kWh / yıl</div>
+          <input class="form-input" type="number" placeholder="0" value="30350000" oninput="updateCalc()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Enerji Kaynağı</label>
+          <div class="form-sub">Sertifika türü</div>
+          <select class="form-select">
+            <option>Şebeke (Konum Bazlı)</option>
+            <option>Yenilenebilir Sertifika</option>
+            <option>Karma</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Satın Alınan Buhar</label>
+          <div class="form-sub">GJ / yıl</div>
+          <input class="form-input" type="number" placeholder="0" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Scope 3 -->
+    <div class="form-section">
+      <div class="form-section-title">
+        🔗 Değer Zinciri Emisyonları
+        <span class="scope-tag scope3-tag">Kapsam 3</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">İş Seyahati — Uçuş</label>
+          <div class="form-sub">kişi-km / yıl</div>
+          <input class="form-input" type="number" placeholder="0" value="4200000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Çalışan Ulaşımı</label>
+          <div class="form-sub">kişi-km / yıl</div>
+          <input class="form-input" type="number" placeholder="0" value="18500000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Finanse Edilmiş Emisyon</label>
+          <div class="form-sub">ton CO₂e (PCAF metodolojisi)</div>
+          <input class="form-input" type="number" placeholder="0" value="183500">
+        </div>
+      </div>
+      <div style="background:var(--green-50);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:12px;color:var(--green-800)">
+        💡 <strong>Bankacılık sektörü:</strong> Kapsam 3 Kategori 15 (Finanse Edilmiş Emisyonlar) PCAF standardına göre hesaplanır. Kredi portföyü verilerinizi yükleyin → otomatik hesaplama yapılır.
+      </div>
+    </div>
+
+    <!-- Live Calculation Preview -->
+    <div class="calc-preview">
+      <div style="font-size:13px;font-weight:700;color:var(--green-800);margin-bottom:10px">⚙️ Anlık Hesaplama Sonucu</div>
+      <div class="calc-row"><span>Kapsam 1 (Doğalgaz + Dizel)</span><span id="calc-s1"><strong>4.280 ton CO₂e</strong></span></div>
+      <div class="calc-row"><span>Kapsam 2 — Konum Bazlı (TEİAŞ 0.4166 kgCO₂e/kWh)</span><span><strong>12.644 ton CO₂e</strong></span></div>
+      <div class="calc-row"><span>Kapsam 3 (Seyahat + Çalışan + PCAF)</span><span><strong>183.547 ton CO₂e</strong></span></div>
+      <div class="calc-row calc-total"><span>TOPLAM</span><span>200.471 ton CO₂e</span></div>
+      <div style="font-size:11px;color:var(--green-700);margin-top:8px">
+        ✓ Hesaplama: GHG Protocol · DEFRA 2024 · TEİAŞ 2024 · PCAF Standard
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+      <button class="btn btn-outline">Kaydet (Taslak)</button>
+      <button class="btn btn-primary" onclick="showPage('ai-report')">Devam: AI Rapor Yaz →</button>
+    </div>
+  </div>
+</div><!-- /data-entry -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--             AI REPORT PAGE                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content page" id="page-ai-report">
+
+  <div class="ai-status">
+    <div class="ai-icon">🤖</div>
+    <div style="flex:1">
+      <div class="ai-title">AI Rapor Yazıcı — claude-sonnet-4-6</div>
+      <div class="ai-desc">16 gerçek TSRS raporundan öğrenilen format · Prompt caching aktif · Maliyet optimize</div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+      <div style="margin-top:6px;font-size:11px;opacity:.7">Yönetişim bölümü yazılıyor… (3/6 bölüm tamamlandı)</div>
+    </div>
+    <div style="text-align:center;min-width:80px">
+      <div style="font-size:28px;font-weight:800">72%</div>
+      <div style="font-size:11px;opacity:.7">tamamlandı</div>
+    </div>
+  </div>
+
+  <div class="grid-r mb-20">
+    <!-- Report Settings -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">Rapor Ayarları</div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Standart</label>
+        <select class="form-select">
+          <option selected>TSRS 1 & 2 (Zorunlu)</option>
+          <option>GRI Universal Standards 2021</option>
+          <option>TCFD Çerçevesi</option>
+          <option>Entegre Rapor (TSRS + Yıllık Faaliyet)</option>
+          <option>UK SRS</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Dil</label>
+        <select class="form-select">
+          <option>🇹🇷 Türkçe</option>
+          <option>🇬🇧 İngilizce</option>
+          <option>🇩🇪 Almanca</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Güvence</label>
+        <select class="form-select">
+          <option>PwC — Sınırlı Güvence (GDS 3000/3410)</option>
+          <option>Deloitte — Sınırlı Güvence</option>
+          <option>KPMG — Sınırlı Güvence</option>
+          <option>Güvence Yok (taslak)</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Çıktı Formatı</label>
+        <select class="form-select">
+          <option>PDF (Kurumsal Şablon)</option>
+          <option>Word (.docx)</option>
+          <option>PDF + Word</option>
+          <option>PDF + Web Sayfası</option>
+        </select>
+      </div>
+
+      <div style="background:var(--green-50);border-radius:8px;padding:12px;font-size:12px;margin-bottom:12px">
+        <div style="font-weight:700;color:var(--green-800);margin-bottom:6px">📋 Bölümler</div>
+        <div class="section-tabs">
+          <div class="section-tab active">Rapor Hakkında</div>
+          <div class="section-tab active">Yönetişim</div>
+          <div class="section-tab active">Strateji</div>
+          <div class="section-tab active">Risk Yönetimi</div>
+          <div class="section-tab active">Metrik & Hedefler</div>
+          <div class="section-tab active">Ekler</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%">⚡ Yeniden Üret</button>
+    </div>
+
+    <!-- Report Preview -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title">Rapor Önizleme</div>
+        <div style="font-size:11px;color:var(--gray-500)">TSRS Skoru: <strong style="color:var(--green-700)">87/100</strong></div>
+      </div>
+
+      <div class="ai-generating">
+        <div class="spinner"></div>
+        <span>AI yönetişim bölümünü yazıyor… (yaklaşık 45 saniye)</span>
+      </div>
+
+      <div class="report-preview" style="max-height:480px;overflow-y:auto">
+        <h2>1. RAPOR HAKKINDA</h2>
+        <h3>1.1 Raporun Stratejik Çerçevesi ve Amacı</h3>
+        <p>Akbank T.A.Ş., bu raporu Kamu Gözetimi, Muhasebe ve Denetim Standartları Kurumu (KGK) tarafından <span class="highlight">29 Aralık 2023 tarihli ve 32414 sayılı Resmî Gazete</span>'de yayımlanan Türkiye Sürdürülebilirlik Raporlama Standartları (TSRS 1 ve TSRS 2) çerçevesinde hazırlamıştır.</p>
+        <p>Bankamız, iklim değişikliğinin finansal sisteme yönelik fiziksel ve geçiş risklerini hem kendi operasyonları hem de finanse ettiği portföy açısından sistematik biçimde değerlendirme sorumluluğunu üstlenmektedir. Bu rapor, söz konusu değerlendirmelerin şeffaf ve denetlenebilir biçimde kamuoyuyla paylaşılmasını amaçlamaktadır.</p>
+
+        <h3>1.2 Önemlilik Değerlendirmesi</h3>
+        <p>Raporlama sürecinde <span class="highlight">çift yönlü önemlilik</span> yaklaşımı benimsenmiş; hem iklim değişikliğinin Bankamızın finansal performansına etkisi hem de Bankamızın faaliyetlerinin çevresel sistemlere etkisi değerlendirilmiştir.</p>
+
+        <h2>2. YÖNETİŞİM</h2>
+        <h3>2.1 Sürdürülebilirlik Yönetişim Yapısı</h3>
+        <p>Yönetim Kurulumuz, iklimle ilgili risk ve fırsatları <span class="highlight">üç ayda bir</span> Sürdürülebilirlik Komitesi raporları aracılığıyla izlemektedir. İklim hedeflerine ulaşmada gösterilen performans, üst yönetim değişken ücretlendirmesinin <span class="highlight">%15</span>'ini oluşturmaktadır.</p>
+
+        <h2>3. STRATEJİ</h2>
+        <h3>3.1 Senaryo Analizi</h3>
+        <p>Bankamız, iklim dirençliliğini değerlendirmek amacıyla üç farklı iklim senaryosu kullanmıştır: IEA Net Sıfır Emisyon 2050 (NZE), IPCC 1.5°C ve 2°C senaryoları. Bu senaryolar kapsamında <span class="highlight">kısa (0-3 yıl), orta (3-10 yıl) ve uzun (10+ yıl)</span> vade riskleri belirlenmiştir.</p>
+
+        <h2>5. METRİK VE HEDEFLER</h2>
+        <p>Bankamız 2024 yılında toplam <span class="highlight">200.471 ton CO₂e</span> sera gazı emisyonu gerçekleştirmiştir. Bu değerin %91.6'sını Kapsam 3 kapsamındaki finanse edilmiş emisyonlar oluşturmaktadır. Kapsam 1 ve Kapsam 2 emisyonlarımız bir önceki yıla kıyasla <span class="highlight">%10 azalarak</span> 16.924 tona gerilemiştir.</p>
+      </div>
+
+      <div class="export-btns">
+        <button class="btn btn-primary btn-sm">📄 PDF İndir</button>
+        <button class="btn btn-outline btn-sm">📝 Word İndir</button>
+        <button class="btn btn-outline btn-sm" onclick="showPage('esg-page')">🌐 ESG Sayfasına Yayımla</button>
+      </div>
+    </div>
+  </div>
+</div><!-- /ai-report -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--             SATELLITE PAGE                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content page" id="page-satellite">
+  <div style="margin-bottom:20px">
+    <div style="font-size:22px;font-weight:800;color:var(--green-800)">🛰️ Uydu Doğrulama & Fiziksel İklim Riski</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">NASA Earthdata · ESA Sentinel-2 · AFAD Türkiye · Mayıs 2026</div>
+  </div>
+
+  <div class="grid-2 mb-20">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px">Şirket Lokasyonu Girişi</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Şirket Adı</label>
+          <input class="form-input" value="Akbank T.A.Ş. Genel Müdürlük">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adres</label>
+          <input class="form-input" value="Ataşehir, İstanbul">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Enlem</label>
+          <input class="form-input" value="41.0082">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Boylam</label>
+          <input class="form-input" value="29.1042">
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%">🛰️ Risk Analizini Yenile</button>
+
+      <div style="margin-top:16px;font-size:12px;color:var(--gray-500)">
+        <strong>Faz 1:</strong> AFAD API — deprem, sel, heyelan<br>
+        <strong>Faz 2 (Temmuz 2026):</strong> NASA NDVI — yeşil alan değişimi<br>
+        <strong>Faz 3 (2027):</strong> Gerçek zamanlı hava kalitesi (OpenAQ)
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">Risk Sonuçları — TSRS 2 Açıklaması</div>
+      <div style="background:var(--green-50);border-radius:8px;padding:14px;font-size:12px;line-height:1.7;margin-bottom:12px;border-left:3px solid var(--green-600)">
+        <strong>Otomatik Rapor Metni (TSRS 2 Bölüm 16):</strong><br>
+        "Şirketimiz, <em>1. Derece Deprem Bölgesi</em>'nde konumlanmaktadır. Bu durum, ani fiziksel iklim riski kapsamında değerlendirilmekte olup <em>AFAD Deprem Tehlike Haritası</em> verilerine göre 475 yıl dönüş periyodunda 0.4g'lik yer ivmesi öngörülmektedir. Sel riski <em>orta düzey</em>, kuraklık riski ise <em>düşük düzey</em> olarak sınıflandırılmıştır."
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--gray-100);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">🏔️</div>
+          <div style="font-size:11px;color:var(--gray-500);font-weight:600">DEPREM</div>
+          <div style="font-size:14px;font-weight:800;color:var(--red)">1. Bölge</div>
+          <div style="font-size:10px;color:var(--gray-500);margin-top:2px">0.4g / 475 yıl</div>
+        </div>
+        <div style="background:var(--gray-100);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">🌊</div>
+          <div style="font-size:11px;color:var(--gray-500);font-weight:600">SEL</div>
+          <div style="font-size:14px;font-weight:800;color:var(--amber)">Orta Risk</div>
+          <div style="font-size:10px;color:var(--gray-500);margin-top:2px">100 yıl dönüş</div>
+        </div>
+        <div style="background:var(--gray-100);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">☀️</div>
+          <div style="font-size:11px;color:var(--gray-500);font-weight:600">KURAKLIK</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green-600)">Düşük Risk</div>
+          <div style="font-size:10px;color:var(--gray-500);margin-top:2px">PDSI: -0.8</div>
+        </div>
+        <div style="background:var(--gray-100);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">🌿</div>
+          <div style="font-size:11px;color:var(--gray-500);font-weight:600">NDVI (NASA)</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green-600)">+4.2%</div>
+          <div style="font-size:10px;color:var(--gray-500);margin-top:2px">5 yıllık değişim</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:4px">Greenwashing Doğrulama</div>
+    <div class="card-sub" style="margin-bottom:16px">NASA Sentinel-2 NDVI analizi · "Ağaç dikim" iddiası doğrulama</div>
+    <div style="display:flex;align-items:center;gap:20px;padding:16px;background:var(--green-50);border-radius:10px;border:1px solid var(--green-200)">
+      <div style="font-size:48px">🌳</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--green-800)">✓ İddia Doğrulandı</div>
+        <div style="font-size:13px;color:var(--gray-600);margin-top:4px">
+          "2022-2024 arası 5.000 ağaç dikildi" iddiası uydu görüntülerinde yeşil alan artışı (%4.2) ile desteklenmektedir. Greenwashing riski: <strong style="color:var(--green-600)">DÜŞÜK</strong>
+        </div>
+      </div>
+      <div style="margin-left:auto;text-align:center">
+        <div style="font-size:28px;font-weight:900;color:var(--green-700)">94</div>
+        <div style="font-size:11px;color:var(--gray-500)">Doğruluk Skoru</div>
+      </div>
+    </div>
+  </div>
+</div><!-- /satellite -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--              GAR PORTAL PAGE                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content page" id="page-gar">
+  <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:22px;font-weight:800;color:var(--green-800)">🏦 Banka GAR Portalı</div>
+      <div style="font-size:13px;color:var(--gray-500);margin-top:4px">BDDK Yeşil Varlık Oranı · Akbank T.A.Ş. · Nisan 2026</div>
+    </div>
+    <button class="btn btn-primary">📊 BDDK Format Excel İndir</button>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi-card kpi-scope1">
+      <div class="kpi-label">Yeşil Varlık Oranı</div>
+      <div class="kpi-value">34.2<span style="font-size:16px">%</span></div>
+      <div class="kpi-unit">BDDK Hedef: %40 (2026)</div>
+      <div class="kpi-trend trend-up">▲ +6.8 puan (2023: %27.4)</div>
+    </div>
+    <div class="kpi-card kpi-scope2">
+      <div class="kpi-label">Uygun Kredi Sayısı</div>
+      <div class="kpi-value">1.847</div>
+      <div class="kpi-unit">şirket (toplam portföyden)</div>
+      <div class="kpi-trend trend-down">✓ TSRS raporu olan: 423</div>
+    </div>
+    <div class="kpi-card kpi-scope3">
+      <div class="kpi-label">Yeşil Kredi Hacmi</div>
+      <div class="kpi-value">18.4</div>
+      <div class="kpi-unit">Milyar TL (yeşil sınıflandırma)</div>
+      <div class="kpi-trend trend-down">▲ %23 yıldan yıla artış</div>
+    </div>
+    <div class="kpi-card kpi-tsrs">
+      <div class="kpi-label">Finanse Edilmiş Emisyon</div>
+      <div class="kpi-value">183.5</div>
+      <div class="kpi-unit">Bin ton CO₂e (PCAF)</div>
+      <div class="kpi-trend trend-down">▼ %5 azalma</div>
+    </div>
+  </div>
+
+  <div class="grid-2 mt-16">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">Portföy Şirketleri</div>
+      <div class="card-sub" style="margin-bottom:12px">Karbon skoru ve GAR sınıflandırması</div>
+
+      <div class="portfolio-item">
+        <div class="dot dot-green"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">Arçelik A.Ş.</div>
+          <div style="font-size:11px;color:var(--gray-500)">Beyaz Eşya · SBTi onaylı · TSRS 2024</div>
+        </div>
+        <div class="company-score-bar">
+          <div class="score-bar-bg"><div class="score-bar-fill green-loan" style="width:82%"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--green-700);min-width:40px;text-align:right">82</div>
+        <span class="status-badge status-done" style="margin-left:8px">Yeşil</span>
+      </div>
+
+      <div class="portfolio-item">
+        <div class="dot dot-green"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">Migros Ticaret A.Ş.</div>
+          <div style="font-size:11px;color:var(--gray-500)">Perakende · Çift yönlü önemlilik · TSRS 2025</div>
+        </div>
+        <div class="company-score-bar">
+          <div class="score-bar-bg"><div class="score-bar-fill green-loan" style="width:78%"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--green-700);min-width:40px;text-align:right">78</div>
+        <span class="status-badge status-done" style="margin-left:8px">Yeşil</span>
+      </div>
+
+      <div class="portfolio-item">
+        <div class="dot dot-yellow"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">Afyon Çimento A.Ş.</div>
+          <div style="font-size:11px;color:var(--gray-500)">Çimento · Klinker oranı yüksek</div>
+        </div>
+        <div class="company-score-bar">
+          <div class="score-bar-bg"><div class="score-bar-fill yellow-loan" style="width:54%"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--amber);min-width:40px;text-align:right">54</div>
+        <span class="status-badge status-rev" style="margin-left:8px">İzlemede</span>
+      </div>
+
+      <div class="portfolio-item">
+        <div class="dot dot-red"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">ABC Tekstil Ltd.</div>
+          <div style="font-size:11px;color:var(--gray-500)">Tekstil · TSRS raporu yok · Veri eksik</div>
+        </div>
+        <div class="company-score-bar">
+          <div class="score-bar-bg"><div class="score-bar-fill red-loan" style="width:22%"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--red);min-width:40px;text-align:right">22</div>
+        <span class="status-badge" style="background:#FFEBEE;color:#C62828;margin-left:8px">Kırmızı</span>
+      </div>
+
+      <div class="portfolio-item">
+        <div class="dot dot-red"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">XYZ Madencilik A.Ş.</div>
+          <div style="font-size:11px;color:var(--gray-500)">Madencilik · Yüksek karbon sektörü</div>
+        </div>
+        <div class="company-score-bar">
+          <div class="score-bar-bg"><div class="score-bar-fill red-loan" style="width:18%"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--red);min-width:40px;text-align:right">18</div>
+        <span class="status-badge" style="background:#FFEBEE;color:#C62828;margin-left:8px">Kırmızı</span>
+      </div>
+
+      <div style="text-align:center;padding:10px;font-size:12px;color:var(--gray-500)">
+        + 1.842 şirket daha · <a href="#" style="color:var(--green-700)">Tümünü gör</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">GAR Trend</div>
+      <canvas id="garChart" height="180"></canvas>
+      <div style="margin-top:16px;padding:12px;background:var(--green-50);border-radius:8px;font-size:12px">
+        <strong style="color:var(--green-800)">BDDK Uyarısı:</strong><br>
+        Hedef %40'a ulaşmak için <strong>yaklaşık 1.050 ek müşterinin</strong> TSRS uyumlu raporu olması gerekiyor.
+        Müşteri davet butonu ile platforma yönlendirin.
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px">
+        📧 Kırmızı Müşterilere Rapor Daveti Gönder
+      </button>
+    </div>
+  </div>
+</div><!-- /gar -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--              ESG PUBLIC PAGE                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content page" id="page-esg-page">
+  <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:22px;font-weight:800;color:var(--green-800)">🌐 ESG Web Sayfam</div>
+      <div style="font-size:13px;color:var(--gray-500);margin-top:4px">akbank.sustain.com.tr/esg · Otomatik oluşturuldu · Herkese açık</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm">🔗 Bağlantıyı Kopyala</button>
+      <button class="btn btn-outline btn-sm">⚙️ Özelleştir</button>
+      <button class="btn btn-primary btn-sm">🚀 Yayımla</button>
+    </div>
+  </div>
+
+  <!-- Live Preview Frame -->
+  <div class="esg-page-frame">
+    <div class="esg-header">
+      <div class="esg-logo-area">
+        <div class="esg-company-logo">🏦</div>
+        <div>
+          <div class="esg-company-name">Akbank T.A.Ş.</div>
+          <div class="esg-company-sub">ESG & Sürdürülebilirlik Merkezi</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="esg-badge">✓ TSRS 2024 Uyumlu</div>
+        <div class="esg-badge">🔍 PwC Güvence</div>
+      </div>
+    </div>
+
+    <div class="esg-body">
+      <div class="esg-kpi-row">
+        <div class="esg-kpi">
+          <div class="esg-kpi-val">200.471</div>
+          <div class="esg-kpi-name">ton CO₂e · Toplam Emisyon 2024</div>
+        </div>
+        <div class="esg-kpi" style="border-left-color:var(--teal)">
+          <div class="esg-kpi-val">87/100</div>
+          <div class="esg-kpi-name">TSRS Uyum Skoru · Derece B</div>
+        </div>
+        <div class="esg-kpi" style="border-left-color:var(--blue)">
+          <div class="esg-kpi-val">34.2%</div>
+          <div class="esg-kpi-name">Yeşil Varlık Oranı (GAR)</div>
+        </div>
+        <div class="esg-kpi" style="border-left-color:var(--amber)">
+          <div class="esg-kpi-val">2050</div>
+          <div class="esg-kpi-name">Net Sıfır Hedef Yılı</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--green-800);margin-bottom:8px">📋 Raporlar & Belgeler</div>
+          <div style="background:white;border-radius:8px;padding:12px">
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:12px">
+              <span>📄</span> <strong>2024 TSRS Sürdürülebilirlik Raporu</strong>
+              <span style="margin-left:auto;color:var(--green-700);cursor:pointer">↓ TR</span>
+              <span style="color:var(--green-700);cursor:pointer">↓ EN</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:12px">
+              <span>📊</span> ESG Veri Paketi 2024 (Excel)
+              <span style="margin-left:auto;color:var(--green-700);cursor:pointer">↓ İndir</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px">
+              <span>✅</span> 2023 Sürdürülebilirlik Raporu (Arşiv)
+              <span style="margin-left:auto;color:var(--green-700);cursor:pointer">↓ PDF</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--green-800);margin-bottom:8px">🎯 Taahhütlerimiz</div>
+          <div class="esg-commitment">
+            <div style="font-size:16px">🌡️</div>
+            <div class="commitment-bar-wrap">
+              <div class="commitment-label">2030 Kapsam 1&2 Azaltım Hedefi (%40)</div>
+              <div class="commitment-bar"><div class="commitment-fill" style="width:31%"></div></div>
+            </div>
+            <div class="commitment-pct">%31</div>
+          </div>
+          <div class="esg-commitment">
+            <div style="font-size:16px">☀️</div>
+            <div class="commitment-bar-wrap">
+              <div class="commitment-label">Yenilenebilir Enerji (%100 hedef 2030)</div>
+              <div class="commitment-bar"><div class="commitment-fill" style="width:42%"></div></div>
+            </div>
+            <div class="commitment-pct">%42</div>
+          </div>
+          <div class="esg-commitment">
+            <div style="font-size:16px">💚</div>
+            <div class="commitment-bar-wrap">
+              <div class="commitment-label">Yeşil Kredi Oranı (%40 hedef)</div>
+              <div class="commitment-bar"><div class="commitment-fill" style="width:85%"></div></div>
+            </div>
+            <div class="commitment-pct">%34.2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="esg-footer-bar">
+      <div class="esg-footer-text">Son güncelleme: Mayıs 2026 · Veri kaynağı: TSRS Raporu 2024</div>
+      <div class="powered-by">Powered by <span>sustain.com.tr</span></div>
+    </div>
+  </div>
+</div><!-- /esg-page -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--           SUBSIDIES PAGE                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content page" id="page-subsidies">
+  <div style="margin-bottom:20px">
+    <div style="font-size:22px;font-weight:800;color:var(--green-800)">💰 Devlet Destekleri</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Aboneliğinizin yarısını devlet karşılayabilir</div>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+    <div class="kpi-card" style="border-top:3px solid var(--green-600)">
+      <div class="kpi-label">Yıllık Destek Potansiyeli</div>
+      <div class="kpi-value" style="color:var(--green-700)">₺20.000</div>
+      <div class="kpi-unit">bu şirket için tahmini</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid var(--amber)">
+      <div class="kpi-label">Uygun Olduğunuz Program</div>
+      <div class="kpi-value" style="font-size:16px;color:var(--amber)">2 Program</div>
+      <div class="kpi-unit">Responsible® + KOSGEB</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid var(--blue)">
+      <div class="kpi-label">Net Abonelik Maliyeti</div>
+      <div class="kpi-value" style="color:var(--blue)">₺20.000</div>
+      <div class="kpi-unit">₺40.000 yerine (destekli)</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" style="border:2px solid var(--green-300)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="font-size:32px">🏛️</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--green-800)">Responsible® Programı</div>
+          <div style="font-size:12px;color:var(--gray-500)">Ticaret Bakanlığı · Res. Gaz. 23/02/2024</div>
+        </div>
+        <span class="status-badge status-done" style="margin-left:auto">✓ Uygunsunuz</span>
+      </div>
+      <div style="background:var(--green-50);border-radius:8px;padding:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span>Destek oranı</span><strong>%50</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span>Süre</span><strong>5 yıl</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span>Azami destek</span><strong>10.000.000 ₺</strong>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:12px">
+        İhracatçı şirketler sürdürülebilirlik raporlama yazılımı aboneliğinde <strong>%50 devlet desteği</strong> alabilir. Platform aboneliğiniz uygun harcama kapsamına giriyor.
+      </div>
+      <button class="btn btn-primary" style="width:100%">📋 Başvuru Rehberini İndir</button>
+    </div>
+
+    <div class="card" style="border:2px solid var(--gray-300)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="font-size:32px">🏢</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--gray-800)">KOSGEB YÖNDE</div>
+          <div style="font-size:12px;color:var(--gray-500)">Yönderlik ve Değerlendirme · Res. Gaz. 13/01/2024</div>
+        </div>
+        <span class="status-badge status-rev" style="margin-left:auto">Kontrol Et</span>
+      </div>
+      <div style="background:var(--gray-100);border-radius:8px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--gray-600)">
+          250 çalışanın altındaki KOBİ'ler için sürdürülebilirlik raporlama desteği. Çalışan sayısı: <strong>Kontrol edilemiyor</strong>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:12px">
+        Banka kuruluşları genellikle KOSGEB kapsamı dışındadır. KOBİ müşterileriniz için bu programı önerin.
+      </div>
+      <button class="btn btn-outline" style="width:100%">🔍 Uygunluk Kontrolü Yap</button>
+    </div>
+  </div>
+</div><!-- /subsidies -->
+
+<!-- REPORTS LIST PAGE -->
+<div class="content page" id="page-reports-list">
+  <div style="margin-bottom:20px">
+    <div style="font-size:22px;font-weight:800;color:var(--green-800)">📄 Tüm Raporlarım</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Tüm şirketler · Tüm yıllar · Tüm standartlar</div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Rapor</th><th>Sektör</th><th>Standart</th><th>Dil</th><th>TSRS Skoru</th><th>Durum</th><th>Güvence</th><th>Tarih</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Akbank 2024 TSRS</strong></td><td>🏦 Bankacılık</td><td>TSRS 1&2</td><td>TR/EN</td><td><strong style="color:var(--green-700)">87 · B</strong></td><td><span class="status-badge status-done">Yayında</span></td><td>PwC</td><td style="color:var(--gray-500)">Mar 2025</td><td><button class="btn btn-outline btn-sm">↓ PDF</button></td></tr>
+          <tr><td><strong>Migros 2025 Entegre Rapor</strong></td><td>🛒 Perakende</td><td>TSRS + Yıllık</td><td>TR</td><td><strong style="color:var(--green-700)">91 · A</strong></td><td><span class="status-badge status-done">Yayında</span></td><td>KPMG</td><td style="color:var(--gray-500)">Şub 2026</td><td><button class="btn btn-outline btn-sm">↓ PDF</button></td></tr>
+          <tr><td><strong>OYAK Çimento 2025</strong></td><td>🏭 Çimento</td><td>TSRS 1&2</td><td>TR/EN</td><td><strong style="color:var(--amber)">74 · C</strong></td><td><span class="status-badge status-rev">İncelemede</span></td><td>Deloitte</td><td style="color:var(--gray-500)">Nis 2026</td><td><button class="btn btn-primary btn-sm">Düzenle</button></td></tr>
+          <tr><td><strong>Bupa Acıbadem 2024</strong></td><td>🏥 Sigorta</td><td>TSRS 1&2</td><td>TR/EN</td><td><strong style="color:var(--green-700)">83 · B</strong></td><td><span class="status-badge status-done">Yayında</span></td><td>PwC</td><td style="color:var(--gray-500)">Mar 2025</td><td><button class="btn btn-outline btn-sm">↓ PDF</button></td></tr>
+          <tr><td><strong>Taslak — 2025 Q3</strong></td><td>🏦 Bankacılık</td><td>TSRS 1&2</td><td>TR</td><td><span style="color:var(--gray-400)">—</span></td><td><span class="status-badge status-draft">Taslak</span></td><td>—</td><td style="color:var(--gray-500)">Devam ediyor</td><td><button class="btn btn-primary btn-sm">Devam Et</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /reports-list -->
+
+</main>
+</div><!-- /app -->
+
+<script>
+// ═══ NAVIGATION ═══
+const pageTitles = {
+  'dashboard':    ['📊 Dashboard', 'Akbank T.A.Ş. · 2024 Raporlama Dönemi'],
+  'data-entry':   ['📥 Veri Giriş', '2024 · Bankacılık · Operasyonel Kontrol'],
+  'ai-report':    ['🤖 AI Rapor Yaz', 'Claude Sonnet 4.6 · TSRS 1 & 2 · Türkçe'],
+  'satellite':    ['🛰️ Uydu Doğrulama', 'NASA Earthdata · AFAD · Fiziksel İklim Riski'],
+  'gar':          ['🏦 Banka GAR Portalı', 'BDDK Yeşil Varlık Oranı · PCAF · 1.847 Şirket'],
+  'esg-page':     ['🌐 ESG Web Sayfam', 'akbank.sustain.com.tr/esg · Herkese Açık'],
+  'subsidies':    ['💰 Devlet Destekleri', 'Responsible® + KOSGEB · Yıllık ₺20.000 Potansiyel'],
+  'reports-list': ['📄 Tüm Raporlarım', '5 rapor · 4 sektör · 3 yıl'],
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const titles = pageTitles[id] || ['Dashboard', ''];
+  document.getElementById('page-title').textContent = titles[0];
+  document.getElementById('page-subtitle').textContent = titles[1];
+  const navMap = {
+    'dashboard': 0, 'data-entry': 3, 'ai-report': 4, 'reports-list': 5,
+    'satellite': 7, 'gar': 8, 'esg-page': 9, 'subsidies': 11
+  };
+  const items = document.querySelectorAll('.nav-item');
+  if (navMap[id] !== undefined) items[navMap[id]]?.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ═══ SECTOR SELECT ═══
+function selectSector(el) {
+  document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ═══ EMISSION CALCULATION ═══
+function updateCalc() { /* live calc demo - already has static values */ }
+
+// ═══ CHARTS ═══
+window.addEventListener('load', () => {
+
+  // Trend Chart
+  const trendCtx = document.getElementById('trendChart').getContext('2d');
+  new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+      datasets: [{
+        label: '2024',
+        data: [1520, 1480, 1410, 1390, 1350, 1320, 1290, 1310, 1280, 1260, 1240, 1220],
+        borderColor: '#2E7D32', backgroundColor: 'rgba(46,125,50,.1)',
+        tension: .4, fill: true, pointRadius: 3,
+      }, {
+        label: '2023',
+        data: [1720, 1700, 1650, 1630, 1600, 1580, 1560, 1570, 1540, 1510, 1490, 1470],
+        borderColor: '#9E9E9E', backgroundColor: 'transparent',
+        tension: .4, pointRadius: 2, borderDash: [4, 4],
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
+      scales: {
+        y: { grid: { color: '#F5F5F5' }, ticks: { font: { size: 10 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Donut Chart
+  const donutCtx = document.getElementById('donutChart').getContext('2d');
+  new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Kapsam 1', 'Kapsam 2', 'Kapsam 3'],
+      datasets: [{
+        data: [4280, 12640, 183500],
+        backgroundColor: ['#2E7D32', '#00897B', '#1565C0'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: false, cutout: '72%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: ctx => ` ${ctx.label}: ${ctx.raw.toLocaleString('tr-TR')} ton`
+      }}}
+    }
+  });
+
+  // Score Ring
+  const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(scoreCtx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [87, 13],
+        backgroundColor: ['#2E7D32', '#E0E0E0'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: false, cutout: '80%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { animateRotate: true, duration: 1200 }
+    }
+  });
+
+  // GAR Trend Chart
+  const garCtx = document.getElementById('garChart').getContext('2d');
+  new Chart(garCtx, {
+    type: 'bar',
+    data: {
+      labels: ['2022', '2023', '2024', '2025 H.'],
+      datasets: [{
+        label: 'GAR Oranı %',
+        data: [18.5, 27.4, 34.2, 40],
+        backgroundColor: ['#A5D6A7', '#66BB6A', '#43A047', 'rgba(46,125,50,.3)'],
+        borderColor: ['#2E7D32', '#2E7D32', '#2E7D32', '#2E7D32'],
+        borderWidth: [0, 0, 0, 2],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true, max: 50,
+          ticks: { font: { size: 10 }, callback: v => v + '%' },
+          grid: { color: '#F5F5F5' }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+});
+</script>
+</body>
+</html>
