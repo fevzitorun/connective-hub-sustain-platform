@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+import io
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
 from typing import Optional
+import openpyxl
 from ..database import get_db
 from ..models import EmissionRecord, User
 from ..services.calculation_engine import EmissionInput, calculate_emissions, SECTOR_BENCHMARKS
@@ -156,6 +158,151 @@ async def save_emission(
         "scope2_location_co2e": result.scope2_location_co2e,
         "scope3_co2e": result.scope3_co2e,
         "total_co2e": result.total_co2e,
+    }
+
+
+@router.post("/bulk-upload")
+async def bulk_upload(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not file.filename or not file.filename.endswith(".xlsx"):
+        raise HTTPException(400, "Sadece Excel (.xlsx) dosyası kabul edilir")
+
+    content = await file.read()
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
+    except Exception:
+        raise HTTPException(400, "Geçersiz Excel dosyası")
+
+    ws = wb.active
+    if ws is None or ws.max_row < 2:
+        raise HTTPException(400, "Dosya boş veya başlık satırı eksik")
+
+    raw_headers = [str(cell.value).strip() if cell.value else "" for cell in ws[1]]
+
+    def _opt_float(val) -> Optional[float]:
+        if val is None or val == "":
+            return None
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return None
+
+    def _opt_int(val) -> Optional[int]:
+        if val is None or val == "":
+            return None
+        try:
+            return int(float(val))
+        except (ValueError, TypeError):
+            return None
+
+    valid_sectors = set(SECTOR_BENCHMARKS.keys())
+    success_ids: list[str] = []
+    errors: list[dict] = []
+
+    for row_idx, row in enumerate(ws.iter_rows(min_row=3, values_only=True), start=3):
+        if all(v is None for v in row):
+            continue
+
+        row_data = dict(zip(raw_headers, row))
+
+        try:
+            sector = str(row_data.get("sector") or "manufacturing").strip()
+            if sector not in valid_sectors:
+                raise ValueError(f"Geçersiz sektör: '{sector}'. Geçerli değerler: {', '.join(valid_sectors)}")
+
+            year_raw = _opt_int(row_data.get("year"))
+            if not year_raw or not (2015 <= year_raw <= 2030):
+                raise ValueError(f"Geçersiz yıl: '{row_data.get('year')}'. 2015–2030 aralığında olmalı")
+
+            body = EmissionDataIn(
+                year=year_raw,
+                sector=sector,
+                reporting_boundary=str(row_data.get("reporting_boundary") or "operational_control").strip(),
+                employee_count=_opt_int(row_data.get("employee_count")),
+                natural_gas_m3=_opt_float(row_data.get("natural_gas_m3")),
+                diesel_liters=_opt_float(row_data.get("diesel_liters")),
+                lpg_kg=_opt_float(row_data.get("lpg_kg")),
+                coal_tons=_opt_float(row_data.get("coal_tons")),
+                company_vehicles_km=_opt_float(row_data.get("company_vehicles_km")),
+                electricity_kwh=float(_opt_float(row_data.get("electricity_kwh")) or 0),
+                renewable_electricity_kwh=_opt_float(row_data.get("renewable_electricity_kwh")),
+                business_flights_shorthaul=_opt_float(row_data.get("business_flights_shorthaul")),
+                business_flights_longhaul=_opt_float(row_data.get("business_flights_longhaul")),
+                employee_commute_km=_opt_float(row_data.get("employee_commute_km")),
+                waste_tons=_opt_float(row_data.get("waste_tons")),
+                loan_portfolio_tl=_opt_float(row_data.get("loan_portfolio_tl")),
+                financed_emissions_co2e=_opt_float(row_data.get("financed_emissions_co2e")),
+                clinker_tons=_opt_float(row_data.get("clinker_tons")),
+                cement_tons=_opt_float(row_data.get("cement_tons")),
+                electricity_generated_mwh=_opt_float(row_data.get("electricity_generated_mwh")),
+                renewable_capacity_mw=_opt_float(row_data.get("renewable_capacity_mw")),
+            )
+        except (ValueError, Exception) as e:
+            errors.append({"row": row_idx, "message": str(e)})
+            continue
+
+        if not current_user.company_id:
+            errors.append({"row": row_idx, "message": "Şirket bilgisi eksik"})
+            continue
+
+        try:
+            inp = _build_emission_input(current_user.company_id, body)
+            result = calculate_emissions(inp)
+
+            existing_result = await db.execute(
+                select(EmissionRecord).where(
+                    EmissionRecord.company_id == current_user.company_id,
+                    EmissionRecord.year == body.year,
+                )
+            )
+            record = existing_result.scalar_one_or_none()
+
+            fields = dict(
+                reporting_boundary=body.reporting_boundary,
+                electricity_source=inp.electricity_source,
+                natural_gas_m3=body.natural_gas_m3,
+                diesel_liters=body.diesel_liters,
+                lpg_kg=body.lpg_kg,
+                coal_tons=body.coal_tons,
+                company_vehicles_km=body.company_vehicles_km,
+                electricity_kwh=body.electricity_kwh,
+                business_travel_flight_km=inp.business_travel_flight_km,
+                employee_commute_km=body.employee_commute_km,
+                waste_tons=body.waste_tons,
+                loan_portfolio_tl=body.loan_portfolio_tl,
+                financed_emissions_co2e=body.financed_emissions_co2e,
+                clinker_tons=body.clinker_tons,
+                cement_production_tons=body.cement_tons,
+                electricity_generated_mwh=body.electricity_generated_mwh,
+                scope1_co2e=result.scope1_co2e,
+                scope2_location_co2e=result.scope2_location_co2e,
+                scope2_market_co2e=result.scope2_market_co2e,
+                scope3_co2e=result.scope3_co2e,
+            )
+
+            if record:
+                for k, v in fields.items():
+                    setattr(record, k, v)
+            else:
+                record = EmissionRecord(company_id=current_user.company_id, year=body.year, **fields)
+                db.add(record)
+
+            await db.flush()
+            success_ids.append(record.id)
+
+        except Exception as e:
+            errors.append({"row": row_idx, "message": f"Kayıt hatası: {str(e)}"})
+
+    await db.commit()
+
+    return {
+        "processed": len(success_ids) + len(errors),
+        "success": len(success_ids),
+        "errors": errors,
+        "saved_ids": success_ids,
     }
 
 

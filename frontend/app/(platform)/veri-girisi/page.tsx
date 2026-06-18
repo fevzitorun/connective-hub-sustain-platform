@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
+import type { BulkUploadResult } from '@/lib/api'
 import { SECTORS, EMISSION_FACTORS, type SectorId } from '@/lib/constants'
 import type { EmissionData, CalcPreview } from '@/types'
 
@@ -136,27 +137,122 @@ function LivePreview({ preview }: { preview: CalcPreview | null }) {
   )
 }
 
+// ─── Bulk upload panel ────────────────────────────────────────────────────────
+function BulkUploadPanel() {
+  const [open, setOpen] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [result, setResult] = useState<BulkUploadResult | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  async function handleDownloadTemplate() {
+    try {
+      const blob = await api.templates.downloadEmissions()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'sustain-emisyon-sablonu.xlsx'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Şablon indirilemedi')
+    }
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setResult(null)
+    try {
+      const res = await api.emissions.bulkUpload(file)
+      setResult(res)
+      if (res.success > 0) {
+        toast.success(`${res.success} yıl verisi başarıyla yüklendi`)
+      }
+      if (res.errors.length > 0) {
+        toast.warning(`${res.errors.length} satırda hata oluştu`)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Yükleme başarısız')
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border mb-4" style={{ borderColor: 'var(--border)' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full px-5 py-3 flex items-center justify-between text-sm font-semibold"
+        style={{ color: 'var(--green-800)' }}>
+        <span>📂 Toplu Yükleme (Excel)</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+          {open ? '▲ Kapat' : '▼ Aç'}
+        </span>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 border-t space-y-3" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-xs mt-3" style={{ color: 'var(--muted-foreground)' }}>
+            Excel şablonunu indirin, verileri doldurun ve yükleyin. Her satır bir raporlama yılını temsil eder.
+          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={handleDownloadTemplate}
+              className="px-4 py-2 rounded-lg text-xs font-semibold border"
+              style={{ borderColor: 'var(--green-300)', color: 'var(--green-700)', background: 'var(--green-50)' }}>
+              ⬇ Şablon İndir (.xlsx)
+            </button>
+            <label
+              className="px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer"
+              style={{ background: uploading ? 'var(--green-300)' : 'var(--green-700)', color: 'white' }}>
+              {uploading ? '⏳ Yükleniyor…' : '📂 Excel Yükle'}
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".xlsx"
+                className="hidden"
+                disabled={uploading}
+                onChange={handleFileChange}
+              />
+            </label>
+          </div>
+
+          {result && (
+            <div className="rounded-xl p-3 text-xs space-y-1"
+              style={{ background: result.errors.length === 0 ? 'var(--green-50)' : '#FFF8E1', border: '1px solid var(--green-200)' }}>
+              <p className="font-semibold" style={{ color: 'var(--green-800)' }}>
+                ✅ {result.success} / {result.processed} satır başarıyla kaydedildi
+              </p>
+              {result.errors.map((e, i) => (
+                <p key={i} style={{ color: '#B71C1C' }}>• Satır {e.row}: {e.message}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 const empty: EmissionData = {
   year: 2024,
   sector: 'manufacturing',
   employee_count: 0,
   reporting_boundary: 'operational_control',
-  // Scope 1
   natural_gas_m3: 0,
   diesel_liters: 0,
   lpg_kg: 0,
   coal_tons: 0,
   company_vehicles_km: 0,
-  // Scope 2
   electricity_kwh: 0,
   renewable_electricity_kwh: 0,
-  // Scope 3
   business_flights_shorthaul: 0,
   business_flights_longhaul: 0,
   employee_commute_km: 0,
   waste_tons: 0,
-  // Sector-specific
   loan_portfolio_tl: 0,
   financed_emissions_co2e: 0,
   clinker_tons: 0,
@@ -203,6 +299,9 @@ export default function VeriGirisiPage() {
   const [preview, setPreview] = useState<CalcPreview | null>(null)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<'scope1' | 'scope2' | 'scope3' | 'sektorel'>('scope1')
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null)
+  const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const hasDataRef = useRef(false)
 
   const set = useCallback(<K extends keyof EmissionData>(key: K, raw: string) => {
     const v = raw === '' ? 0 : parseFloat(raw) || 0
@@ -213,6 +312,20 @@ export default function VeriGirisiPage() {
     setData(prev => ({ ...prev, [key]: val }))
   }, [])
 
+  // Restore draft on mount
+  useEffect(() => {
+    api.reports.getDraft()
+      .then(draft => {
+        if (draft.form_data && Object.keys(draft.form_data).length > 0) {
+          setData(prev => ({ ...prev, ...(draft.form_data as Partial<EmissionData>) }))
+          const savedTime = new Date(draft.updated_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+          toast.info(`Önceki taslak yüklendi (${savedTime})`)
+          setDraftSavedAt(draft.updated_at)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   // Recalculate preview on every data change
   useEffect(() => {
     const total =
@@ -221,8 +334,29 @@ export default function VeriGirisiPage() {
 
     if (total === 0) {
       setPreview(null)
+      hasDataRef.current = false
     } else {
       setPreview(clientCalc(data))
+      hasDataRef.current = true
+    }
+  }, [data])
+
+  // Auto-save draft every 30 seconds when there's data
+  useEffect(() => {
+    autoSaveRef.current = setInterval(async () => {
+      if (!hasDataRef.current) return
+      try {
+        const res = await api.reports.saveDraft({
+          standard: 'tsrs',
+          language: 'tr',
+          form_data: data as Record<string, unknown>,
+        })
+        setDraftSavedAt(res.updated_at)
+      } catch { /* silent — backend may not be running */ }
+    }, 30000)
+
+    return () => {
+      if (autoSaveRef.current) clearInterval(autoSaveRef.current)
     }
   }, [data])
 
@@ -233,7 +367,8 @@ export default function VeriGirisiPage() {
       const saved = await api.emissions.save(data)
       toast.success('Veriler kaydedildi')
       const report = await api.reports.generate({ emission_id: saved.id, standard: 'tsrs' })
-      toast.success('AI rapor oluşturuluyor…')
+      toast.success(`AI rapor oluşturuluyor… (v${report.version_number})`)
+      await api.reports.clearDraft().catch(() => {})
       router.push(`/ai-rapor?id=${report.id}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Kayıt başarısız')
@@ -254,6 +389,21 @@ export default function VeriGirisiPage() {
     }
   }
 
+  async function handleManualSaveDraft() {
+    if (!hasDataRef.current) { toast.error('Kaydedilecek veri yok'); return }
+    try {
+      const res = await api.reports.saveDraft({
+        standard: 'tsrs',
+        language: 'tr',
+        form_data: data as Record<string, unknown>,
+      })
+      setDraftSavedAt(res.updated_at)
+      toast.success('Taslak kaydedildi')
+    } catch {
+      toast.error('Taslak kaydedilemedi')
+    }
+  }
+
   const sector = SECTORS.find(s => s.id === data.sector)
   const tabs = [
     { key: 'scope1' as const, label: 'Kapsam 1', icon: '🔥' },
@@ -265,12 +415,24 @@ export default function VeriGirisiPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-black" style={{ color: 'var(--green-900)' }}>Emisyon Veri Girişi</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>
-          GHG Protokolü Kapsam 1, 2 ve 3 — TEİAŞ 2024 grid faktörü (0,4166 kg CO₂e/kWh)
-        </p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-black" style={{ color: 'var(--green-900)' }}>Emisyon Veri Girişi</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>
+            GHG Protokolü Kapsam 1, 2 ve 3 — TEİAŞ 2024 grid faktörü (0,4166 kg CO₂e/kWh)
+          </p>
+        </div>
+        {draftSavedAt && (
+          <div className="text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5"
+            style={{ background: 'var(--green-50)', color: 'var(--green-700)', border: '1px solid var(--green-200)' }}>
+            <span>💾</span>
+            <span>Taslak: {new Date(draftSavedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        )}
       </div>
+
+      {/* Bulk upload */}
+      <BulkUploadPanel />
 
       {/* Meta row */}
       <div className="bg-white rounded-2xl p-5 border mb-5 grid grid-cols-2 md:grid-cols-4 gap-4"
@@ -525,6 +687,13 @@ export default function VeriGirisiPage() {
               className="w-full py-2.5 rounded-xl text-sm font-medium border transition-all disabled:opacity-50"
               style={{ borderColor: 'var(--green-300)', color: 'var(--green-700)', background: 'var(--green-50)' }}>
               📊 Yalnızca Hesapla
+            </button>
+            <button
+              onClick={handleManualSaveDraft}
+              disabled={!preview}
+              className="w-full py-2 rounded-xl text-xs font-medium border transition-all disabled:opacity-40"
+              style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+              💾 Taslak Kaydet
             </button>
           </div>
 

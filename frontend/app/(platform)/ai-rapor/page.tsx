@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
+import type { ReportVersion } from '@/lib/api'
 import type { Report } from '@/types'
 
 function StatusBadge({ status }: { status: string }) {
@@ -41,6 +42,56 @@ function ComplianceChecklist({ score }: { score?: number }) {
   )
 }
 
+function VersionHistoryPanel({ versions, currentId }: { versions: ReportVersion[]; currentId: string }) {
+  const router = useRouter()
+  if (versions.length <= 1) return null
+
+  return (
+    <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: 'var(--border)' }}>
+      <p className="text-xs font-semibold mb-3" style={{ color: 'var(--green-900)' }}>
+        Versiyon Geçmişi ({versions.length})
+      </p>
+      <div className="space-y-2">
+        {versions.map(v => {
+          const isCurrent = v.id === currentId
+          return (
+            <button
+              key={v.id}
+              onClick={() => !isCurrent && router.push(`/ai-rapor?id=${v.id}`)}
+              disabled={isCurrent}
+              className="w-full text-left px-2.5 py-2 rounded-lg text-xs transition-all"
+              style={isCurrent
+                ? { background: 'var(--green-700)', color: 'white', cursor: 'default' }
+                : { background: 'var(--green-50)', color: 'var(--green-800)', border: '1px solid var(--green-200)' }}>
+              <div className="flex items-center justify-between">
+                <span className="font-bold">v{v.version_number}</span>
+                <div className="flex items-center gap-1.5">
+                  {v.compliance_grade && (
+                    <span className="font-black text-xs px-1.5 py-0.5 rounded"
+                      style={isCurrent
+                        ? { background: 'rgba(255,255,255,0.2)', color: 'white' }
+                        : { background: 'var(--green-100)', color: 'var(--green-800)' }}>
+                      {v.compliance_grade}
+                    </span>
+                  )}
+                  {v.compliance_score && (
+                    <span className="font-medium opacity-80">{v.compliance_score}p</span>
+                  )}
+                </div>
+              </div>
+              <div className="text-[10px] mt-0.5 opacity-70">
+                {new Date(v.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                {' '}
+                {new Date(v.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function AIRaporContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -48,6 +99,7 @@ function AIRaporContent() {
   const [report, setReport] = useState<Report | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState(0)
+  const [versions, setVersions] = useState<ReportVersion[]>([])
   const pollRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -71,6 +123,13 @@ function AIRaporContent() {
     return () => { if (pollRef.current) clearTimeout(pollRef.current) }
   }, [reportId])
 
+  // Load version history when report is completed
+  useEffect(() => {
+    if (report?.status === 'completed' && reportId) {
+      api.reports.versions(reportId).then(setVersions).catch(() => {})
+    }
+  }, [report?.status, reportId])
+
   async function handleNewReport() {
     router.push('/veri-girisi')
   }
@@ -81,7 +140,7 @@ function AIRaporContent() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `sustain-tsrs-rapor-${report.year ?? 2024}.txt`
+    a.download = `sustain-tsrs-rapor-${report.year ?? 2024}${versions.length > 1 ? `-v${(report as Report & { version_number?: number }).version_number ?? 1}` : ''}.txt`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -100,7 +159,7 @@ function AIRaporContent() {
           <span className="text-5xl block mb-4">🤖</span>
           <h2 className="text-xl font-black mb-2" style={{ color: 'var(--green-900)' }}>AI TSRS Rapor Oluşturucu</h2>
           <p className="text-sm mb-6" style={{ color: 'var(--muted-foreground)' }}>
-            Claude claude-sonnet-4-6 ile TSRS 1 & 2 uyumlu Türkçe sürdürülebilirlik raporu oluşturun.
+            Claude ile TSRS 1 & 2 uyumlu Türkçe sürdürülebilirlik raporu oluşturun.
             Önce emisyon verilerinizi girin.
           </p>
           <button
@@ -126,6 +185,8 @@ function AIRaporContent() {
     )
   }
 
+  const reportWithVersion = report as (Report & { version_number?: number }) | null
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -136,6 +197,12 @@ function AIRaporContent() {
           </h1>
           <div className="flex items-center gap-3 mt-2">
             {report && <StatusBadge status={report.status} />}
+            {reportWithVersion?.version_number && reportWithVersion.version_number > 1 && (
+              <span className="text-xs px-2.5 py-1 rounded-full font-bold"
+                style={{ background: '#E3F2FD', color: '#1565C0' }}>
+                v{reportWithVersion.version_number}
+              </span>
+            )}
             {report?.ai_model && (
               <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                 style={{ background: 'var(--green-100)', color: 'var(--green-700)' }}>
@@ -173,7 +240,7 @@ function AIRaporContent() {
           <div className="w-14 h-14 rounded-full border-4 border-t-transparent mx-auto mb-4 animate-spin"
             style={{ borderColor: 'var(--green-300)', borderTopColor: 'var(--green-700)' }} />
           <p className="font-bold mb-1" style={{ color: 'var(--green-900)' }}>
-            Claude claude-sonnet-4-6 raporunuzu yazıyor…
+            Claude raporunuzu yazıyor…
           </p>
           <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
             TSRS 1 & 2 standardına göre Türkçe rapor hazırlanıyor. Bu işlem 30-60 saniye sürebilir.
@@ -207,7 +274,7 @@ function AIRaporContent() {
       {/* Completed: two-column layout */}
       {report?.status === 'completed' && report.content_text && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-          {/* Sidebar: section nav + compliance */}
+          {/* Sidebar: section nav + compliance + versions */}
           <div className="space-y-4">
             {/* Token usage */}
             {(report.prompt_tokens || report.completion_tokens) && (
@@ -236,6 +303,11 @@ function AIRaporContent() {
               </div>
               <ComplianceChecklist score={report.compliance_score} />
             </div>
+
+            {/* Version history */}
+            {reportId && (
+              <VersionHistoryPanel versions={versions} currentId={reportId} />
+            )}
 
             {/* Section navigator */}
             {sections.length > 0 && (
@@ -269,6 +341,12 @@ function AIRaporContent() {
                 <div>
                   <p className="text-sm font-bold" style={{ color: 'var(--green-900)' }}>
                     TSRS 1 & 2 Sürdürülebilirlik Raporu
+                    {reportWithVersion?.version_number && reportWithVersion.version_number > 1 && (
+                      <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full"
+                        style={{ background: '#E3F2FD', color: '#1565C0' }}>
+                        v{reportWithVersion.version_number}
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                     KGK onaylı format · RG 32414 (29.12.2023)

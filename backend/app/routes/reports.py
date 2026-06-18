@@ -1,11 +1,12 @@
 import asyncio
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_, func
 from pydantic import BaseModel
 from typing import Optional
 from ..database import get_db, AsyncSessionLocal
-from ..models import Report, EmissionRecord, Company, User
+from ..models import Report, EmissionRecord, Company, User, ReportDraft
 from ..services.ai_report_writer import generate_tsrs_report
 from ..services.calculation_engine import SECTOR_BENCHMARKS, calculate_tsrs_compliance
 from .auth import get_current_user
@@ -14,10 +15,17 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 class GenerateReportRequest(BaseModel):
-    emission_id: str                # matches frontend field name
+    emission_id: str
     standard: str = "tsrs"
     language: str = "tr"
     assurance_firm: Optional[str] = "PwC"
+
+
+class DraftRequest(BaseModel):
+    standard: str = "tsrs"
+    language: str = "tr"
+    assurance_firm: Optional[str] = None
+    form_data: Optional[dict] = None
 
 
 async def _run_report_generation(
@@ -113,6 +121,116 @@ async def _run_report_generation(
                     await err_db.commit()
 
 
+# ─── Draft endpoints (must come before /{report_id} routes) ──────────────────
+
+@router.post("/drafts")
+async def save_draft(
+    body: DraftRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(ReportDraft).where(ReportDraft.user_id == current_user.id)
+    )
+    draft = result.scalar_one_or_none()
+
+    if draft:
+        draft.standard = body.standard
+        draft.language = body.language
+        draft.assurance_firm = body.assurance_firm
+        draft.form_data = body.form_data
+        draft.updated_at = datetime.now(timezone.utc)
+    else:
+        draft = ReportDraft(
+            user_id=current_user.id,
+            company_id=current_user.company_id,
+            standard=body.standard,
+            language=body.language,
+            assurance_firm=body.assurance_firm,
+            form_data=body.form_data,
+        )
+        db.add(draft)
+
+    await db.commit()
+    await db.refresh(draft)
+    return {"id": draft.id, "updated_at": draft.updated_at.isoformat()}
+
+
+@router.get("/drafts/latest")
+async def get_draft(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(ReportDraft).where(ReportDraft.user_id == current_user.id)
+    )
+    draft = result.scalar_one_or_none()
+    if not draft:
+        raise HTTPException(404, "Taslak bulunamadı")
+    return {
+        "id": draft.id,
+        "standard": draft.standard,
+        "language": draft.language,
+        "assurance_firm": draft.assurance_firm,
+        "form_data": draft.form_data,
+        "updated_at": draft.updated_at.isoformat(),
+    }
+
+
+@router.delete("/drafts", status_code=204)
+async def delete_draft(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(ReportDraft).where(ReportDraft.user_id == current_user.id)
+    )
+    draft = result.scalar_one_or_none()
+    if draft:
+        await db.delete(draft)
+        await db.commit()
+
+
+# ─── Version history ──────────────────────────────────────────────────────────
+
+@router.get("/{report_id}/versions")
+async def get_versions(
+    report_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    report = await db.get(Report, report_id)
+    if not report or report.company_id != current_user.company_id:
+        raise HTTPException(404, "Rapor bulunamadı")
+
+    root_id = report.version_of or report.id
+
+    result = await db.execute(
+        select(Report)
+        .where(
+            or_(Report.id == root_id, Report.version_of == root_id),
+            Report.company_id == current_user.company_id,
+        )
+        .order_by(Report.version_number)
+    )
+    versions = result.scalars().all()
+
+    return [
+        {
+            "id": r.id,
+            "version_number": r.version_number,
+            "status": r.status,
+            "compliance_score": r.compliance_score,
+            "compliance_grade": r.compliance_grade,
+            "ai_model": r.ai_model,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in versions
+    ]
+
+
+# ─── Generate (with versioning) ───────────────────────────────────────────────
+
 @router.post("/generate", status_code=202)
 async def generate(
     body: GenerateReportRequest,
@@ -134,6 +252,32 @@ async def generate(
     if not company:
         raise HTTPException(404, "Şirket bulunamadı")
 
+    # Versioning: find existing root report for this emission + standard
+    root_result = await db.execute(
+        select(Report)
+        .where(
+            Report.company_id == current_user.company_id,
+            Report.emission_data_id == body.emission_id,
+            Report.standard == body.standard,
+            Report.version_of.is_(None),
+        )
+        .order_by(Report.created_at.asc())
+        .limit(1)
+    )
+    root_report = root_result.scalar_one_or_none()
+
+    version_of_id = None
+    version_number = 1
+
+    if root_report:
+        max_result = await db.execute(
+            select(func.max(Report.version_number))
+            .where(or_(Report.id == root_report.id, Report.version_of == root_report.id))
+        )
+        max_version = max_result.scalar() or 1
+        version_of_id = root_report.id
+        version_number = max_version + 1
+
     report = Report(
         company_id=current_user.company_id,
         emission_data_id=body.emission_id,
@@ -141,6 +285,8 @@ async def generate(
         language=body.language,
         status="generating",
         assurance_firm=body.assurance_firm,
+        version_number=version_number,
+        version_of=version_of_id,
     )
     db.add(report)
     await db.commit()
@@ -155,8 +301,10 @@ async def generate(
         body.assurance_firm or "PwC",
     )
 
-    return {"id": report.id, "status": "generating"}
+    return {"id": report.id, "status": "generating", "version_number": version_number}
 
+
+# ─── Status & listing ─────────────────────────────────────────────────────────
 
 @router.get("/{report_id}/status")
 async def get_status(
@@ -178,6 +326,8 @@ async def get_status(
         "completion_tokens": report.completion_tokens,
         "compliance_score": report.compliance_score,
         "compliance_grade": report.compliance_grade,
+        "version_number": report.version_number,
+        "version_of": report.version_of,
         "created_at": report.created_at.isoformat(),
     }
 
@@ -202,6 +352,8 @@ async def list_reports(
             "ai_model": r.ai_model,
             "compliance_score": r.compliance_score,
             "compliance_grade": r.compliance_grade,
+            "version_number": r.version_number,
+            "version_of": r.version_of,
             "created_at": r.created_at.isoformat(),
         }
         for r in reports

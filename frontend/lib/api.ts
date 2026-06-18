@@ -14,7 +14,60 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     const err = await res.json().catch(() => ({ detail: 'Sunucu hatası' }))
     throw new Error(err.detail || 'Bir hata oluştu')
   }
+  if (res.status === 204) return undefined as T
   return res.json()
+}
+
+async function requestForm<T>(path: string, form: FormData): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('sustain_token') : null
+  const res = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: form,
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Sunucu hatası' }))
+    throw new Error(err.detail || 'Bir hata oluştu')
+  }
+  return res.json()
+}
+
+async function requestBlob(path: string): Promise<Blob> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('sustain_token') : null
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Sunucu hatası' }))
+    throw new Error(err.detail || 'İndirme başarısız')
+  }
+  return res.blob()
+}
+
+export type BulkUploadResult = {
+  processed: number
+  success: number
+  errors: Array<{ row: number; message: string }>
+  saved_ids: string[]
+}
+
+export type ReportVersion = {
+  id: string
+  version_number: number
+  status: string
+  compliance_score?: number
+  compliance_grade?: string
+  ai_model?: string
+  created_at: string
+}
+
+export type ReportDraft = {
+  id: string
+  standard: string
+  language: string
+  assurance_firm?: string
+  form_data?: Record<string, unknown>
+  updated_at: string
 }
 
 export const api = {
@@ -46,16 +99,30 @@ export const api = {
     list: () =>
       request<EmissionData[]>('/emissions'),
     get: (id: string) => request<EmissionData>(`/emissions/${id}`),
+    bulkUpload: (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return requestForm<BulkUploadResult>('/emissions/bulk-upload', form)
+    },
   },
 
   reports: {
     generate: (payload: { emission_id: string; standard: string; language?: string; assurance_firm?: string }) =>
-      request<{ id: string; status: string }>(
+      request<{ id: string; status: string; version_number: number }>(
         '/reports/generate', { method: 'POST', body: JSON.stringify(payload) }
       ),
     get: (id: string) => request<Report>(`/reports/${id}`),
     list: () => request<Report[]>('/reports'),
     status: (reportId: string) => request<Report>(`/reports/${reportId}/status`),
+    versions: (reportId: string) => request<ReportVersion[]>(`/reports/${reportId}/versions`),
+    saveDraft: (data: { standard?: string; language?: string; assurance_firm?: string; form_data?: Record<string, unknown> }) =>
+      request<{ id: string; updated_at: string }>('/reports/drafts', { method: 'POST', body: JSON.stringify(data) }),
+    getDraft: () => request<ReportDraft>('/reports/drafts/latest'),
+    clearDraft: () => request<void>('/reports/drafts', { method: 'DELETE' }),
+  },
+
+  templates: {
+    downloadEmissions: () => requestBlob('/templates/emissions'),
   },
 
   companies: {

@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from .models import Company, User, EmissionRecord, Report  # noqa: F401 — tablo tanımları için import
-from .routes import auth, emissions, reports
+from .models import Company, User, EmissionRecord, Report, ReportDraft  # noqa: F401 — tablo tanımları için import
+from .routes import auth, emissions, reports, templates
 
 app = FastAPI(
     title="sustain.com.tr API",
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(emissions.router)
 app.include_router(reports.router)
+app.include_router(templates.router)
 
 
 @app.on_event("startup")
