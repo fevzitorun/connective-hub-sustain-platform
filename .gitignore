@@ -5,7 +5,12 @@
 *.jpg
 *.jpeg
 fwesgyazlmpiyasaarastirmasihk/
-platform/
+platform/database/
+platform/**/.env
+platform/**/*.db
+platform/**/node_modules/
+platform/**/__pycache__/
+platform/**/.next/
 ilknur/
 Prone notlar/
 LOGO/
@@ -18,3 +23,4 @@ GUNLUK-2026-05-24.md
 KEMAL-BEY-OZET-MESAJ.md
 KEMAL-BEY-WHATSAPP.md
 output.png
+.vercel
