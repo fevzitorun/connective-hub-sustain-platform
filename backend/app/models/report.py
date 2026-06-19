@@ -32,6 +32,11 @@ class Report(Base):
     version_number: Mapped[int] = mapped_column(Integer, default=1)
     version_of: Mapped[str | None] = mapped_column(ForeignKey("reports.id", ondelete="SET NULL"), nullable=True)
 
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    approved_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    rejection_reason: Mapped[str | None] = mapped_column(Text)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

@@ -8,9 +8,12 @@ import type { Report } from '@/types'
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; style: React.CSSProperties }> = {
-    generating: { label: '⏳ Oluşturuluyor…', style: { background: '#FFF3E0', color: '#E65100' } },
-    completed:  { label: '✅ Tamamlandı', style: { background: 'var(--green-100)', color: 'var(--green-800)' } },
-    failed:     { label: '❌ Başarısız', style: { background: '#FFEBEE', color: '#B71C1C' } },
+    generating: { label: '⏳ Oluşturuluyor…',  style: { background: '#FFF3E0', color: '#E65100' } },
+    completed:  { label: '✅ Tamamlandı',       style: { background: 'var(--green-100)', color: 'var(--green-800)' } },
+    failed:     { label: '❌ Başarısız',         style: { background: '#FFEBEE', color: '#B71C1C' } },
+    pending:    { label: '🕐 Onay Bekliyor',    style: { background: '#FFF8E1', color: '#5D4037' } },
+    approved:   { label: '✅ Onaylandı',        style: { background: '#E8F5E9', color: '#1B5E20' } },
+    rejected:   { label: '❌ Reddedildi',       style: { background: '#FFEBEE', color: '#B71C1C' } },
   }
   const s = map[status] ?? map.generating
   return (
@@ -100,7 +103,13 @@ function AIRaporContent() {
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState(0)
   const [versions, setVersions] = useState<ReportVersion[]>([])
+  const [userRole, setUserRole] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const pollRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    api.auth.me().then(me => setUserRole(me.role)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!reportId) { setLoading(false); return }
@@ -123,16 +132,13 @@ function AIRaporContent() {
     return () => { if (pollRef.current) clearTimeout(pollRef.current) }
   }, [reportId])
 
-  // Load version history when report is completed
+  // Load version history for any terminal status
   useEffect(() => {
-    if (report?.status === 'completed' && reportId) {
+    const terminalStatuses = ['completed', 'pending', 'approved', 'rejected']
+    if (report && terminalStatuses.includes(report.status) && reportId) {
       api.reports.versions(reportId).then(setVersions).catch(() => {})
     }
   }, [report?.status, reportId])
-
-  async function handleNewReport() {
-    router.push('/veri-girisi')
-  }
 
   async function handleDownload() {
     if (!report?.content_text) return
@@ -144,6 +150,49 @@ function AIRaporContent() {
     a.click()
     URL.revokeObjectURL(url)
   }
+
+  async function handleSubmit() {
+    if (!reportId) return
+    setSubmitting(true)
+    try {
+      await api.reports.submit(reportId)
+      toast.success('Rapor onaya gönderildi')
+      const r = await api.reports.status(reportId)
+      setReport(r)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gönderilemedi')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleApprove() {
+    if (!reportId) return
+    try {
+      await api.reports.approve(reportId)
+      toast.success('Rapor onaylandı')
+      const r = await api.reports.status(reportId)
+      setReport(r)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Onaylanamadı')
+    }
+  }
+
+  async function handleReject() {
+    if (!reportId) return
+    const reason = prompt('Red nedeni (isteğe bağlı):')
+    if (reason === null) return
+    try {
+      await api.reports.reject(reportId, reason || undefined)
+      toast.success('Rapor reddedildi')
+      const r = await api.reports.status(reportId)
+      setReport(r)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Reddedilemedi')
+    }
+  }
+
+  const isApprover = userRole === 'admin' || userRole === 'editor'
 
   // Parse sections from report content
   const sections = report?.content_text
@@ -216,16 +265,41 @@ function AIRaporContent() {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap justify-end">
+          {report?.status === 'completed' && (
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="px-4 py-2 rounded-lg text-xs font-bold text-white disabled:opacity-50"
+              style={{ background: '#1565C0' }}>
+              {submitting ? '⏳ Gönderiliyor…' : '↑ Onaya Gönder'}
+            </button>
+          )}
+          {report?.status === 'pending' && isApprover && (
+            <>
+              <button
+                onClick={handleApprove}
+                className="px-4 py-2 rounded-lg text-xs font-bold text-white"
+                style={{ background: 'var(--green-700)' }}>
+                ✓ Onayla
+              </button>
+              <button
+                onClick={handleReject}
+                className="px-4 py-2 rounded-lg text-xs font-bold border"
+                style={{ borderColor: '#FFCDD2', color: '#B71C1C', background: '#FFEBEE' }}>
+                ✕ Reddet
+              </button>
+            </>
+          )}
           <button
             onClick={handleDownload}
-            disabled={report?.status !== 'completed'}
+            disabled={!report?.content_text}
             className="px-4 py-2 rounded-lg text-xs font-semibold border disabled:opacity-40"
             style={{ borderColor: 'var(--green-300)', color: 'var(--green-700)', background: 'var(--green-50)' }}>
             ⬇ İndir
           </button>
           <button
-            onClick={handleNewReport}
+            onClick={() => router.push('/veri-girisi')}
             className="px-4 py-2 rounded-lg text-xs font-semibold text-white"
             style={{ background: 'var(--green-700)' }}>
             + Yeni Rapor
@@ -264,19 +338,80 @@ function AIRaporContent() {
           <p className="text-sm mb-4" style={{ color: '#C62828' }}>
             ANTHROPIC_API_KEY kontrol edin veya tekrar deneyin.
           </p>
-          <button onClick={handleNewReport} className="px-4 py-2 rounded-lg text-sm font-bold text-white"
+          <button onClick={() => router.push('/veri-girisi')} className="px-4 py-2 rounded-lg text-sm font-bold text-white"
             style={{ background: '#D32F2F' }}>
             Tekrar Dene
           </button>
         </div>
       )}
 
-      {/* Completed: two-column layout */}
-      {report?.status === 'completed' && report.content_text && (
+      {/* Pending state */}
+      {report?.status === 'pending' && (
+        <div className="rounded-2xl p-5 mb-5 flex items-start gap-4"
+          style={{ background: '#FFF8E1', border: '1px solid #FFB300' }}>
+          <span className="text-2xl">🕐</span>
+          <div className="flex-1">
+            <p className="font-bold text-sm" style={{ color: '#5D4037' }}>Onay Bekleniyor</p>
+            <p className="text-xs mt-1" style={{ color: '#795548' }}>
+              Bu rapor inceleme için gönderildi. Bir editör veya yönetici onayladıktan sonra yayına alınabilir.
+            </p>
+            {report.submitted_at && (
+              <p className="text-xs mt-1.5" style={{ color: '#8D6E63' }}>
+                Gönderildi: {new Date(report.submitted_at).toLocaleString('tr-TR')}
+              </p>
+            )}
+            {isApprover && (
+              <p className="text-xs mt-2 font-semibold" style={{ color: '#5D4037' }}>
+                Raporu inceledikten sonra yukarıdaki Onayla / Reddet butonlarını kullanın.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Approved state */}
+      {report?.status === 'approved' && (
+        <div className="rounded-2xl p-5 mb-5 flex items-start gap-4"
+          style={{ background: '#E8F5E9', border: '1px solid var(--green-300)' }}>
+          <span className="text-2xl">✅</span>
+          <div>
+            <p className="font-bold text-sm" style={{ color: '#1B5E20' }}>Rapor Onaylandı</p>
+            {report.approved_at && (
+              <p className="text-xs mt-1" style={{ color: '#2E7D32' }}>
+                Onaylandı: {new Date(report.approved_at).toLocaleString('tr-TR')}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Rejected state */}
+      {report?.status === 'rejected' && (
+        <div className="rounded-2xl p-5 mb-5 flex items-start gap-4"
+          style={{ background: '#FFEBEE', border: '1px solid #FFCDD2' }}>
+          <span className="text-2xl">❌</span>
+          <div className="flex-1">
+            <p className="font-bold text-sm" style={{ color: '#B71C1C' }}>Rapor Reddedildi</p>
+            {report.rejection_reason && (
+              <p className="text-xs mt-1" style={{ color: '#C62828' }}>
+                Neden: {report.rejection_reason}
+              </p>
+            )}
+            <button
+              onClick={() => router.push('/veri-girisi')}
+              className="mt-3 px-4 py-1.5 rounded-lg text-xs font-bold text-white"
+              style={{ background: '#D32F2F' }}>
+              Yeni Versiyon Oluştur
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Completed/pending/approved/rejected: two-column layout with content */}
+      {report?.content_text && ['completed', 'pending', 'approved', 'rejected'].includes(report.status) && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-          {/* Sidebar: section nav + compliance + versions */}
+          {/* Sidebar: token usage + compliance + versions + section nav */}
           <div className="space-y-4">
-            {/* Token usage */}
             {(report.prompt_tokens || report.completion_tokens) && (
               <div className="bg-white rounded-2xl p-4 border text-xs space-y-1"
                 style={{ borderColor: 'var(--border)' }}>
@@ -292,7 +427,6 @@ function AIRaporContent() {
               </div>
             )}
 
-            {/* Compliance */}
             <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: 'var(--border)' }}>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold" style={{ color: 'var(--green-900)' }}>TSRS Uyum</p>
@@ -304,12 +438,10 @@ function AIRaporContent() {
               <ComplianceChecklist score={report.compliance_score} />
             </div>
 
-            {/* Version history */}
             {reportId && (
               <VersionHistoryPanel versions={versions} currentId={reportId} />
             )}
 
-            {/* Section navigator */}
             {sections.length > 0 && (
               <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: 'var(--border)' }}>
                 <p className="text-xs font-semibold mb-3" style={{ color: 'var(--green-900)' }}>Bölümler</p>

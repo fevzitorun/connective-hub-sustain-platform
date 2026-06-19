@@ -4,8 +4,26 @@ export interface User {
   id: string
   email: string
   name: string
-  role: 'admin' | 'user' | 'bank_analyst'
+  role: 'admin' | 'editor' | 'viewer' | 'auditor' | 'data_entry'
   company_id: string
+}
+
+export interface UserProfile {
+  id: string
+  email: string
+  name: string
+  role: string
+  role_label: string
+  is_self?: boolean
+  created_at: string
+}
+
+export const ROLE_LABELS: Record<string, string> = {
+  admin: 'Yönetici',
+  editor: 'Editör',
+  viewer: 'İzleyici',
+  auditor: 'Denetçi',
+  data_entry: 'Veri Girişi',
 }
 
 export interface Company {
@@ -90,7 +108,7 @@ export interface Report {
   year?: number
   standard?: 'tsrs' | 'gri' | 'tcfd' | 'integrated' | 'uk_srs'
   language?: 'tr' | 'en' | 'de'
-  status: 'draft' | 'generating' | 'completed' | 'failed' | 'review' | 'published'
+  status: 'draft' | 'generating' | 'completed' | 'failed' | 'review' | 'published' | 'pending' | 'approved' | 'rejected'
   compliance_score?: number
   compliance_grade?: string
   content_text?: string
@@ -101,6 +119,12 @@ export interface Report {
   pdf_url?: string
   word_url?: string
   assurance_firm?: string
+  version_number?: number
+  version_of?: string
+  submitted_at?: string
+  approved_at?: string
+  approved_by?: string
+  rejection_reason?: string
   created_at: string
   published_at?: string
 }

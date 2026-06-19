@@ -1,26 +1,82 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import type { Report } from '@/types'
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  completed:  { label: 'Tamamlandı', color: 'var(--green-800)', bg: 'var(--green-100)' },
-  generating: { label: 'Oluşturuluyor', color: '#E65100', bg: '#FFF3E0' },
-  failed:     { label: 'Başarısız', color: '#B71C1C', bg: '#FFEBEE' },
+  completed:  { label: 'Tamamlandı',    color: 'var(--green-800)', bg: 'var(--green-100)' },
+  generating: { label: 'Oluşturuluyor', color: '#E65100',          bg: '#FFF3E0' },
+  failed:     { label: 'Başarısız',     color: '#B71C1C',          bg: '#FFEBEE' },
+  pending:    { label: 'Onay Bekliyor', color: '#5D4037',          bg: '#FFF8E1' },
+  approved:   { label: 'Onaylandı',     color: '#1B5E20',          bg: '#E8F5E9' },
+  rejected:   { label: 'Reddedildi',    color: '#B71C1C',          bg: '#FFEBEE' },
 }
 
 export default function RaporlarPage() {
   const router = useRouter()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
+  const [pendingReports, setPendingReports] = useState<Report[]>([])
+  const [userRole, setUserRole] = useState('')
+  const [submitting, setSubmitting] = useState<string | null>(null)
 
-  useEffect(() => {
-    api.reports.list()
-      .then(setReports)
-      .catch(() => setReports([]))
-      .finally(() => setLoading(false))
-  }, [])
+  async function loadAll() {
+    try {
+      const [data, me] = await Promise.all([api.reports.list(), api.auth.me()])
+      setReports(data)
+      setUserRole(me.role)
+      if (me.role === 'admin' || me.role === 'editor') {
+        const pending = await api.reports.pending()
+        setPendingReports(pending)
+      }
+    } catch {
+      setReports([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { loadAll() }, [])
+
+  async function handleSubmit(reportId: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    setSubmitting(reportId)
+    try {
+      await api.reports.submit(reportId)
+      toast.success('Rapor onaya gönderildi')
+      loadAll()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gönderilemedi')
+    } finally {
+      setSubmitting(null)
+    }
+  }
+
+  async function handleApprove(reportId: string) {
+    try {
+      await api.reports.approve(reportId)
+      toast.success('Rapor onaylandı')
+      loadAll()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Onaylanamadı')
+    }
+  }
+
+  async function handleReject(reportId: string) {
+    const reason = prompt('Red nedeni (isteğe bağlı):')
+    if (reason === null) return
+    try {
+      await api.reports.reject(reportId, reason || undefined)
+      toast.success('Rapor reddedildi')
+      loadAll()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Reddedilemedi')
+    }
+  }
+
+  const isApprover = userRole === 'admin' || userRole === 'editor'
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -38,6 +94,60 @@ export default function RaporlarPage() {
           + Yeni Rapor
         </button>
       </div>
+
+      {/* Pending approvals — admin/editor only */}
+      {isApprover && pendingReports.length > 0 && (
+        <div className="mb-5 rounded-2xl border overflow-hidden" style={{ borderColor: '#FFB300' }}>
+          <div className="px-5 py-3 flex items-center gap-2" style={{ background: '#FFF8E1' }}>
+            <span>🔔</span>
+            <span className="text-sm font-bold" style={{ color: '#5D4037' }}>
+              Onay Bekleyen Raporlar ({pendingReports.length})
+            </span>
+          </div>
+          {pendingReports.map(r => (
+            <div key={r.id}
+              className="bg-white px-5 py-3 flex items-center gap-4"
+              style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--green-900)' }}>
+                  TSRS 1 & 2 Sürdürülebilirlik Raporu
+                  {r.version_number && r.version_number > 1 && (
+                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded"
+                      style={{ background: '#E3F2FD', color: '#1565C0' }}>
+                      v{r.version_number}
+                    </span>
+                  )}
+                </p>
+                {r.submitted_at && (
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                    Gönderildi: {new Date(r.submitted_at).toLocaleString('tr-TR')}
+                  </p>
+                )}
+              </div>
+              {r.compliance_grade && (
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0"
+                  style={{ background: 'var(--green-700)', color: 'white' }}>
+                  {r.compliance_grade}
+                </div>
+              )}
+              <div className="flex gap-2 flex-shrink-0">
+                <button
+                  onClick={() => handleApprove(r.id)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                  style={{ background: 'var(--green-700)' }}>
+                  ✓ Onayla
+                </button>
+                <button
+                  onClick={() => handleReject(r.id)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border"
+                  style={{ borderColor: '#FFCDD2', color: '#B71C1C', background: '#FFEBEE' }}>
+                  ✕ Reddet
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="rounded-2xl p-10 text-center bg-white border" style={{ borderColor: 'var(--border)' }}>
@@ -73,6 +183,12 @@ export default function RaporlarPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate" style={{ color: 'var(--green-900)' }}>
                     TSRS 1 & 2 Sürdürülebilirlik Raporu {r.year}
+                    {r.version_number && r.version_number > 1 && (
+                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded"
+                        style={{ background: '#E3F2FD', color: '#1565C0' }}>
+                        v{r.version_number}
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                     {r.ai_model} · {new Date(r.created_at).toLocaleDateString('tr-TR')}
@@ -88,6 +204,15 @@ export default function RaporlarPage() {
                   style={{ background: st.bg, color: st.color }}>
                   {st.label}
                 </span>
+                {r.status === 'completed' && (
+                  <button
+                    onClick={(e) => handleSubmit(r.id, e)}
+                    disabled={submitting === r.id}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0 disabled:opacity-50"
+                    style={{ background: '#1565C0' }}>
+                    {submitting === r.id ? '⏳' : '↑ Onaya Gönder'}
+                  </button>
+                )}
               </div>
             )
           })}

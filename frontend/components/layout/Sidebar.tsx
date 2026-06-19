@@ -20,6 +20,9 @@ const navItems = [
   { section: 'Destek', items: [
     { href: '/destekler', label: 'Devlet Destekleri', icon: '💰' },
   ]},
+  { section: 'Yönetim', items: [
+    { href: '/kullaniciler', label: 'Kullanıcılar', icon: '👥' },
+  ]},
 ]
 
 export function Sidebar() {

@@ -9,7 +9,7 @@ from ..database import get_db, AsyncSessionLocal
 from ..models import Report, EmissionRecord, Company, User, ReportDraft
 from ..services.ai_report_writer import generate_tsrs_report
 from ..services.calculation_engine import SECTOR_BENCHMARKS, calculate_tsrs_compliance
-from .auth import get_current_user
+from .auth import get_current_user, get_editor_or_admin
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -26,6 +26,10 @@ class DraftRequest(BaseModel):
     language: str = "tr"
     assurance_firm: Optional[str] = None
     form_data: Optional[dict] = None
+
+
+class RejectionRequest(BaseModel):
+    reason: Optional[str] = None
 
 
 async def _run_report_generation(
@@ -119,6 +123,38 @@ async def _run_report_generation(
                     report.status = "failed"
                     report.content_text = f"Hata: {str(e)}"
                     await err_db.commit()
+
+
+# ─── Pending list (must come before /{report_id} routes) ────────────────────
+
+@router.get("/pending")
+async def list_pending(
+    approver: User = Depends(get_editor_or_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Report)
+        .where(
+            Report.company_id == approver.company_id,
+            Report.status == "pending",
+        )
+        .order_by(Report.submitted_at)
+    )
+    reports = result.scalars().all()
+    return [
+        {
+            "id": r.id,
+            "standard": r.standard,
+            "language": r.language,
+            "status": r.status,
+            "compliance_score": r.compliance_score,
+            "compliance_grade": r.compliance_grade,
+            "version_number": r.version_number,
+            "submitted_at": r.submitted_at.isoformat() if r.submitted_at else None,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in reports
+    ]
 
 
 # ─── Draft endpoints (must come before /{report_id} routes) ──────────────────
@@ -304,6 +340,64 @@ async def generate(
     return {"id": report.id, "status": "generating", "version_number": version_number}
 
 
+# ─── Approval workflow ───────────────────────────────────────────────────────
+
+@router.post("/{report_id}/submit")
+async def submit_for_approval(
+    report_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    report = await db.get(Report, report_id)
+    if not report or report.company_id != current_user.company_id:
+        raise HTTPException(404, "Rapor bulunamadı")
+    if report.status != "completed":
+        raise HTTPException(400, f"Tamamlanmış raporlar onaya gönderilebilir (mevcut durum: {report.status})")
+
+    report.status = "pending"
+    report.submitted_at = datetime.now(timezone.utc)
+    await db.commit()
+    return {"id": report.id, "status": report.status, "submitted_at": report.submitted_at.isoformat()}
+
+
+@router.post("/{report_id}/approve")
+async def approve_report(
+    report_id: str,
+    approver: User = Depends(get_editor_or_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    report = await db.get(Report, report_id)
+    if not report or report.company_id != approver.company_id:
+        raise HTTPException(404, "Rapor bulunamadı")
+    if report.status != "pending":
+        raise HTTPException(400, f"Sadece onay bekleyen raporlar onaylanabilir (mevcut durum: {report.status})")
+
+    report.status = "approved"
+    report.approved_at = datetime.now(timezone.utc)
+    report.approved_by = approver.id
+    await db.commit()
+    return {"id": report.id, "status": report.status, "approved_at": report.approved_at.isoformat()}
+
+
+@router.post("/{report_id}/reject")
+async def reject_report(
+    report_id: str,
+    body: RejectionRequest,
+    approver: User = Depends(get_editor_or_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    report = await db.get(Report, report_id)
+    if not report or report.company_id != approver.company_id:
+        raise HTTPException(404, "Rapor bulunamadı")
+    if report.status != "pending":
+        raise HTTPException(400, f"Sadece onay bekleyen raporlar reddedilebilir (mevcut durum: {report.status})")
+
+    report.status = "rejected"
+    report.rejection_reason = body.reason
+    await db.commit()
+    return {"id": report.id, "status": report.status, "rejection_reason": report.rejection_reason}
+
+
 # ─── Status & listing ─────────────────────────────────────────────────────────
 
 @router.get("/{report_id}/status")
@@ -328,6 +422,10 @@ async def get_status(
         "compliance_grade": report.compliance_grade,
         "version_number": report.version_number,
         "version_of": report.version_of,
+        "submitted_at": report.submitted_at.isoformat() if report.submitted_at else None,
+        "approved_at": report.approved_at.isoformat() if report.approved_at else None,
+        "approved_by": report.approved_by,
+        "rejection_reason": report.rejection_reason,
         "created_at": report.created_at.isoformat(),
     }
 

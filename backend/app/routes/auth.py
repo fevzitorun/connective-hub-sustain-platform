@@ -41,10 +41,10 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
     if not user or not verify_password(body.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-posta veya şifre hatalı")
 
-    token = create_access_token({"sub": user.id, "company_id": user.company_id})
+    token = create_access_token({"sub": user.id, "company_id": user.company_id, "role": user.role})
     return TokenResponse(
         access_token=token,
-        user={"id": user.id, "email": user.email, "name": user.name, "company_id": user.company_id},
+        user={"id": user.id, "email": user.email, "name": user.name, "company_id": user.company_id, "role": user.role},
     )
 
 
@@ -63,19 +63,21 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     db.add(company)
     await db.flush()
 
+    # First user to register for a company becomes admin
     user = User(
         email=body.email,
         name=body.name,
         hashed_password=hash_password(body.password),
         company_id=company.id,
+        role="admin",
     )
     db.add(user)
     await db.commit()
 
-    token = create_access_token({"sub": user.id, "company_id": company.id})
+    token = create_access_token({"sub": user.id, "company_id": company.id, "role": user.role})
     return TokenResponse(
         access_token=token,
-        user={"id": user.id, "email": user.email, "name": user.name, "company_id": company.id},
+        user={"id": user.id, "email": user.email, "name": user.name, "company_id": company.id, "role": user.role},
     )
 
 
@@ -94,6 +96,18 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=401, detail="Kullanıcı bulunamadı")
     return user
+
+
+async def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Bu işlem için yönetici yetkisi gereklidir")
+    return current_user
+
+
+async def get_editor_or_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in ("admin", "editor"):
+        raise HTTPException(status_code=403, detail="Bu işlem için editör veya yönetici yetkisi gereklidir")
+    return current_user
 
 
 @router.get("/me")

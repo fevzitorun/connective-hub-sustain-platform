@@ -1,5 +1,5 @@
 import { API_URL } from './constants'
-import type { EmissionData, CalcPreview, Report } from '@/types'
+import type { EmissionData, CalcPreview, Report, UserProfile } from '@/types'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('sustain_token') : null
@@ -88,7 +88,7 @@ export const api = {
       request<{ access_token: string; user: { id: string; email: string; name: string } }>(
         '/auth/register', { method: 'POST', body: JSON.stringify(data) }
       ),
-    me: () => request<{ id: string; email: string; name: string; company_id: string }>('/auth/me'),
+    me: () => request<{ id: string; email: string; name: string; company_id: string; role: string }>('/auth/me'),
   },
 
   emissions: {
@@ -115,6 +115,15 @@ export const api = {
     list: () => request<Report[]>('/reports'),
     status: (reportId: string) => request<Report>(`/reports/${reportId}/status`),
     versions: (reportId: string) => request<ReportVersion[]>(`/reports/${reportId}/versions`),
+    pending: () => request<Report[]>('/reports/pending'),
+    submit: (reportId: string) =>
+      request<{ id: string; status: string; submitted_at: string }>(`/reports/${reportId}/submit`, { method: 'POST' }),
+    approve: (reportId: string) =>
+      request<{ id: string; status: string; approved_at: string }>(`/reports/${reportId}/approve`, { method: 'POST' }),
+    reject: (reportId: string, reason?: string) =>
+      request<{ id: string; status: string; rejection_reason?: string }>(
+        `/reports/${reportId}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }
+      ),
     saveDraft: (data: { standard?: string; language?: string; assurance_firm?: string; form_data?: Record<string, unknown> }) =>
       request<{ id: string; updated_at: string }>('/reports/drafts', { method: 'POST', body: JSON.stringify(data) }),
     getDraft: () => request<ReportDraft>('/reports/drafts/latest'),
@@ -123,6 +132,19 @@ export const api = {
 
   templates: {
     downloadEmissions: () => requestBlob('/templates/emissions'),
+  },
+
+  users: {
+    list: () => request<UserProfile[]>('/users'),
+    invite: (data: { email: string; name: string; role: string }) =>
+      request<{ id: string; email: string; name: string; role: string; role_label: string; temp_password: string }>(
+        '/users/invite', { method: 'POST', body: JSON.stringify(data) }
+      ),
+    updateRole: (userId: string, role: string) =>
+      request<{ id: string; role: string; role_label: string }>(
+        `/users/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }
+      ),
+    remove: (userId: string) => request<void>(`/users/${userId}`, { method: 'DELETE' }),
   },
 
   companies: {
