@@ -11,6 +11,9 @@ platform/**/*.db
 platform/**/node_modules/
 platform/**/__pycache__/
 platform/**/.next/
+platform/**/.pytest_cache/
+platform/**/.coverage
+platform/**/htmlcov/
 ilknur/
 Prone notlar/
 LOGO/

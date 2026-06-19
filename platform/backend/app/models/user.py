@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from ..database import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -12,8 +13,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[str] = mapped_column(String(30), default="user")
+    # Roles: admin | editor | viewer | auditor | data_entry
+    role: Mapped[str] = mapped_column(String(30), default="editor")
     company_id: Mapped[str | None] = mapped_column(ForeignKey("companies.id"))
+    is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     company: Mapped["Company"] = relationship("Company", back_populates="users")  # type: ignore
