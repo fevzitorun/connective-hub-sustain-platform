@@ -57,7 +57,7 @@ export default function RegisterPage() {
               style={{ background: 'var(--green-500)' }}>
               🌿
             </div>
-            <span className="text-xl font-black text-white">sustain.com.tr</span>
+            <span className="text-xl font-black text-white">SustainHub.online</span>
           </div>
           <p className="text-sm" style={{ color: 'var(--green-300)' }}>
             Sürdürülebilirlik Raporlama Platformu
@@ -182,6 +182,21 @@ export default function RegisterPage() {
                   onChange={set('employee_count')}
                 />
               </div>
+            </div>
+
+            <div className="space-y-3 py-2">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" required className="mt-1 w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" />
+                <span className="text-xs text-slate-600 leading-tight">
+                  <Link href="/legal/terms" className="text-emerald-700 font-medium hover:underline">Terms of Use</Link> ve <Link href="/legal/privacy" className="text-emerald-700 font-medium hover:underline">Privacy Policy</Link>'yi okudum, kabul ediyorum.
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" required className="mt-1 w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" />
+                <span className="text-xs text-slate-600 leading-tight">
+                  Verilerimin analiz edilmesi için açık rıza veriyorum (GDPR/KVKK Opt-in).
+                </span>
+              </label>
             </div>
 
             <button

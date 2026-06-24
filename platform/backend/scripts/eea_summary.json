@@ -1,0 +1,74 @@
+{
+  "circular_material_use_rate": {
+    "name": "Döngüsel Materyal Kullanım Oranı",
+    "value": 11.8,
+    "unit": "%",
+    "trend": 0.3,
+    "year": 2023,
+    "source": "EEA",
+    "file": "ee25-circular-material-use-rate-all-eea38-countries.csv"
+  },
+  "organic_farming_area": {
+    "name": "Organik Tarım Alanı",
+    "value": 9.1,
+    "unit": "%",
+    "trend": 0.0,
+    "year": 2022,
+    "source": "EEA",
+    "file": "ee25-area-under-organic-farming-all-eea38-countries.csv"
+  },
+  "climate_economic_losses": {
+    "name": "İklimle İlişkili Ekonomik Kayıplar",
+    "value": 66.4,
+    "unit": "milyar EUR",
+    "trend": 4.51,
+    "year": 2023,
+    "source": "EEA",
+    "file": "ee25-climate-related-economic-losses-all-eea38-countries.csv"
+  },
+  "consumption_footprint": {
+    "name": "Tüketim Ayak İzi",
+    "value": 2.1,
+    "unit": "ton/kişi",
+    "trend": 0.18,
+    "year": 2021,
+    "source": "EEA",
+    "file": "ee25-consumption-footprint-all-eea38-countries.csv"
+  },
+  "eco_innovation_index": {
+    "name": "Eko-İnovasyon Endeksi",
+    "value": 127.5,
+    "unit": "index",
+    "trend": 3.8,
+    "year": 2024,
+    "source": "EEA",
+    "file": "ee25-eco-innovation-index-all-eea38-countries.csv"
+  },
+  "green_employment": {
+    "name": "Çevre Sektöründe İstihdam",
+    "value": 2.49,
+    "unit": "% toplam istihdam",
+    "trend": 0.05,
+    "year": 2021,
+    "source": "EEA",
+    "file": "ee25-employment-in-the-environmental-goods-and-services-sector-all-eea38-countries.csv"
+  },
+  "energy_poverty": {
+    "name": "Enerji Yoksulluğu",
+    "value": 10.6,
+    "unit": "%",
+    "trend": 1.3,
+    "year": 2023,
+    "source": "EEA",
+    "file": "ee25-energy-poverty-all-eea38-countries.csv"
+  },
+  "env_protection_expenditure": {
+    "name": "Çevre Koruma Harcamaları",
+    "value": 2.1,
+    "unit": "% GSYH",
+    "trend": 0.0,
+    "year": 2023,
+    "source": "EEA",
+    "file": "ee25-environmental-protection-expenditure-all-eea38-countries.csv"
+  }
+}

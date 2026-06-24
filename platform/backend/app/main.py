@@ -2,8 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .models import Company, User, EmissionRecord, Report, ReportDraft, ShareLink  # noqa: F401
-from .routes import auth, emissions, reports, dashboard
+from .models import audit as audit_model  # noqa: F401
+from .models import report_template as template_model  # noqa: F401
+from .routes import auth, emissions, reports, dashboard, templates
 from .routes import drafts, bulk_upload, validation, users
+from .routes import benchmarks, audit, cbam, eudr
+from .routes import payments
+from .routes import satellite, materiality, credit_score, scores, suppliers, integration
+from .middleware.rate_limit import RateLimitMiddleware
 
 app = FastAPI(
     title="SustainHub API",
@@ -11,11 +17,13 @@ app = FastAPI(
     version="2.0.0",
 )
 
+app.add_middleware(RateLimitMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://sustain.com.tr",
+        "https://SustainHub.online",
         "https://sustainhub.ai",
         "https://sustaincomtr.vercel.app",
     ],
@@ -35,6 +43,36 @@ app.include_router(drafts.router)
 app.include_router(bulk_upload.router, prefix="/api")
 app.include_router(validation.router)
 app.include_router(users.router)
+
+# Sprint 3 routes
+app.include_router(benchmarks.router)
+app.include_router(audit.router)
+app.include_router(cbam.router)
+app.include_router(eudr.router)
+app.include_router(templates.router)
+
+# Sprint 4 routes
+app.include_router(payments.router)
+
+# Sprint 5 routes
+app.include_router(satellite.router)
+app.include_router(materiality.router)
+app.include_router(credit_score.router)
+app.include_router(scores.router)
+
+# Sprint 6 routes
+app.include_router(suppliers.router)
+
+# Sprint 8 routes
+app.include_router(integration.router)
+
+# Sprint 9 routes
+from .routes import chat
+app.include_router(chat.router)
+
+# Sprint 13 routes (Finance Oracle)
+from .routes import finance_api
+app.include_router(finance_api.router)
 
 
 @app.on_event("startup")

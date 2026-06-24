@@ -1,6 +1,6 @@
 from sqlalchemy import String, Boolean, Integer, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import DateTime
@@ -26,6 +26,11 @@ class Company(Base):
     net_zero_target_year: Mapped[int | None] = mapped_column(Integer)
     brand_color: Mapped[str | None] = mapped_column(String(7))
     logo_url: Mapped[str | None] = mapped_column(Text)
+    # White-Label: kapsamlı tema ayarları (primary_color, secondary_color, font, favicon_url vb.)
+    theme_settings: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # Stripe abonelik alanları
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     users: Mapped[list["User"]] = relationship("User", back_populates="company")  # type: ignore

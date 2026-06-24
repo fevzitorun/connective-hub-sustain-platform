@@ -141,11 +141,45 @@ async def save_emission(
     )
 
     if record:
+        import json
+        from ..services.audit_service import log_action
+        old_data = {k: getattr(record, k) for k in fields.keys()}
         for k, v in fields.items():
             setattr(record, k, v)
+        await log_action(
+            db=db,
+            user_id=current_user.id,
+            user_email=current_user.email,
+            user_role="user",
+            action="Güncelleme",
+            entity_type="emission",
+            entity_id=record.id,
+            entity_desc=f"Emisyon verisi güncellendi ({body.year})",
+            company_id=current_user.company_id,
+            table_name="emission_records",
+            old_value=json.dumps(old_data, default=str),
+            new_value=json.dumps(fields, default=str),
+        )
     else:
         record = EmissionRecord(company_id=current_user.company_id, year=body.year, **fields)
         db.add(record)
+        await db.flush()
+        import json
+        from ..services.audit_service import log_action
+        await log_action(
+            db=db,
+            user_id=current_user.id,
+            user_email=current_user.email,
+            user_role="user",
+            action="Giriş",
+            entity_type="emission",
+            entity_id=record.id,
+            entity_desc=f"Yeni emisyon verisi eklendi ({body.year})",
+            company_id=current_user.company_id,
+            table_name="emission_records",
+            old_value=None,
+            new_value=json.dumps(fields, default=str),
+        )
 
     await db.commit()
     await db.refresh(record)
@@ -157,6 +191,36 @@ async def save_emission(
         "scope3_co2e": result.scope3_co2e,
         "total_co2e": result.total_co2e,
     }
+
+@router.get("/{emission_id}/history")
+async def get_emission_history(
+    emission_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from ..models.audit import AuditLog
+    from sqlalchemy import desc
+    result = await db.execute(
+        select(AuditLog)
+        .where(
+            AuditLog.entity_id == emission_id,
+            AuditLog.entity_type == "emission",
+            AuditLog.company_id == current_user.company_id
+        )
+        .order_by(desc(AuditLog.timestamp))
+    )
+    logs = result.scalars().all()
+    return [
+        {
+            "action": log.action,
+            "user_email": log.user_email,
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+            "old_value": log.old_value,
+            "new_value": log.new_value,
+            "entity_desc": log.entity_desc
+        }
+        for log in logs
+    ]
 
 
 @router.get("")

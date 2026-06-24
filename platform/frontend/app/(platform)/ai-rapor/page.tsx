@@ -75,15 +75,22 @@ function AIRaporContent() {
     router.push('/veri-girisi')
   }
 
-  async function handleDownload() {
-    if (!report?.content_text) return
-    const blob = new Blob([report.content_text], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
+  async function handleDownload(format: 'pdf' | 'docx' = 'pdf') {
+    if (!report?.id) return
+    const token = typeof window !== 'undefined' ? localStorage.getItem('sustain_token') : null
+    const url = format === 'docx'
+      ? api.reports.exportDocxUrl(report.id)
+      : api.reports.exportUrl(report.id)
+    const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    if (!res.ok) { toast.error('İndirme başarısız'); return }
+    const blob = await res.blob()
+    const ct = res.headers.get('content-type') || ''
+    const ext = format === 'docx' ? 'docx' : ct.includes('pdf') ? 'pdf' : 'txt'
     const a = document.createElement('a')
-    a.href = url
-    a.download = `sustain-tsrs-rapor-${report.year ?? 2024}.txt`
+    a.href = URL.createObjectURL(blob)
+    a.download = `sustainhub-${report.standard ?? 'tsrs'}-v${report.version_number ?? 1}.${ext}`
     a.click()
-    URL.revokeObjectURL(url)
+    URL.revokeObjectURL(a.href)
   }
 
   // Parse sections from report content
@@ -151,11 +158,18 @@ function AIRaporContent() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={handleDownload}
+            onClick={() => handleDownload('pdf')}
             disabled={report?.status !== 'completed'}
             className="px-4 py-2 rounded-lg text-xs font-semibold border disabled:opacity-40"
             style={{ borderColor: 'var(--green-300)', color: 'var(--green-700)', background: 'var(--green-50)' }}>
-            ⬇ İndir
+            ⬇ PDF İndir
+          </button>
+          <button
+            onClick={() => handleDownload('docx')}
+            disabled={report?.status !== 'completed'}
+            className="px-4 py-2 rounded-lg text-xs font-semibold border disabled:opacity-40"
+            style={{ borderColor: '#1565C0', color: '#1565C0', background: '#E3F2FD' }}>
+            ⬇ Word İndir
           </button>
           <button
             onClick={handleNewReport}

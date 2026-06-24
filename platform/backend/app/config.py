@@ -9,6 +9,21 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     environment: str = "development"
 
+    # SMTP e-posta
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+
+    # Rate limiting (istek/dk)
+    rate_limit_per_minute: int = 100
+    rate_limit_ai_per_hour: int = 20  # AI rapor üretimi
+
+    # Stripe ödeme
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_publishable_key: str = ""
+
     class Config:
         env_file = ".env"
 

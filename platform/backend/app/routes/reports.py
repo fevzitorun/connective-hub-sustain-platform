@@ -2,6 +2,7 @@
 import asyncio
 import secrets
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
@@ -14,6 +15,10 @@ from ..services.ai_report_writer import generate_tsrs_report
 from ..services.calculation_engine import SECTOR_BENCHMARKS, calculate_tsrs_compliance
 from ..services.rbac import require_permission, can
 from ..services.auth import hash_password, verify_password
+from ..services.pdf_generator import generate_pdf, get_content_type, get_file_extension
+from ..services.docx_generator import generate_docx
+from ..services.email_service import send_report_ready, send_report_submitted_for_approval
+from ..services.target_engine import calculate_sbti_targets
 from .auth import get_current_user
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -429,6 +434,225 @@ async def view_shared_report(
         "version_number": report.version_number,
     }
 
+
+@router.get("/{report_id}/export")
+async def export_report(
+    report_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Raporu PDF (veya TXT) olarak indir."""
+    result = await db.execute(
+        select(Report).where(
+            Report.id == report_id,
+            Report.company_id == current_user.company_id,
+        )
+    )
+    report = result.scalar_one_or_none()
+    if not report:
+        raise HTTPException(404, "Rapor bulunamadı")
+    if report.status not in ("completed", "approved", "published"):
+        raise HTTPException(400, "Sadece tamamlanmış raporlar indirilebilir")
+    if not report.content_text:
+        raise HTTPException(400, "Rapor içeriği henüz mevcut değil")
+
+    company = await db.get(Company, current_user.company_id)
+    company_name = company.name if company else "Şirket"
+
+    file_bytes = generate_pdf(
+        report_text=report.content_text,
+        company_name=company_name,
+        standard=report.standard,
+        year=2024,
+        compliance_score=report.compliance_score,
+    )
+    ext = get_file_extension()
+    ct = get_content_type()
+    filename = f"sustainhub-{report.standard}-v{report.version_number}.{ext}"
+
+    return Response(
+        content=file_bytes,
+        media_type=ct,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/{report_id}/export/docx")
+async def export_report_docx(
+    report_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Raporu Word (.docx) olarak indir."""
+    result = await db.execute(
+        select(Report).where(
+            Report.id == report_id,
+            Report.company_id == current_user.company_id,
+        )
+    )
+    report = result.scalar_one_or_none()
+    if not report:
+        raise HTTPException(404, "Rapor bulunamadı")
+    if report.status not in ("completed", "approved", "published"):
+        raise HTTPException(400, "Sadece tamamlanmış raporlar indirilebilir")
+    if not report.content_text:
+        raise HTTPException(400, "Rapor içeriği henüz mevcut değil")
+
+    company = await db.get(Company, current_user.company_id)
+    company_name = company.name if company else "Şirket"
+
+    file_bytes = generate_docx(
+        title=f"{report.standard} Sürdürülebilirlik Raporu",
+        content=report.content_text,
+        company_name=company_name,
+        standard=report.standard.upper(),
+        version=report.version_number or 1,
+        reporting_year=report.reporting_year,
+    )
+    filename = f"sustainhub-{report.standard}-v{report.version_number}.docx"
+
+    return Response(
+        content=file_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/{report_id}/targets")
+async def get_report_targets(
+    report_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """SBTi hedef yolu, mevcut trend ve 2030/2050 boşluk analizi."""
+    result = await db.execute(
+        select(Report).where(
+            Report.id == report_id,
+            Report.company_id == current_user.company_id,
+        )
+    )
+    report = result.scalar_one_or_none()
+    if not report:
+        raise HTTPException(404, "Rapor bulunamadı")
+
+    # Raporun emisyon verisini getir
+    emission = await db.get(EmissionRecord, report.emission_id) if report.emission_id else None
+
+    base_scope12 = 0.0
+    base_scope3 = 0.0
+    sector = "bankacılık"
+    base_year = 2022
+
+    if emission:
+        base_scope12 = float((emission.scope1_direct or 0) + (emission.scope2_location or 0))
+        base_scope3 = float(emission.scope3_total or 0)
+        base_year = emission.reporting_year or 2022
+
+    company = await db.get(Company, current_user.company_id)
+    if company and company.sector:
+        sector = company.sector.lower()
+
+    # Örnek geçmiş veri (gerçekte DB'den çekilecek)
+    historical = [
+        {"year": base_year - 2, "scope12": base_scope12 * 1.06, "scope3": base_scope3 * 1.04},
+        {"year": base_year - 1, "scope12": base_scope12 * 1.03, "scope3": base_scope3 * 1.02},
+        {"year": base_year,     "scope12": base_scope12,         "scope3": base_scope3},
+    ]
+
+    targets = calculate_sbti_targets(
+        sector=sector,
+        base_year=base_year,
+        base_scope12=base_scope12 or 16920,
+        base_scope3=base_scope3 or 183500,
+        historical=historical,
+        current_year=2026,
+    )
+
+    def _serialize_points(pts):
+        return [{"year": p.year, "scope12": p.scope12, "scope3": p.scope3, "total": p.total} for p in pts]
+
+    return {
+        "base_year": targets.base_year,
+        "base_scope12": targets.base_scope12,
+        "base_scope3": targets.base_scope3,
+        "current_trend": _serialize_points(targets.current_trend),
+        "sbti_target_path": _serialize_points(targets.sbti_target_path),
+        "net_zero_path": _serialize_points(targets.net_zero_path),
+        "gap_2030": targets.gap_2030,
+        "gap_pct_2030": targets.gap_pct_2030,
+        "sbti_compliant": targets.sbti_compliant,
+        "flag_emissions": targets.flag_emissions,
+        "recommendations": targets.recommendations,
+        "sector": targets.sector,
+    }
+
+
+@router.post("/{report_id}/targets")
+async def generate_report_targets(
+    report_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """SBTi hedeflerini hesaplar ve Rapor metnine Bilimsel Temelli Hedefler bölümü olarak ekler."""
+    result = await db.execute(
+        select(Report).where(
+            Report.id == report_id,
+            Report.company_id == current_user.company_id,
+        )
+    )
+    report = result.scalar_one_or_none()
+    if not report:
+        raise HTTPException(404, "Rapor bulunamadı")
+
+    emission = await db.get(EmissionRecord, report.emission_id) if report.emission_id else None
+
+    base_scope12 = 0.0
+    base_scope3 = 0.0
+    sector = "bankacılık"
+    base_year = 2022
+
+    if emission:
+        base_scope12 = float((emission.scope1_direct or 0) + (emission.scope2_location or 0))
+        base_scope3 = float(emission.scope3_total or 0)
+        base_year = emission.reporting_year or 2022
+
+    company = await db.get(Company, current_user.company_id)
+    if company and company.sector:
+        sector = company.sector.lower()
+
+    # Örnek geçmiş veri
+    historical = [
+        {"year": base_year - 2, "scope12": base_scope12 * 1.06, "scope3": base_scope3 * 1.04},
+        {"year": base_year - 1, "scope12": base_scope12 * 1.03, "scope3": base_scope3 * 1.02},
+        {"year": base_year,     "scope12": base_scope12,         "scope3": base_scope3},
+    ]
+
+    targets = calculate_sbti_targets(
+        sector=sector,
+        base_year=base_year,
+        base_scope12=base_scope12 or 16920,
+        base_scope3=base_scope3 or 183500,
+        historical=historical,
+        current_year=2026,
+    )
+
+    # Hedef sonuçlarını rapora ekleme
+    target_section = f"\n\n## Bilimsel Temelli Hedefler (SBTi)\n"
+    target_section += f"Şirketinizin SBTi 1.5°C uyumlu hedefleri hesaplanmıştır:\n"
+    target_section += f"- **Kapsam 1 ve 2:** 2030 yılına kadar %{targets.gap_pct_2030} azaltım gerekmektedir.\n"
+    target_section += f"- **Sektör:** {sector.capitalize()}\n"
+    target_section += "### Tavsiyeler:\n"
+    for rec in targets.recommendations:
+        target_section += f"- {rec}\n"
+
+    if report.content_text:
+        report.content_text += target_section
+    else:
+        report.content_text = target_section
+
+    await db.commit()
+    
+    return {"status": "success", "message": "Hedefler başarıyla rapora eklendi."}
 
 @router.get("")
 async def list_reports(

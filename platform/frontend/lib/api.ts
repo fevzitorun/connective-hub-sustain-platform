@@ -56,6 +56,53 @@ export const api = {
     get: (id: string) => request<Report>(`/reports/${id}`),
     list: () => request<Report[]>('/reports'),
     status: (reportId: string) => request<Report>(`/reports/${reportId}/status`),
+    exportUrl: (reportId: string) => `${API_URL}/reports/${reportId}/export`,
+    exportDocxUrl: (reportId: string) => `${API_URL}/reports/${reportId}/export/docx`,
+  },
+
+  dashboard: {
+    summary: () => request<{
+      reporting_year: number
+      emissions: { scope1: number; scope2: number; scope3: number; total: number; unit: string }
+      energy: { electricity_kwh: number; renewable_pct: number }
+      reports: { total: number; approved: number; recent: Report[] }
+      compliance: { score: number | null; grade: string | null }
+    }>('/dashboard/summary'),
+  },
+
+  templates: {
+    list: () => request<{ templates: Array<{ id: string; name: string; standard: string; language: string; description: string }> }>('/templates'),
+    get: (id: string) => request<{ id: string; name: string; required_sections: string[]; prompt_suffix: string }>(`/templates/${id}`),
+  },
+
+  benchmark: {
+    calculate: (data: {
+      sector: string; total_co2e: number; employee_count: number;
+      electricity_kwh?: number; renewable_pct?: number; waste_recycling_pct?: number
+    }) => request<{
+      grade: string; overall_score: number; carbon_intensity: number;
+      carbon_intensity_avg: number; sector_rank: string; recommendations: string[]
+    }>('/benchmarks/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    eea: () => request<{ indicators: Record<string, { name: string; value: number; unit: string; trend: number; year: number }> }>('/benchmarks/eea-indicators'),
+    radar: (companyId: string, sector = 'bankacılık') =>
+      request<{ axes: string[]; company: number[]; sector_avg: number[]; global_avg: number[] }>(
+        `/benchmarks/radar/${companyId}?sector=${encodeURIComponent(sector)}`
+      ),
+  },
+
+  cbam: {
+    calculate: (data: { sector: string; goods_tons: number; eu_ets_price?: number }) =>
+      request<{ cbam_duty_eur: number; embedded_co2_total: number; eu_ets_price: number }>(
+        '/cbam/calculate', { method: 'POST', body: JSON.stringify(data) }
+      ),
+  },
+
+  audit: {
+    logs: (params?: { entity_type?: string; status?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString()
+      return request<{ total: number; logs: unknown[] }>(`/audit/logs${q ? '?' + q : ''}`)
+    },
+    exportUrl: () => `${API_URL}/audit/logs/export`,
   },
 
   companies: {
@@ -69,6 +116,27 @@ export const api = {
       request<{ earthquake_zone: string; flood_risk: string; drought_risk: string }>(
         `/satellite/risk?lat=${lat}&lng=${lng}`
       ),
+    getByCoords: (lat: number, lng: number, city = 'istanbul', year = 2024) =>
+      request<unknown>(`/satellite/risk?lat=${lat}&lng=${lng}&city=${city}&year=${year}`),
+    getByCompany: (companyId: string) =>
+      request<unknown>(`/satellite/risk/${companyId}`),
+  },
+
+  materiality: {
+    topics: () => request<{ topics: unknown[] }>('/materiality/topics'),
+    assess: (data: { sector?: string; custom_scores?: Record<string, { impact: number; financial: number }> }) =>
+      request<unknown>('/materiality/assess', { method: 'POST', body: JSON.stringify(data) }),
+    myMatrix: () => request<unknown>('/materiality/my/matrix'),
+    matrix: (companyId: string) => request<unknown>(`/materiality/${companyId}/matrix`),
+  },
+
+  creditScore: {
+    get: (companyId: string) => request<unknown>(`/credit-score/${companyId}`),
+    demo: () => request<unknown>('/credit-score/demo/preview'),
+  },
+
+  targets: {
+    fromReport: (reportId: string) => request<unknown>(`/reports/${reportId}/targets`),
   },
 
   subsidies: {
@@ -76,5 +144,22 @@ export const api = {
       request<{ subsidies: Array<{ program: string; is_eligible: boolean; annual_potential_tl: number }> }>(
         companyId ? `/subsidies/${companyId}` : '/subsidies'
       ),
+  },
+
+  payments: {
+    plans: () =>
+      request<{ plans: unknown[] }>('/payments/plans'),
+    plan: (planId: string) =>
+      request<unknown>(`/payments/plans/${planId}`),
+    createCheckout: (data: { plan_id: string; billing: string; success_url?: string; cancel_url?: string }) =>
+      request<{ checkout_url: string; session_id: string }>(
+        '/payments/create-checkout-session', { method: 'POST', body: JSON.stringify(data) }
+      ),
+    subscription: () =>
+      request<{ plan: unknown; stripe_customer_id: string | null; stripe_subscription_id: string | null }>(
+        '/payments/subscription'
+      ),
+    portal: () =>
+      request<{ portal_url: string }>('/payments/portal', { method: 'POST' }),
   },
 }

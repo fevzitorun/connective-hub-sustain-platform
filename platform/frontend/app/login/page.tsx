@@ -36,7 +36,7 @@ export default function LoginPage() {
               style={{ background: 'var(--green-500)' }}>
               🌿
             </div>
-            <span className="text-xl font-black text-white">sustain.com.tr</span>
+            <span className="text-xl font-black text-white">SustainHub.online</span>
           </div>
           <p className="text-sm" style={{ color: 'var(--green-300)' }}>
             Sürdürülebilirlik Raporlama Platformu

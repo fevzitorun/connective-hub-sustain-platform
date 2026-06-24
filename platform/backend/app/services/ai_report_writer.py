@@ -63,7 +63,12 @@ RAPOR FORMATI KURALLARI (gerçek raporlardan çıkarıldı):
 8. SEKTÖRE GÖRE SASB CİLTLERİ:
    Bankacılık: Cilt 16 + Cilt 19 | Çimento: Cilt 10 | Enerji: Cilt 32
    İnşaat: Cilt 33 | Perakende/Gıda: Cilt 22 | Sigorta: Cilt 20+21
-   Beyaz Eşya: Cilt 26 | Rafineri: Cilt 31"""
+   Beyaz Eşya: Cilt 26 | Rafineri: Cilt 31
+
+9. FİNANSAL TAVSİYE (SUSTAIN-SCORE BAĞLANTISI):
+   Eğer şirketin kredi notu (Sustain Grade) B veya altındaysa, raporun 'Finansal Planlama'
+   kısmında bu notu A seviyesine çıkarmak için yapması gereken 3 somut yatırımı
+   (Örn: Güneş paneli, atık ısı geri kazanımı) ROI (Yatırım Getirisi) odaklı olarak öner."""
 
 
 def generate_tsrs_report(
@@ -89,7 +94,7 @@ def generate_tsrs_report(
     drought_risk: str = "Düşük",
     is_regulated: bool = False,
     is_public: bool = False,
-    language: str = "tr",
+    language: str = "en",
     assurance_firm: str = "PwC",
     sector_avg_intensity: float = 2.4,
     compliance_score: int = 0,
@@ -105,7 +110,17 @@ def generate_tsrs_report(
     intensity = round(total_co2e / max(employee_count, 1), 2)
     position = "sektör ortalamasının altında" if intensity < sector_avg_intensity else "sektör ortalamasının üzerinde"
 
-    user_prompt = f"""Aşağıdaki şirket için eksiksiz TSRS 1 & 2 uyumlu sürdürülebilirlik raporu yaz.
+    # Multi-language & CSRD/ESRS Support Configuration
+    if language == "en":
+        lang_instruction = "IMPORTANT: Write the ENTIRE report in English. Map headings to European Sustainability Reporting Standards (ESRS/CSRD). Use terms like 'Environmental ESRS E1' instead of 'Çevresel Etki', 'Double Materiality' instead of 'Çift Yönlü Önemlilik'."
+    elif language == "de":
+        lang_instruction = "IMPORTANT: Write the ENTIRE report in German. Map headings to European Sustainability Reporting Standards (ESRS/CSRD). Use terms like 'Umwelt ESRS E1', 'Doppelte Wesentlichkeit'."
+    else:
+        lang_instruction = "ÖNEMLİ: Raporu tamamen Türkçe yaz. Sadece TSRS terminolojisini kullan."
+
+    dynamic_system_prompt = SYSTEM_PROMPT + "\n\n10. LANGUAGE & STANDARDS MAPPING:\n" + lang_instruction
+
+    user_prompt = f"""Aşağıdaki şirket için eksiksiz sürdürülebilirlik raporu yaz. (Zorunlu dil/standart kuralı: {language})
 Tüm zorunlu bölümleri sistem promptundaki kurallara göre hazırla.
 
 ŞİRKET PROFİLİ:
@@ -153,7 +168,7 @@ Son bölüm olarak TSRS İçerik Endeksi tablosunu oluştur."""
         system=[
             {
                 "type": "text",
-                "text": SYSTEM_PROMPT,
+                "text": dynamic_system_prompt,
                 "cache_control": {"type": "ephemeral"},
             }
         ],
