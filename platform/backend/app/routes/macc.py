@@ -42,7 +42,7 @@ def _result_to_dict(r: MACCResult) -> dict:
 @router.post("/calculate")
 async def calculate(
     body: MACCRequest,
-    _: dict = Depends(require_role(min_level=20)),
+    _: dict = Depends(require_role("viewer")),
 ):
     """MACC hesapla — sektöre göre maliyet-etkinlik sıralı önlemler."""
     result = calculate_macc(

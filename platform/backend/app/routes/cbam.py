@@ -112,7 +112,7 @@ async def create_declaration(
     current_user=Depends(get_current_user),
 ):
     """CBAM beyanı oluştur (DB kaydı Phase 4'te eklenecek)."""
-    require_role(current_user, min_level=40)  # data_entry+
+    require_role("data_entry")(current_user)
     sector_key = decl.sector.lower()
     co2_factor = decl.embedded_co2_factor
     duty = round(decl.goods_tons * co2_factor * decl.eu_ets_price, 2)
@@ -130,5 +130,5 @@ async def create_declaration(
 @router.get("/declarations")
 async def list_declarations(current_user=Depends(get_current_user)):
     """Şirkete ait CBAM beyanları (Phase 4'te DB'den çekilecek)."""
-    require_role(current_user, min_level=30)
+    require_role("auditor")(current_user)
     return {"declarations": [], "message": "DB entegrasyonu Phase 4'te eklenecek."}

@@ -120,7 +120,7 @@ async def assess_supplier(
 @router.get("/suppliers")
 async def list_suppliers(current_user=Depends(get_current_user)):
     """Şirkete kayıtlı tedarikçiler (Phase 4'te DB'den)."""
-    require_role(current_user, min_level=30)
+    require_role("auditor")(current_user)
     return {"suppliers": [], "message": "DB entegrasyonu Phase 4'te eklenecek."}
 
 

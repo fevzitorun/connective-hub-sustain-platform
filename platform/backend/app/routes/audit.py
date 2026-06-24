@@ -26,7 +26,7 @@ async def list_audit_logs(
     db: AsyncSession = Depends(get_db),
 ):
     """Denetim kayıtlarını listele. Sadece admin ve auditor rolü erişebilir."""
-    require_role(current_user, min_level=30)  # auditor+
+    require_role("auditor")(current_user)
     logs = await get_audit_logs(
         db,
         user_email=user_email,
@@ -60,7 +60,7 @@ async def export_audit_csv(
     db: AsyncSession = Depends(get_db),
 ):
     """Denetim kayıtlarını CSV olarak indir."""
-    require_role(current_user, min_level=60)  # editor+
+    require_role("editor")(current_user)
     logs = await get_audit_logs(db, limit=500)
 
     output = io.StringIO()
@@ -95,7 +95,7 @@ async def verify_emission_record(
     current_user=Depends(get_current_user)
 ):
     """Denetçi tarafından kaydın doğrulanması."""
-    require_role(current_user, min_level=30)  # auditor+
+    require_role("auditor")(current_user)
     from ..services.verification_service import verify_record
     
     auditor_name = current_user.full_name or current_user.email

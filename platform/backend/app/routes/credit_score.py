@@ -21,7 +21,7 @@ async def get_credit_score(
     Şirketin ESG kredi puanını hesapla.
     Sadece auditor (rol>=30) ve admin (rol>=60) erişebilir.
     """
-    require_role(current_user, min_level=30)
+    require_role("auditor")(current_user)
 
     company = await db.get(Company, company_id)
     if not company:

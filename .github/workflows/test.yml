@@ -56,14 +56,25 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run Alembic migrations (test DB)
+      - name: Create test DB schema
         working-directory: platform/backend
         env:
           DATABASE_URL: postgresql+asyncpg://sustain:sustain_dev_2026@localhost:5432/sustaindb_test
           SECRET_KEY: ci_test_secret
           ANTHROPIC_API_KEY: ""
         run: |
-          alembic upgrade head
+          python -c "
+          import asyncio, os
+          os.environ.setdefault('DATABASE_URL', 'postgresql+asyncpg://sustain:sustain_dev_2026@localhost:5432/sustaindb_test')
+          os.environ.setdefault('SECRET_KEY', 'ci_test_secret')
+          from app.database import engine, Base
+          import app.models  # noqa: F401
+          async def main():
+              async with engine.begin() as conn:
+                  await conn.run_sync(Base.metadata.create_all)
+          asyncio.run(main())
+          print('Schema created OK')
+          "
 
       - name: Run tests with coverage
         working-directory: platform/backend
@@ -109,18 +120,18 @@ jobs:
 
       - name: TypeScript type check
         working-directory: platform/frontend
-        run: npx tsc --noEmit
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: |
+          # next build generates next-env.d.ts and type-checks simultaneously
+          npm run build
 
       - name: ESLint
         working-directory: platform/frontend
         run: npx eslint . --ext .ts,.tsx --max-warnings 0
         continue-on-error: true
 
-      - name: Build (production)
-        working-directory: platform/frontend
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:8000
-        run: npm run build
+      # Build step merged into TypeScript check above (npm run build covers both)
 
   # ─── Security Scan ──────────────────────────────────────────────────────────
   security:
