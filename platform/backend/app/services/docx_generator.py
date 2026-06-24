@@ -80,7 +80,7 @@ def _set_footer(doc: "Document", version: int) -> None:
     p.clear()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     ts = datetime.now().strftime("%d.%m.%Y")
-    run = p.add_run(f"SustainHub Platform — sustainhub.ai — v{version} — {ts}  ")
+    run = p.add_run(f"SustainHub Platform — sustainhub.online — v{version} — {ts}  ")
     run.font.size = Pt(8)
     run.font.color.rgb = RGBColor(0x75, 0x75, 0x75)
     # Sayfa numarası

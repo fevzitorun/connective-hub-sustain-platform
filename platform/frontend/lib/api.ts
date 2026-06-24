@@ -162,4 +162,15 @@ export const api = {
     portal: () =>
       request<{ portal_url: string }>('/payments/portal', { method: 'POST' }),
   },
+
+  macc: {
+    calculate: (data: {
+      company_id: string
+      sector: string
+      total_emissions?: number
+      sbti_gap_2030?: number
+      budget_limit_tl?: number
+    }) => request<unknown>('/macc/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    demo: (sector: string) => request<unknown>(`/macc/demo/${sector}`),
+  },
 }

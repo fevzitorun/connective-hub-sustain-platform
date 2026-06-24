@@ -23,8 +23,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://SustainHub.online",
-        "https://sustainhub.ai",
+        "https://sustainhub.online",
+        "https://www.sustainhub.online",
         "https://sustaincomtr.vercel.app",
     ],
     allow_credentials=True,
@@ -65,6 +65,10 @@ app.include_router(suppliers.router)
 
 # Sprint 8 routes
 app.include_router(integration.router)
+
+# Sprint 15 routes (MACC)
+from .routes import macc
+app.include_router(macc.router)
 
 # Sprint 9 routes
 from .routes import chat

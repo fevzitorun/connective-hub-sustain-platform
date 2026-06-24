@@ -149,8 +149,8 @@ async def create_checkout_session(
             customer=customer_id,
             mode="subscription",
             line_items=[{"price": price_id, "quantity": 1}],
-            success_url=body.success_url or "https://sustainhub.ai/abonelik?success=1",
-            cancel_url=body.cancel_url or "https://sustainhub.ai/abonelik?cancel=1",
+            success_url=body.success_url or "https://sustainhub.online/abonelik?success=1",
+            cancel_url=body.cancel_url or "https://sustainhub.online/abonelik?cancel=1",
             metadata={"company_id": current_user.company_id, "plan_id": body.plan_id},
         )
 
@@ -246,7 +246,7 @@ async def create_portal_session(
         stripe.api_key = stripe_key
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
-            return_url="https://sustainhub.ai/abonelik",
+            return_url="https://sustainhub.online/abonelik",
         )
         return {"portal_url": session.url}
     except Exception as e:

@@ -20,7 +20,7 @@ _REPORT_CSS = """
     size: A4;
     margin: 2.5cm 2cm;
     @bottom-center {
-        content: "SustainHub · sustainhub.ai · Sayfa " counter(page) " / " counter(pages);
+        content: "SustainHub · sustainhub.online · Sayfa " counter(page) " / " counter(pages);
         font-size: 9pt;
         color: #6b7280;
     }
@@ -103,7 +103,7 @@ def generate_pdf(
 <body>
   <div class="header-bar">
     <h1>🌿 SustainHub</h1>
-    <p>sustainhub.ai · Global Sürdürülebilirlik İstihbarat Platformu</p>
+    <p>sustainhub.online · Global Sürdürülebilirlik İstihbarat Platformu</p>
   </div>
   <h1>{company_name}</h1>
   <p><strong>Standart:</strong> {standard.upper()} &nbsp;|&nbsp;
@@ -114,7 +114,7 @@ def generate_pdf(
   {html_body}
   <hr style="border:none;border-top:1px solid #e5e7eb;margin:24pt 0 8pt;">
   <p style="font-size:9pt;color:#9ca3af;text-align:center;">
-    Bu rapor SustainHub (sustainhub.ai) tarafından Claude Sonnet 4.6 AI modeli kullanılarak üretilmiştir.
+    Bu rapor SustainHub (sustainhub.online) tarafından Claude Sonnet 4.6 AI modeli kullanılarak üretilmiştir.
     Raporlama standartlarına uyumluluk için bağımsız güvence önerilir.
   </p>
 </body>
