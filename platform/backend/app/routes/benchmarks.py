@@ -9,7 +9,7 @@ from ..services.benchmark_service import (
     BenchmarkResult,
 )
 from ..services.rbac import require_role
-from ..services.auth import get_current_user
+from .auth import get_current_user
 
 router = APIRouter(prefix="/benchmarks", tags=["benchmarks"])
 

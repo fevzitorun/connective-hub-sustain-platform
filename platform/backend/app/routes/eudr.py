@@ -6,7 +6,7 @@ Tüzük (AB) 2023/1115 · Aralık 2026 zorunlu.
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.rbac import require_role
 
 router = APIRouter(prefix="/eudr", tags=["eudr"])

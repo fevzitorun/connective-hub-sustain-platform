@@ -1,6 +1,6 @@
 """Rapor şablonları API."""
 from fastapi import APIRouter, Depends
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..models.report_template import BUILTIN_TEMPLATES
 
 router = APIRouter(prefix="/templates", tags=["templates"])

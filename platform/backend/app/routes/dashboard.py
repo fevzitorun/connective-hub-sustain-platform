@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from ..database import get_db
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..models.emission import EmissionRecord
 from ..models.report import Report
 from ..models.user import User

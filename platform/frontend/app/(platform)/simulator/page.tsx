@@ -270,6 +270,5 @@ export default function SimulatorPage() {
         </div>
 
       </div>
-    </div>
   )
 }
