@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Footer } from '@/components/layout/Footer'
 import { DemoWizard } from '@/components/layout/DemoWizard'
 
-export default function PlatformLayout({ children }: { children: React.ReactNode }) {
+export default function PlatformLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar />

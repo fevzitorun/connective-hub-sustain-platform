@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, String, ForeignKey, DateTime, Text, JSON, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
 from ..database import Base
@@ -18,11 +18,11 @@ class Report(Base):
     # Status: draft | generating | completed | failed | pending | approved | rejected | published
     status: Mapped[str] = mapped_column(String(20), default="draft")
 
-    content_json: Mapped[dict | None] = mapped_column(JSONB)
+    content_json: Mapped[dict | None] = mapped_column(JSON)
     content_text: Mapped[str | None] = mapped_column(Text)
     compliance_score: Mapped[int | None] = mapped_column(Integer)
     compliance_grade: Mapped[str | None] = mapped_column(String(2))
-    compliance_detail: Mapped[dict | None] = mapped_column(JSONB)
+    compliance_detail: Mapped[dict | None] = mapped_column(JSON)
 
     pdf_url: Mapped[str | None] = mapped_column(Text)
     word_url: Mapped[str | None] = mapped_column(Text)
@@ -63,7 +63,7 @@ class ReportDraft(Base):
     # Tamamlanmış rapora link (oluşturulduktan sonra)
     report_id: Mapped[str | None] = mapped_column(ForeignKey("reports.id"))
     # Kullanıcının taslak içeriği (form state)
-    content: Mapped[dict | None] = mapped_column(JSONB)
+    content: Mapped[dict | None] = mapped_column(JSON)
     notes: Mapped[str | None] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
