@@ -1,7 +1,6 @@
 {
   "version": 2,
   "name": "sustainhub-online",
-  "rootDirectory": "platform/frontend",
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",

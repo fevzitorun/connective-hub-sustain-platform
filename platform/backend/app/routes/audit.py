@@ -9,7 +9,7 @@ import io
 
 from ..database import get_db
 from ..services.audit_service import get_audit_logs
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.rbac import require_role
 
 router = APIRouter(prefix="/audit", tags=["audit"])

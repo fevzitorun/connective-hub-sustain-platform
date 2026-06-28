@@ -1,6 +1,6 @@
-from sqlalchemy import String, Boolean, Integer, Numeric, Text
+from sqlalchemy import String, Boolean, Integer, Numeric, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import DateTime
@@ -27,7 +27,7 @@ class Company(Base):
     brand_color: Mapped[str | None] = mapped_column(String(7))
     logo_url: Mapped[str | None] = mapped_column(Text)
     # White-Label: kapsamlı tema ayarları (primary_color, secondary_color, font, favicon_url vb.)
-    theme_settings: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    theme_settings: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     # Stripe abonelik alanları
     stripe_customer_id: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
     stripe_subscription_id: Mapped[str | None] = mapped_column(String(100), nullable=True)

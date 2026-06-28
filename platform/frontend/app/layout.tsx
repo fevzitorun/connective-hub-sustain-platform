@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   description: "Türkiye'nin ilk AI + uydu destekli TSRS uyumlu sürdürülebilirlik raporlama platformu.",
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="tr">
       <body>

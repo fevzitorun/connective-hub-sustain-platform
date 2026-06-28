@@ -2,7 +2,7 @@ from sqlalchemy import String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime, timezone
 import uuid
-from . import Base
+from ..database import Base
 
 class Supplier(Base):
     __tablename__ = "suppliers"

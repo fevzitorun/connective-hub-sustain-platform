@@ -5,7 +5,7 @@ Tüzük (AB) 2023/956 · Ocak 2026 zorunlu raporlama.
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.rbac import require_role
 
 router = APIRouter(prefix="/cbam", tags=["cbam"])
