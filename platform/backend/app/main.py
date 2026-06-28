@@ -87,6 +87,10 @@ app.include_router(library.router)
 from .routes import import_route
 app.include_router(import_route.router)
 
+# Sprint 17 — Global Stats & Admin API
+from .routes import stats
+app.include_router(stats.router)
+
 
 @app.on_event("startup")
 async def startup():

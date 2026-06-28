@@ -15,27 +15,55 @@ type Plan = {
   badge: string | null
 }
 
+type CurrencyKey = 'USD' | 'EUR' | 'GBP' | 'TRY'
+
+const CURRENCIES: Record<CurrencyKey, { symbol: string; flag: string; label: string; rate: number }> = {
+  USD: { symbol: '$',  flag: '🇺🇸', label: 'USD',  rate: 1 },
+  EUR: { symbol: '€',  flag: '🇪🇺', label: 'EUR',  rate: 0.92 },
+  GBP: { symbol: '£',  flag: '🇬🇧', label: 'GBP',  rate: 0.79 },
+  TRY: { symbol: '₺',  flag: '🇹🇷', label: 'TRY',  rate: 38.5 },
+}
+
+function detectCurrency(): CurrencyKey {
+  if (typeof navigator === 'undefined') return 'USD'
+  const lang = navigator.language || 'en-US'
+  if (lang.startsWith('tr')) return 'TRY'
+  if (lang === 'en-GB') return 'GBP'
+  const euLangs = ['de', 'fr', 'es', 'it', 'nl', 'pt', 'fi', 'sv', 'da', 'no', 'pl']
+  if (euLangs.some(l => lang.startsWith(l))) return 'EUR'
+  return 'USD'
+}
+
+function fmtPrice(usdPrice: number, currency: CurrencyKey): string {
+  const { symbol, rate } = CURRENCIES[currency]
+  const converted = usdPrice * rate
+  if (currency === 'TRY') return `${symbol}${Math.round(converted).toLocaleString('tr-TR')}`
+  return `${symbol}${Math.round(converted)}`
+}
+
 const BADGE_COLORS: Record<string, { bg: string; text: string }> = {
-  'Popüler':       { bg: 'var(--green-700)', text: 'white' },
-  'En İyi Değer':  { bg: '#1565C0', text: 'white' },
+  'Popüler':      { bg: 'var(--green-700)', text: 'white' },
+  'En İyi Değer': { bg: '#1565C0',          text: 'white' },
 }
 
 function PlanCard({
   plan,
   billing,
+  currency,
   current,
   onSelect,
   loading,
 }: {
   plan: Plan
   billing: 'monthly' | 'yearly'
+  currency: CurrencyKey
   current: boolean
   onSelect: (planId: string) => void
   loading: boolean
 }) {
-  const price = billing === 'yearly' ? plan.price_yearly : plan.price_monthly
-  const perMonth = billing === 'yearly' && plan.price_yearly > 0
-    ? (plan.price_yearly / 12).toFixed(0)
+  const usdPrice = billing === 'yearly' ? plan.price_yearly : plan.price_monthly
+  const usdPerMonth = billing === 'yearly' && plan.price_yearly > 0
+    ? plan.price_yearly / 12
     : null
   const badge = plan.badge ? BADGE_COLORS[plan.badge] : null
 
@@ -60,20 +88,20 @@ function PlanCard({
       <div className="mb-4">
         <h3 className="text-lg font-black" style={{ color: 'var(--green-900)' }}>{plan.name_tr}</h3>
         <div className="mt-2 flex items-baseline gap-1">
-          {price === 0 ? (
+          {usdPrice === 0 ? (
             <span className="text-3xl font-black" style={{ color: 'var(--green-800)' }}>Ücretsiz</span>
           ) : (
             <>
               <span className="text-3xl font-black" style={{ color: 'var(--green-800)' }}>
-                ${billing === 'yearly' ? perMonth : price}
+                {fmtPrice(billing === 'yearly' && usdPerMonth ? usdPerMonth : usdPrice, currency)}
               </span>
               <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>/ay</span>
             </>
           )}
         </div>
-        {billing === 'yearly' && price > 0 && (
+        {billing === 'yearly' && usdPrice > 0 && (
           <p className="text-xs mt-1" style={{ color: 'var(--green-600)' }}>
-            Yıllık ${plan.price_yearly} — 2 ay ücretsiz
+            Yıllık {fmtPrice(usdPrice, currency)} — 2 ay ücretsiz
           </p>
         )}
       </div>
@@ -98,7 +126,7 @@ function PlanCard({
           disabled={loading}
           className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50"
           style={{ background: plan.badge === 'Popüler' ? 'var(--green-700)' : '#1565C0' }}>
-          {loading ? 'Yönlendiriliyor…' : price === 0 ? 'Başla' : `${plan.name_tr}'e Geç`}
+          {loading ? 'Yönlendiriliyor…' : usdPrice === 0 ? 'Başla' : `${plan.name_tr}'e Geç`}
         </button>
       )}
     </div>
@@ -109,8 +137,13 @@ export default function AbonelikPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [currentPlan, setCurrentPlan] = useState<string>('free')
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('yearly')
+  const [currency, setCurrency] = useState<CurrencyKey>('USD')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+
+  useEffect(() => {
+    setCurrency(detectCurrency())
+  }, [])
 
   useEffect(() => {
     Promise.all([api.payments.plans(), api.payments.subscription()])
@@ -126,7 +159,12 @@ export default function AbonelikPage() {
     if (planId === 'free') { toast.info('Ücretsiz plan zaten aktif'); return }
     setLoading(true)
     try {
-      const res = await api.payments.createCheckout({ plan_id: planId, billing })
+      const res = await api.payments.createCheckout({
+        plan_id: planId,
+        billing,
+        success_url: `${window.location.origin}/dashboard?ödeme=basarili`,
+        cancel_url: window.location.href,
+      })
       if ((res as { checkout_url: string }).checkout_url) {
         window.location.href = (res as { checkout_url: string }).checkout_url
       }
@@ -159,29 +197,54 @@ export default function AbonelikPage() {
           Sürdürülebilirlik raporlama ihtiyacınıza uygun planı seçin
         </p>
 
-        {/* Billing toggle */}
-        <div className="inline-flex rounded-xl border p-1 gap-1" style={{ borderColor: 'var(--border)', background: 'var(--green-50)' }}>
-          <button
-            onClick={() => setBilling('monthly')}
-            className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
-            style={billing === 'monthly'
-              ? { background: 'var(--green-700)', color: 'white' }
-              : { color: 'var(--muted-foreground)' }}>
-            Aylık
-          </button>
-          <button
-            onClick={() => setBilling('yearly')}
-            className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
-            style={billing === 'yearly'
-              ? { background: 'var(--green-700)', color: 'white' }
-              : { color: 'var(--muted-foreground)' }}>
-            Yıllık
-            <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-bold"
-              style={{ background: '#E8F5E9', color: 'var(--green-700)' }}>
-              −17%
-            </span>
-          </button>
+        {/* Controls row: billing toggle + currency selector */}
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          {/* Billing toggle */}
+          <div className="inline-flex rounded-xl border p-1 gap-1" style={{ borderColor: 'var(--border)', background: 'var(--green-50)' }}>
+            <button
+              onClick={() => setBilling('monthly')}
+              className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+              style={billing === 'monthly'
+                ? { background: 'var(--green-700)', color: 'white' }
+                : { color: 'var(--muted-foreground)' }}>
+              Aylık
+            </button>
+            <button
+              onClick={() => setBilling('yearly')}
+              className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+              style={billing === 'yearly'
+                ? { background: 'var(--green-700)', color: 'white' }
+                : { color: 'var(--muted-foreground)' }}>
+              Yıllık
+              <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-bold"
+                style={{ background: '#E8F5E9', color: 'var(--green-700)' }}>
+                −17%
+              </span>
+            </button>
+          </div>
+
+          {/* Currency selector */}
+          <div className="inline-flex rounded-xl border p-1 gap-1" style={{ borderColor: 'var(--border)', background: '#f8fafc' }}>
+            {(Object.keys(CURRENCIES) as CurrencyKey[]).map(cur => (
+              <button
+                key={cur}
+                onClick={() => setCurrency(cur)}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1"
+                style={currency === cur
+                  ? { background: '#1e293b', color: 'white' }
+                  : { color: '#64748b' }}>
+                <span>{CURRENCIES[cur].flag}</span>
+                <span>{CURRENCIES[cur].label}</span>
+              </button>
+            ))}
+          </div>
         </div>
+
+        {currency === 'TRY' && (
+          <p className="text-xs mt-3" style={{ color: 'var(--muted-foreground)' }}>
+            ₺ fiyatlar tahmini dönüşümdür. Ödeme USD olarak alınır.
+          </p>
+        )}
       </div>
 
       {fetching ? (
@@ -197,6 +260,7 @@ export default function AbonelikPage() {
               key={plan.id}
               plan={plan}
               billing={billing}
+              currency={currency}
               current={plan.id === currentPlan}
               onSelect={handleSelect}
               loading={loading}

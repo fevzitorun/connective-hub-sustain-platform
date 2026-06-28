@@ -236,4 +236,34 @@ export const api = {
     papersPublic: () => request<unknown>('/library/papers/public'),
     recommend: (topic: string) => request<unknown>(`/library/recommend?topic=${encodeURIComponent(topic)}`),
   },
+
+  stats: {
+    global: () => request<{
+      platform: string
+      last_updated: string
+      metrics: {
+        companies_onboarded: number
+        active_users: number
+        reports_generated: number
+        carbon_prevented_tco2e: number
+        green_investment_eur: number
+        countries_active: number
+        satellite_verifications: number
+      }
+      raw: {
+        real_companies: number
+        real_users: number
+        real_reports: number
+        real_emissions_tracked: number
+      }
+    }>('/stats/global'),
+    adminCompanies: () => request<{ companies: unknown[]; total: number }>('/stats/admin/companies'),
+    adminOverview: () => request<{
+      company_count: number
+      user_count: number
+      report_count: number
+      emission_records: number
+      plan_distribution: Record<string, number>
+    }>('/stats/admin/overview'),
+  },
 }

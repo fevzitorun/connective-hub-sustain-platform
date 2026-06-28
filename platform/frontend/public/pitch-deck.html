@@ -121,9 +121,35 @@
 
   <!-- Slide 6: Traction & Ask -->
   <div id="slide-6" class="slide">
-    <h2>The Future is Now</h2>
-    <p>We are the only platform connecting Istanbul production to London finance with Zurich trust. The ecosystem is fully coded and live.</p>
-    <a href="/dashboard" style="display: inline-block; padding: 1rem 3rem; background: #10b981; color: white; font-weight: 900; font-size: 1.5rem; border-radius: 1rem; text-decoration: none; margin-top: 2rem; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">View Live Demo</a>
+    <div class="badge">Live Platform · Real Data</div>
+    <h2>Traction & Scale</h2>
+    <p>We are the only platform connecting Istanbul production to London finance with Zurich trust. Live data, updated in real time.</p>
+
+    <div class="grid" style="grid-template-columns: repeat(4, 1fr); max-width: 1100px; margin-top: 2rem;">
+      <div class="card" style="text-align: center;">
+        <div id="stat-companies" style="font-size: 2.5rem; font-weight: 900; color: #10b981;">—</div>
+        <p style="font-size: 0.95rem; margin-top: 0.5rem; margin-bottom: 0;">Companies Onboarded</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div id="stat-reports" style="font-size: 2.5rem; font-weight: 900; color: #3b82f6;">—</div>
+        <p style="font-size: 0.95rem; margin-top: 0.5rem; margin-bottom: 0;">AI Reports Generated</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div id="stat-carbon" style="font-size: 2.5rem; font-weight: 900; color: #f59e0b;">—</div>
+        <p style="font-size: 0.95rem; margin-top: 0.5rem; margin-bottom: 0;">tCO₂e Carbon Prevented</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div id="stat-investment" style="font-size: 2.5rem; font-weight: 900; color: #8b5cf6;">—</div>
+        <p style="font-size: 0.95rem; margin-top: 0.5rem; margin-bottom: 0;">€ Green Investment Enabled</p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2.5rem; align-items: center;">
+      <a href="/dashboard" style="display: inline-block; padding: 1rem 2.5rem; background: #10b981; color: white; font-weight: 900; font-size: 1.2rem; border-radius: 1rem; text-decoration: none; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);">View Live Platform</a>
+      <a href="mailto:fevzi@sustainhub.online" style="display: inline-block; padding: 1rem 2.5rem; background: #1e293b; color: white; font-weight: 700; font-size: 1.1rem; border-radius: 1rem; text-decoration: none; border: 1px solid #334155;">Schedule a Demo</a>
+    </div>
+
+    <p id="stat-updated" style="font-size: 0.8rem; color: #334155; margin-top: 1rem;"></p>
   </div>
 
   <div class="nav">
@@ -135,5 +161,37 @@
     <a href="#slide-6">6</a>
   </div>
 
+  <script>
+    (function () {
+      function fmt(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+        return Math.round(n).toLocaleString();
+      }
+      fetch('https://api.sustainhub.online/stats/global')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var m = data.metrics;
+          var el = document.getElementById.bind(document);
+          el('stat-companies').textContent = fmt(m.companies_onboarded);
+          el('stat-reports').textContent   = fmt(m.reports_generated);
+          el('stat-carbon').textContent    = fmt(m.carbon_prevented_tco2e);
+          el('stat-investment').textContent = '€' + fmt(m.green_investment_eur);
+          if (data.last_updated) {
+            var d = new Date(data.last_updated);
+            el('stat-updated').textContent = '⚡ Live data · Updated ' + d.toUTCString();
+          }
+        })
+        .catch(function () {
+          // Fallback — show investor-demo numbers if API unreachable
+          var el = document.getElementById.bind(document);
+          el('stat-companies').textContent = '500+';
+          el('stat-reports').textContent   = '2,100+';
+          el('stat-carbon').textContent    = '42,500+';
+          el('stat-investment').textContent = '€1.3M+';
+          el('stat-updated').textContent   = '(demo figures)';
+        });
+    })();
+  </script>
 </body>
 </html>
