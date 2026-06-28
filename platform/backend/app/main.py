@@ -83,6 +83,10 @@ from .routes import university, library
 app.include_router(university.router)
 app.include_router(library.router)
 
+# Sprint 16 — Magic Import
+from .routes import import_route
+app.include_router(import_route.router)
+
 
 @app.on_event("startup")
 async def startup():

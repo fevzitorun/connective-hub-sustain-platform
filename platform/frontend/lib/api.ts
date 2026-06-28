@@ -180,6 +180,46 @@ export const api = {
     list: () => request<unknown[]>('/suppliers'),
   },
 
+  import: {
+    preview: async (file: File) => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('sustain_token') : null
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch(`${API_URL}/import/preview`, {
+        method: 'POST',
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: form,
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: 'Import hatası' }))
+        throw new Error(err.detail || 'Import hatası')
+      }
+      return res.json() as Promise<{
+        filename: string
+        row_count: number
+        mapped_count: number
+        unmapped_columns: string[]
+        column_mappings: Array<{
+          original_name: string
+          mapped_field: string | null
+          confidence: number
+          sample_values: string[]
+          unit_hint: string
+        }>
+      }>
+    },
+    confirm: (body: {
+      filename: string
+      year: number
+      sector: string
+      reporting_boundary: string
+      column_mappings: Array<{ original_name: string; target_field: string | null }>
+      raw_rows: Record<string, unknown>[]
+    }) => request<{ success: boolean; record_id: string; records_processed: number; message: string }>(
+      '/import/confirm', { method: 'POST', body: JSON.stringify(body) }
+    ),
+  },
+
   university: {
     ranking: () => request<unknown>('/university/ranking'),
     calculate: (data: {

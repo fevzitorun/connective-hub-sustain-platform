@@ -1,10 +1,191 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { SECTORS, EMISSION_FACTORS, type SectorId } from '@/lib/constants'
 import type { EmissionData, CalcPreview } from '@/types'
+
+// ─── Field label map ──────────────────────────────────────────────────────────
+const FIELD_LABELS: Record<string, string> = {
+  natural_gas_m3: 'Doğalgaz (m³)', diesel_liters: 'Dizel (Litre)', lpg_kg: 'LPG (kg)',
+  coal_tons: 'Kömür (Ton)', electricity_kwh: 'Elektrik (kWh)', renewable_electricity_kwh: 'Yenilenebilir Elektrik (kWh)',
+  steam_gj: 'Buhar (GJ)', company_vehicles_km: 'Şirket Araçları (km)', business_flights_shorthaul: 'Kısa Uçuşlar',
+  business_flights_longhaul: 'Uzun Uçuşlar', employee_commute_km: 'İşe Gidiş (km)',
+  purchased_goods_spend_tl: 'Satın Alım (₺)', waste_tons: 'Atık (Ton)', water_m3: 'Su (m³)',
+  year: 'Yıl', employee_count: 'Çalışan Sayısı', sector: 'Sektör',
+}
+
+// ─── Magic Import Panel ───────────────────────────────────────────────────────
+type ImportColMapping = {
+  original_name: string; mapped_field: string | null; confidence: number
+  sample_values: string[]; unit_hint: string
+}
+type ImportPreview = {
+  filename: string; row_count: number; mapped_count: number
+  unmapped_columns: string[]; column_mappings: ImportColMapping[]
+}
+
+function MagicImportPanel({
+  year, sector, onClose, onImported,
+}: {
+  year: number; sector: string; onClose: () => void
+  onImported: (msg: string) => void
+}) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [dragging, setDragging] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [preview, setPreview] = useState<ImportPreview | null>(null)
+  const [mappings, setMappings] = useState<ImportColMapping[]>([])
+  const [confirming, setConfirming] = useState(false)
+
+  async function handleFile(file: File) {
+    setLoading(true)
+    try {
+      const result = await api.import.preview(file)
+      setPreview(result)
+      setMappings(result.column_mappings)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Dosya okunamadı')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault(); setDragging(false)
+    const f = e.dataTransfer.files[0]
+    if (f) handleFile(f)
+  }
+
+  async function handleConfirm() {
+    if (!preview) return
+    setConfirming(true)
+    try {
+      const result = await api.import.confirm({
+        filename: preview.filename,
+        year, sector,
+        reporting_boundary: 'operational_control',
+        column_mappings: mappings.map(m => ({ original_name: m.original_name, target_field: m.mapped_field })),
+        raw_rows: [],
+      })
+      onImported(result.message)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Import başarısız')
+    } finally {
+      setConfirming(false)
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border-2 p-6 space-y-5 mb-6" style={{ borderColor: '#0ea5e9', boxShadow: '0 0 0 4px #0ea5e920' }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-black text-lg" style={{ color: '#0F172A' }}>✨ Magic Import</h2>
+          <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>Excel veya CSV yükleyin — AI sütunları otomatik tanır ve eşler</p>
+        </div>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xl">✕</button>
+      </div>
+
+      {!preview ? (
+        <div
+          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          onClick={() => fileRef.current?.click()}
+          className="border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all"
+          style={{ borderColor: dragging ? '#0ea5e9' : '#cbd5e1', background: dragging ? '#f0f9ff' : '#f8fafc' }}
+        >
+          <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden"
+            onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+          {loading ? (
+            <div className="text-center">
+              <div className="text-4xl mb-3 animate-spin">⚙️</div>
+              <p className="font-semibold text-slate-600">AI sütun analizi yapılıyor…</p>
+            </div>
+          ) : (
+            <>
+              <div className="text-5xl mb-4">📊</div>
+              <p className="font-bold text-slate-700 text-lg">Excel / CSV Sürükle & Bırak</p>
+              <p className="text-sm text-slate-500 mt-2">veya tıklayarak seçin · .xlsx, .xls, .csv · Maks. 10MB</p>
+              <p className="text-xs mt-3 text-blue-500 font-semibold">AI sütun başlıklarını otomatik tanır (Doğalgaz, Electricity, Yakıt…)</p>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#f0fdf4' }}>
+            <span className="text-2xl">✅</span>
+            <div>
+              <p className="font-bold text-green-800 text-sm">{preview.filename}</p>
+              <p className="text-xs text-green-600">{preview.row_count} satır · {preview.mapped_count}/{preview.column_mappings.length} sütun eşlendi</p>
+            </div>
+            <button onClick={() => setPreview(null)} className="ml-auto text-xs text-slate-400 hover:text-slate-600">↩ Yeni Dosya</button>
+          </div>
+
+          <div className="overflow-auto rounded-xl border" style={{ borderColor: '#e2e8f0', maxHeight: 320 }}>
+            <table className="w-full text-xs">
+              <thead>
+                <tr style={{ background: '#f8fafc' }}>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-500">Excel Sütunu</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-500">Örnek Değer</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-500">Eşleme</th>
+                  <th className="px-3 py-2 text-left font-semibold text-slate-500">Güven</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y" style={{ borderColor: '#f1f5f9' }}>
+                {mappings.map((m, i) => (
+                  <tr key={i} className={m.mapped_field ? '' : 'bg-amber-50'}>
+                    <td className="px-3 py-2 font-mono font-semibold text-slate-700">{m.original_name}</td>
+                    <td className="px-3 py-2 text-slate-400">{m.sample_values[0] ?? '—'}</td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={m.mapped_field ?? ''}
+                        onChange={e => setMappings(prev => prev.map((mm, ii) => ii === i ? { ...mm, mapped_field: e.target.value || null } : mm))}
+                        className="border rounded px-2 py-1 text-xs w-full"
+                        style={{ borderColor: '#e2e8f0' }}
+                      >
+                        <option value="">— Atla —</option>
+                        {Object.entries(FIELD_LABELS).map(([k, v]) => (
+                          <option key={k} value={k}>{v}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      {m.mapped_field ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                          style={{ background: m.confidence >= 0.8 ? '#dcfce7' : '#fef9c3', color: m.confidence >= 0.8 ? '#166534' : '#854d0e' }}>
+                          {Math.round(m.confidence * 100)}%
+                        </span>
+                      ) : (
+                        <span className="text-amber-500 text-xs">Eşlenmedi</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {preview.unmapped_columns.length > 0 && (
+            <p className="text-xs text-amber-600">
+              ⚠️ {preview.unmapped_columns.length} sütun otomatik eşlenemedi — yukarıdan manuel seçin ya da atlayın.
+            </p>
+          )}
+
+          <button
+            onClick={handleConfirm}
+            disabled={confirming}
+            className="w-full py-3 rounded-xl text-sm font-black text-white transition-all disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
+          >
+            {confirming ? '⏳ İçe Aktarılıyor…' : `✨ ${mappings.filter(m => m.mapped_field).length} Sütunu İçe Aktar →`}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ─── Section header ───────────────────────────────────────────────────────────
 function SectionHeader({ icon, title, subtitle }: { icon: string; title: string; subtitle?: string }) {
@@ -205,6 +386,7 @@ export default function VeriGirisiPage() {
   const [activeTab, setActiveTab] = useState<'scope1' | 'scope2' | 'scope3' | 'sektorel'>('scope1')
   const [selectedStandard, setSelectedStandard] = useState('tsrs-v2')
   const [ocrLoading, setOcrLoading] = useState(false)
+  const [importMode, setImportMode] = useState(false)
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return
@@ -314,13 +496,31 @@ export default function VeriGirisiPage() {
             GHG Protokolü Kapsam 1, 2 ve 3 — TEİAŞ 2024 grid faktörü (0,4166 kg CO₂e/kWh)
           </p>
         </div>
-        <div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setImportMode(m => !m)}
+            className="font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 border shadow-sm transition-all hover:scale-105"
+            style={importMode
+              ? { background: '#0369a1', color: '#fff', borderColor: '#0369a1' }
+              : { background: '#f0f9ff', color: '#0369a1', borderColor: '#bae6fd' }}
+          >
+            ✨ Magic Import
+          </button>
           <label className="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 border border-blue-200 shadow-sm transition-transform hover:scale-105">
             {ocrLoading ? '⏳ Okunuyor...' : '📸 Faturadan Oku (AI)'}
             <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={ocrLoading} />
           </label>
         </div>
       </div>
+
+      {importMode && (
+        <MagicImportPanel
+          year={data.year}
+          sector={data.sector as string}
+          onClose={() => setImportMode(false)}
+          onImported={(msg) => { toast.success(msg); setImportMode(false) }}
+        />
+      )}
 
       {/* Meta row */}
       <div className="bg-white rounded-2xl p-5 border mb-5 grid grid-cols-2 md:grid-cols-4 gap-4"
