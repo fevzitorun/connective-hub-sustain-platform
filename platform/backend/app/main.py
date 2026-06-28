@@ -98,6 +98,11 @@ app.include_router(health_check.router)
 app.include_router(sroi.router)
 app.include_router(advisory.router)
 
+# Sprint 19 — TCFD Senaryo + Tedarikçi ESG Denetimi
+from .routes import tcfd, supplier_audit
+app.include_router(tcfd.router)
+app.include_router(supplier_audit.router)
+
 
 @app.on_event("startup")
 async def startup():

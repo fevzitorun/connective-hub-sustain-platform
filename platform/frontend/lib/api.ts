@@ -275,6 +275,23 @@ export const api = {
       request<{ ok: boolean }>(`/advisory/notes/${noteId}/read`, { method: 'PATCH' }),
   },
 
+  tcfd: {
+    scenarios: (data: { sector: string; annual_revenue_eur: number; total_co2e: number; goods_exported_tons?: number; eu_ets_price?: number }) =>
+      request<unknown>('/tcfd/scenarios', { method: 'POST', body: JSON.stringify(data) }),
+    demo: () => request<unknown>('/tcfd/demo', { method: 'POST' }),
+  },
+
+  supplierAudit: {
+    questions: () => request<{ questions: Array<{ id: string; category: string; question: string; weight: number; red_flag_if: string | null }> }>('/supplier-audit/questions'),
+    score: (data: { supplier_name: string; responses: Record<string, string>; notes?: string }) =>
+      request<{
+        supplier_name: string; score_pct: number; grade: string; grade_color: string
+        red_flags: Array<{ question_id: string; category: string; question: string; answer: string; severity: string }>
+        critical_flag_count: number; requires_immediate_action: boolean
+        category_breakdown: Record<string, number>; recommendation: string
+      }>('/supplier-audit/score', { method: 'POST', body: JSON.stringify(data) }),
+  },
+
   stats: {
     global: () => request<{
       platform: string

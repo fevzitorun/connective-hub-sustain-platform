@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { Globe, Bell, Zap, BookOpen, ArrowRight } from 'lucide-react'
+import { Globe, Bell, Zap, BookOpen, ArrowRight, FileText } from 'lucide-react'
 import Link from 'next/link'
 
 export default function HubPage() {
@@ -140,6 +140,64 @@ export default function HubPage() {
           </div>
         </div>
 
+      </div>
+
+      {/* Recent Policy Briefs */}
+      <div className="border-t pt-8" style={{ borderColor: '#e2e8f0' }}>
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-6" style={{ color: '#1e293b' }}>
+          <FileText size={22} className="text-purple-600" />
+          Güncel Politika Özetleri
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              category: 'Düzenleme', categoryColor: '#7c3aed', categoryBg: '#ede9fe',
+              date: '2025-06', tag: 'CSRD',
+              title: 'CSRD Geçiş Planı Yükümlülükleri Netleşti',
+              body: 'Avrupa Komisyonu, 2026 raporlamasından itibaren şirketlerin 2050 net-sıfır hedefine uyumlu birer geçiş planı yayımlamasını zorunlu kılıyor.',
+            },
+            {
+              category: 'Finans', categoryColor: '#0369a1', categoryBg: '#e0f2fe',
+              date: '2025-06', tag: 'Yeşil Tahvil',
+              title: 'ICMA Yeşil Tahvil Standartları 2025 Revizyonu',
+              body: 'ICMA, yeşil tahvil ilkelerini güncelleyerek "yeşil aklama" riskini azaltmak için bağımsız doğrulama zorunluluğunu genişletti.',
+            },
+            {
+              category: 'Tedarik Zinciri', categoryColor: '#065f46', categoryBg: '#d1fae5',
+              date: '2025-05', tag: 'EUDR',
+              title: 'EUDR Uyum Tarihleri Kesinleşti',
+              body: 'AB Ormansızlaşma Tüzüğü kapsamında büyük işletmelerin 30 Aralık 2025, KOBİ\'lerin 30 Haziran 2026 tarihine kadar due diligence sistemlerini kurması gerekiyor.',
+            },
+            {
+              category: 'İklim', categoryColor: '#b45309', categoryBg: '#fef3c7',
+              date: '2025-05', tag: 'TCFD',
+              title: 'TCFD → ISSB Geçişi: Yeni Zorunluluklar',
+              body: 'TCFD\'nin görevi ISSB\'ye devredildi. IFRS S2 (İklim Açıklamaları) 2025\'ten itibaren pek çok ülkede yasal yükümlülük haline geliyor.',
+            },
+            {
+              category: 'Karbon', categoryColor: '#c2410c', categoryBg: '#ffedd5',
+              date: '2025-04', tag: 'CBAM',
+              title: 'CBAM Geçiş Dönemi Raporlama Gereklilikleri',
+              body: '2026 sonrası CBAM tam uygulamaya geçtiğinde ihracat belgesi olmayan Türk üreticiler ton başına €130\'a kadar karbon vergisi ödeyecek.',
+            },
+            {
+              category: 'Standart', categoryColor: '#4f46e5', categoryBg: '#e0e7ff',
+              date: '2025-04', tag: 'GHG Protocol',
+              title: 'GHG Protocol Kapsam 3 Güncelleme Taslağı',
+              body: 'GHG Protocol, 15 kategoride hesaplama metodolojisini revize ediyor; finans sektörü finansal emisyonları (Kapsam 15) için yeni rehber yayımladı.',
+            },
+          ].map(b => (
+            <div key={b.title} className="rounded-xl border p-5 hover:shadow-md transition-shadow bg-white" style={{ borderColor: '#e2e8f0' }}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: b.categoryBg, color: b.categoryColor }}>{b.category}</span>
+                <span className="text-xs font-mono" style={{ color: '#94a3b8' }}>{b.date}</span>
+              </div>
+              <div className="text-xs font-bold mb-1" style={{ color: b.categoryColor }}>{b.tag}</div>
+              <h3 className="font-bold text-sm mb-2 leading-snug" style={{ color: '#1e293b' }}>{b.title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{b.body}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
