@@ -1,7 +1,157 @@
 'use client'
-import React from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Factory, Landmark, Truck, GraduationCap, ArrowRight, ShieldCheck, Globe, Zap } from 'lucide-react'
+import { API_URL } from '@/lib/constants'
+
+const SECTORS = [
+  { value: 'manufacturing', label: 'Üretim / Sanayi' },
+  { value: 'banking',       label: 'Bankacılık / Finans' },
+  { value: 'retail',        label: 'Perakende / Ticaret' },
+  { value: 'energy',        label: 'Enerji' },
+  { value: 'construction',  label: 'İnşaat / Gayrimenkul' },
+  { value: 'logistics',     label: 'Lojistik / Taşımacılık' },
+  { value: 'textile',       label: 'Tekstil / Hazır Giyim' },
+  { value: 'food',          label: 'Gıda / İçecek' },
+  { value: 'tech',          label: 'Teknoloji / Yazılım' },
+  { value: 'other',         label: 'Diğer' },
+]
+
+type HealthResult = {
+  score: number; grade: string; grade_color: string; grade_bg: string
+  percentile: number; total_tco2e: number; sector_label: string
+  vs_sector: string; quick_wins: string[]; cta: string
+}
+
+function EsgHealthWidget() {
+  const [sector, setSector] = useState('manufacturing')
+  const [employees, setEmployees] = useState('')
+  const [kwh, setKwh] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<HealthResult | null>(null)
+  const [error, setError] = useState('')
+
+  async function handleCheck() {
+    if (!employees || parseInt(employees) <= 0) { setError('Çalışan sayısını girin'); return }
+    setError(''); setLoading(true); setResult(null)
+    try {
+      const res = await fetch(`${API_URL}/health-check/estimate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sector,
+          employee_count: parseInt(employees),
+          electricity_kwh: kwh ? parseFloat(kwh) : undefined,
+        }),
+      })
+      if (!res.ok) throw new Error('Hesaplama hatası')
+      setResult(await res.json())
+    } catch {
+      setError('Şu an bağlantı kurulamadı. Lütfen tekrar deneyin.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      {!result ? (
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xl">
+          <div className="text-center mb-6">
+            <div className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 mb-3">
+              ⚡ 10 Saniyede Ücretsiz
+            </div>
+            <h3 className="text-2xl font-black text-slate-900">ESG Sağlık Kontrolü</h3>
+            <p className="text-slate-500 text-sm mt-1">3 bilgi, anında Sustain-Score</p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sektör</label>
+              <select
+                value={sector} onChange={e => setSector(e.target.value)}
+                className="mt-1 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                {SECTORS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Çalışan Sayısı</label>
+              <input
+                type="number" placeholder="örn: 500" value={employees}
+                onChange={e => setEmployees(e.target.value)}
+                className="mt-1 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Yıllık Elektrik Tüketimi (kWh) <span className="font-normal text-slate-400">— opsiyonel</span>
+              </label>
+              <input
+                type="number" placeholder="örn: 1500000 (bilinmiyorsa boş bırakın)"
+                value={kwh} onChange={e => setKwh(e.target.value)}
+                className="mt-1 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            {error && <p className="text-red-500 text-xs">{error}</p>}
+            <button
+              onClick={handleCheck} disabled={loading}
+              className="w-full py-3.5 rounded-2xl text-white font-black text-base transition-all disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 8px 24px rgba(16,185,129,0.3)' }}>
+              {loading ? 'Hesaplanıyor…' : 'Sustain-Skor\'umu Gör →'}
+            </button>
+          </div>
+          <p className="text-center text-xs text-slate-400 mt-4">Kayıt gerektirmez · Veri saklanmaz</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xl">
+          {/* Score */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full text-4xl font-black mb-3"
+              style={{ background: result.grade_bg, color: result.grade_color, border: `3px solid ${result.grade_color}` }}>
+              {result.grade}
+            </div>
+            <div className="text-3xl font-black text-slate-900">{result.score}<span className="text-lg text-slate-400">/100</span></div>
+            <p className="text-sm font-semibold mt-1" style={{ color: result.grade_color }}>
+              {result.sector_label} sektöründe üst %{100 - result.percentile}
+            </p>
+            <p className="text-xs text-slate-500 mt-1">{result.vs_sector}</p>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="rounded-xl p-3 text-center bg-slate-50">
+              <div className="text-xl font-black text-slate-800">{result.total_tco2e.toLocaleString('tr-TR')}</div>
+              <div className="text-xs text-slate-500">ton CO₂e / yıl (tahmini)</div>
+            </div>
+            <div className="rounded-xl p-3 text-center bg-slate-50">
+              <div className="text-xl font-black text-slate-800">%{result.percentile}</div>
+              <div className="text-xs text-slate-500">sektör yüzdeliği</div>
+            </div>
+          </div>
+
+          {/* Quick Wins */}
+          <div className="mb-6">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hızlı Kazanımlar</p>
+            <ul className="space-y-1.5">
+              {result.quick_wins.map(w => (
+                <li key={w} className="flex items-start gap-2 text-sm text-slate-600">
+                  <span className="text-emerald-500 font-bold mt-0.5">→</span>{w}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <Link href="/register"
+            className="block w-full py-3 rounded-2xl text-center text-white font-bold text-sm"
+            style={{ background: '#0f172a' }}>
+            Resmi Rapor + Detaylı Analiz İçin Ücretsiz Başla →
+          </Link>
+          <button onClick={() => setResult(null)} className="w-full mt-2 py-2 text-xs text-slate-400 hover:text-slate-600">
+            Yeniden hesapla
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function LandingPage() {
   return (
@@ -120,6 +270,23 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ESG Health Check */}
+      <section id="health-check" className="py-24 px-6 bg-slate-900">
+        <div className="max-w-4xl mx-auto text-center mb-12">
+          <div className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-900 text-emerald-400 mb-4 uppercase tracking-widest">
+            Rakiplerimiz e-posta bekletiyor. Biz saniyeler içinde gösteriyoruz.
+          </div>
+          <h2 className="text-4xl font-black text-white mb-4">
+            Şirketinizin ESG Skorunu<br />
+            <span className="text-emerald-400">Ücretsiz Hesaplayın</span>
+          </h2>
+          <p className="text-slate-400 max-w-xl mx-auto">
+            Sektör, çalışan sayısı ve enerji tüketiminizi girin — AI motorumuz tahmini Sustain-Score ve hızlı kazanım önerilerinizi anında üretsin.
+          </p>
+        </div>
+        <EsgHealthWidget />
       </section>
 
       {/* Trust & Proof */}

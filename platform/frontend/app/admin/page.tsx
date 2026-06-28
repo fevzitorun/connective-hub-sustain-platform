@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { api } from '@/lib/api'
 
 // ── Mock data (Sprint 18'de canlı API'ye bağlanacak) ─────────────────────────
 const COMPANIES = [
@@ -51,11 +52,45 @@ const ROLE_LABEL: Record<string, string> = {
   admin: 'Platform Admin', editor: 'YK Üyesi', auditor: 'Danışman', viewer: 'Gözlemci',
 }
 
-type Tab = 'companies' | 'sages' | 'leads'
+type Tab = 'companies' | 'sages' | 'leads' | 'advisory'
+
+const PRIORITY_STYLE: Record<string, { bg: string; text: string; label: string }> = {
+  strategic: { bg: '#fef9c3', text: '#854d0e', label: 'Stratejik' },
+  urgent:    { bg: '#fee2e2', text: '#991b1b', label: 'Acil' },
+  normal:    { bg: '#f1f5f9', text: '#475569', label: 'Normal' },
+}
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('companies')
   const [search, setSearch] = useState('')
+
+  // Advisory state
+  const [noteCompany, setNoteCompany] = useState(COMPANIES[0].id)
+  const [noteContent, setNoteContent] = useState('')
+  const [notePriority, setNotePriority] = useState('normal')
+  const [noteTitle, setNoteTitle] = useState('Managing Partner, Europe')
+  const [noteSending, setNoteSending] = useState(false)
+  const [noteSent, setNoteSent] = useState(false)
+
+  async function handleSendNote() {
+    if (!noteContent.trim()) return
+    setNoteSending(true)
+    try {
+      await api.advisory.createNote({
+        company_id: noteCompany,
+        content: noteContent,
+        priority: notePriority,
+        author_title: noteTitle,
+      })
+      setNoteSent(true)
+      setNoteContent('')
+      setTimeout(() => setNoteSent(false), 3000)
+    } catch {
+      // Note: requires auth token — demo mode shows UI only
+    } finally {
+      setNoteSending(false)
+    }
+  }
 
   const totalCO2 = COMPANIES.reduce((a, c) => a + c.co2e, 0)
   const totalReports = COMPANIES.reduce((a, c) => a + c.reports, 0)
@@ -121,6 +156,7 @@ export default function AdminPage() {
           { key: 'companies', label: '🏭 Şirket Yönetimi', count: COMPANIES.length },
           { key: 'sages', label: '👑 7 Bilge Portalı', count: SAGES.filter(s => s.status === 'active').length },
           { key: 'leads', label: '🔥 Marketplace Leads', count: hotLeads },
+          { key: 'advisory', label: '📝 Stratejik Yorumlar', count: 0 },
         ] as const).map(t => (
           <button
             key={t.key}
@@ -302,6 +338,93 @@ export default function AdminPage() {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── ADVISORY ───────────────────────────────────────────────────── */}
+      {tab === 'advisory' && (
+        <div className="grid grid-cols-2 gap-6">
+          {/* Compose */}
+          <div className="rounded-xl p-6 border space-y-4" style={{ background: '#1e293b', borderColor: '#334155' }}>
+            <h3 className="font-bold text-white">Yeni Stratejik Not</h3>
+            <p className="text-xs" style={{ color: '#64748b' }}>
+              YK notu şirketin dashboard'unda altın zarf olarak görünür.
+            </p>
+
+            <div>
+              <label className="text-xs font-bold" style={{ color: '#94a3b8' }}>Şirket</label>
+              <select value={noteCompany} onChange={e => setNoteCompany(e.target.value)}
+                className="mt-1 w-full px-3 py-2 rounded-lg text-sm"
+                style={{ background: '#0F172A', color: '#e2e8f0', border: '1px solid #334155' }}>
+                {COMPANIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold" style={{ color: '#94a3b8' }}>Ünvan (imza)</label>
+              <input value={noteTitle} onChange={e => setNoteTitle(e.target.value)}
+                className="mt-1 w-full px-3 py-2 rounded-lg text-sm"
+                style={{ background: '#0F172A', color: '#e2e8f0', border: '1px solid #334155' }} />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold" style={{ color: '#94a3b8' }}>Öncelik</label>
+              <div className="flex gap-2 mt-1">
+                {(['normal', 'strategic', 'urgent'] as const).map(p => (
+                  <button key={p} onClick={() => setNotePriority(p)}
+                    className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
+                    style={notePriority === p
+                      ? { background: PRIORITY_STYLE[p].bg, color: PRIORITY_STYLE[p].text }
+                      : { background: '#334155', color: '#64748b' }}>
+                    {PRIORITY_STYLE[p].label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold" style={{ color: '#94a3b8' }}>Not İçeriği</label>
+              <textarea rows={5} value={noteContent} onChange={e => setNoteContent(e.target.value)}
+                placeholder="Örn: Scope 3 verilerindeki %10'luk sapma, yeşil tahvil başvurunuzu olumsuz etkileyebilir. Bu ay düzeltme önceliklendirilmeli."
+                className="mt-1 w-full px-3 py-2 rounded-lg text-sm resize-none"
+                style={{ background: '#0F172A', color: '#e2e8f0', border: '1px solid #334155' }} />
+            </div>
+
+            <button onClick={handleSendNote} disabled={noteSending || !noteContent.trim()}
+              className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all"
+              style={{ background: noteSent ? '#10b981' : '#7c3aed' }}>
+              {noteSent ? '✓ Not Gönderildi' : noteSending ? 'Gönderiliyor…' : '📝 Stratejik Not Gönder'}
+            </button>
+          </div>
+
+          {/* Info panel */}
+          <div className="space-y-4">
+            <div className="rounded-xl p-5 border" style={{ background: '#1e293b', borderColor: '#334155' }}>
+              <h3 className="font-bold text-white mb-3">Nasıl Çalışır?</h3>
+              <div className="space-y-3">
+                {[
+                  { step: '1', text: 'YK üyesi (editor+ rol) bu ekrandan şirket seçer ve not yazar.' },
+                  { step: '2', text: 'Not backend\'e kaydedilir, şirket dashboard\'unda altın zarf ikonu belirir.' },
+                  { step: '3', text: 'Şirket yöneticisi zarfa tıklar, notu okur; okundu olarak işaretlenir.' },
+                  { step: '4', text: 'Acil notlar kırmızı, stratejik notlar sarı, normal notlar gri rozet taşır.' },
+                ].map(s => (
+                  <div key={s.step} className="flex gap-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                      style={{ background: '#7c3aed', color: '#fff' }}>{s.step}</div>
+                    <p className="text-sm" style={{ color: '#94a3b8' }}>{s.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl p-5 border" style={{ background: '#1e293b', borderColor: '#10b981' }}>
+              <div className="text-xs font-bold mb-2" style={{ color: '#10b981' }}>Sustaihub.com ile fark</div>
+              <p className="text-sm" style={{ color: '#94a3b8' }}>
+                Rakiplerimizde YK üyeleri platformu sadece izleyebilir. SustainHub&apos;da 7 Bilge şirketlere
+                doğrudan stratejik yönlendirme yapabilir — platform bir &quot;Danışmanlık Aracı&quot;na dönüşür.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

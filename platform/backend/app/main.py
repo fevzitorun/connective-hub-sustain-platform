@@ -91,6 +91,13 @@ app.include_router(import_route.router)
 from .routes import stats
 app.include_router(stats.router)
 
+# Sprint 18 — ESG Health Check + SROI + Advisory Notes
+from .routes import health_check, sroi, advisory
+from .models import advisory as advisory_model  # noqa: F401
+app.include_router(health_check.router)
+app.include_router(sroi.router)
+app.include_router(advisory.router)
+
 
 @app.on_event("startup")
 async def startup():

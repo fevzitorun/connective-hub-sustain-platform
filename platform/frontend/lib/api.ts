@@ -237,6 +237,44 @@ export const api = {
     recommend: (topic: string) => request<unknown>(`/library/recommend?topic=${encodeURIComponent(topic)}`),
   },
 
+  healthCheck: {
+    estimate: (data: { sector: string; employee_count: number; electricity_kwh?: number; natural_gas_m3?: number }) =>
+      request<{
+        score: number; grade: string; grade_color: string; grade_bg: string
+        percentile: number; total_tco2e: number; sector_label: string
+        vs_sector: string; quick_wins: string[]; cta: string
+      }>('/health-check/estimate', { method: 'POST', body: JSON.stringify(data) }),
+  },
+
+  sroi: {
+    catalog: () => request<{ catalog: Record<string, { label: string; unit: string; proxy_eur: number; description: string; sdg: string }> }>('/sroi/catalog'),
+    calculate: (data: { investment_eur: number; inputs: Record<string, number> }) =>
+      request<{
+        sroi_ratio: number; sroi_label: string; total_investment_eur: number
+        total_social_value_eur: number; summary: string
+        line_items: Array<{ label: string; quantity: number; unit: string; proxy_eur: number; total_value_eur: number; sdg: string }>
+        breakdown_pct: Record<string, number>; un_sdgs: string[]
+      }>('/sroi/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    demo: () => request<unknown>('/sroi/demo'),
+  },
+
+  advisory: {
+    createNote: (data: { company_id: string; content: string; priority?: string; author_title?: string }) =>
+      request<{ id: string; author_name: string; content: string; priority: string; created_at: string }>(
+        '/advisory/notes', { method: 'POST', body: JSON.stringify(data) }
+      ),
+    getCompanyNotes: (companyId: string) =>
+      request<{ notes: Array<{ id: string; author_name: string; author_title: string; content: string; priority: string; is_read: boolean; created_at: string }>; unread_count: number }>(
+        `/advisory/notes/company/${companyId}`
+      ),
+    getMyCompanyNotes: () =>
+      request<{ notes: Array<{ id: string; author_name: string; author_title: string; content: string; priority: string; is_read: boolean; created_at: string }>; unread_count: number }>(
+        '/advisory/notes/my-company'
+      ),
+    markRead: (noteId: string) =>
+      request<{ ok: boolean }>(`/advisory/notes/${noteId}/read`, { method: 'PATCH' }),
+  },
+
   stats: {
     global: () => request<{
       platform: string
