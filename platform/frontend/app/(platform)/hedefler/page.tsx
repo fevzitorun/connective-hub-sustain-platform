@@ -130,7 +130,7 @@ export default function HedeflerPage() {
                 <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} unit="k" />
                 <Tooltip
-                  formatter={(v: number, name: string) => [`${v}k ton CO₂e`, name]}
+                  formatter={(v, name) => [`${v ?? 0}k ton CO₂e`, name as string]}
                   contentStyle={{ fontSize: 12, borderRadius: 8 }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />

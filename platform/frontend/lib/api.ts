@@ -174,6 +174,12 @@ export const api = {
     demo: (sector: string) => request<unknown>(`/macc/demo/${sector}`),
   },
 
+  suppliers: {
+    invite: (data: { name: string; email: string }) =>
+      request<{ invite_link: string }>('/suppliers/invite', { method: 'POST', body: JSON.stringify(data) }),
+    list: () => request<unknown[]>('/suppliers'),
+  },
+
   university: {
     ranking: () => request<unknown>('/university/ranking'),
     calculate: (data: {

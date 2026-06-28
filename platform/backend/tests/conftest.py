@@ -1,7 +1,9 @@
 """Test fixtures — SQLite in-memory DB, no external dependencies."""
+import uuid
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.main import app
@@ -11,7 +13,13 @@ from app.services.auth import hash_password
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
-engine_test = create_async_engine(TEST_DB_URL, echo=False)
+# StaticPool ensures all sessions share the same in-memory database
+engine_test = create_async_engine(
+    TEST_DB_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+    echo=False,
+)
 TestSession = async_sessionmaker(engine_test, expire_on_commit=False)
 
 
@@ -46,9 +54,10 @@ async def client():
 
 @pytest_asyncio.fixture
 async def auth_client(client: AsyncClient, db: AsyncSession):
-    """Kayıtlı + giriş yapmış client."""
+    """Kayıtlı + giriş yapmış client. Her test için benzersiz e-posta kullanır."""
+    unique_email = f"test-{uuid.uuid4().hex[:8]}@sustainhub.ai"
     resp = await client.post("/auth/register", json={
-        "email": "test@sustainhub.ai",
+        "email": unique_email,
         "password": "Test1234!",
         "name": "Test Kullanıcı",
         "company_name": "Test Şirketi A.Ş.",
@@ -64,8 +73,9 @@ async def auth_client(client: AsyncClient, db: AsyncSession):
 @pytest_asyncio.fixture
 async def admin_client(client: AsyncClient, db: AsyncSession):
     """Admin rolüyle kayıtlı client."""
+    unique_email = f"admin-{uuid.uuid4().hex[:8]}@sustainhub.ai"
     resp = await client.post("/auth/register", json={
-        "email": "admin@sustainhub.ai",
+        "email": unique_email,
         "password": "Admin1234!",
         "name": "Admin Kullanıcı",
         "company_name": "Admin Şirketi A.Ş.",
@@ -77,7 +87,8 @@ async def admin_client(client: AsyncClient, db: AsyncSession):
 
     # Rolü admin yap
     user_id = resp.json()["user"]["id"]
-    result = await db.execute(__import__("sqlalchemy", fromlist=["select"]).select(User).where(User.id == user_id))
+    from sqlalchemy import select
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one()
     user.role = "admin"
     await db.commit()

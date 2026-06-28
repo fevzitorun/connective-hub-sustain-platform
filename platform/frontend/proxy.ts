@@ -10,7 +10,7 @@ function detectLocale(request: NextRequest): Locale {
   return acceptLanguage.toLowerCase().includes('tr') ? 'tr' : 'en'
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Skip Next.js internals, static assets, API routes

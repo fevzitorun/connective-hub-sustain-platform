@@ -20,7 +20,7 @@ export default function SuppliersPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await api.post('/suppliers/invite', { name: inviteName, email: inviteEmail })
+      const res = await api.suppliers.invite({ name: inviteName, email: inviteEmail })
       setGeneratedLink(res.invite_link)
     } catch (err) {
       console.error(err)

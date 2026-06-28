@@ -146,7 +146,7 @@ export default function BenchmarkPage() {
                   iconType="circle"
                 />
                 <Tooltip
-                  formatter={(value: number) => [`${value}/100`, '']}
+                  formatter={(value) => [`${value ?? 0}/100`, '']}
                   contentStyle={{ fontSize: 12, borderRadius: 8 }}
                 />
               </RadarChart>

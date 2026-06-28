@@ -68,6 +68,13 @@ export interface EmissionData {
   renewable_capacity_mw?: number
   renewable_ratio?: number
 
+  // Onboarding simplified fields
+  scope1_direct?: number
+  scope2_location?: number
+  scope3_total?: number
+  renewable_energy_pct?: number
+  reporting_year?: number
+
   // Hesaplanan (backend'den gelir)
   scope1_co2e?: number
   scope2_location_co2e?: number
@@ -101,6 +108,8 @@ export interface Report {
   pdf_url?: string
   word_url?: string
   assurance_firm?: string
+  version_number?: number
+  emission_id?: string
   created_at: string
   published_at?: string
 }

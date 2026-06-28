@@ -1,5 +1,5 @@
 import React from 'react'
-import { CheckCircle, Globe, Leaf, Download, QrCode, ArrowUpRight } from 'lucide-react'
+import { CheckCircle, Globe, Leaf, Download, QrCode, ArrowUpRight, ShieldAlert } from 'lucide-react'
 import Link from 'next/link'
 
 // Mock Data Fetching for Public Profile
