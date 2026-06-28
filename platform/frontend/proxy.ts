@@ -51,14 +51,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Root path with Turkish browser → redirect to /tr
+  // Root (landing page) is always public — no auth required
   if (pathname === '/') {
-    const locale = detectLocale(request)
-    if (locale === 'tr') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/tr'
-      return NextResponse.redirect(url)
-    }
+    return NextResponse.next()
   }
 
   return NextResponse.next()
