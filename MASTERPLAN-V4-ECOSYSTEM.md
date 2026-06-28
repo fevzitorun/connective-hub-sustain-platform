@@ -667,20 +667,59 @@ PHASE 1 — BEACHHEAD (Now → Q4 2026) — €1.5M Seed
                          Atlas/İTÜ/Sabancı kampüs KPI paneli
    academy/page.tsx:     Sanal ESG Simülatörü (GES slider, EV filo slider)
                          "SustainHub Onaylı ESG Analisti" sertifika akışı
-                         Blockchain tabanlı sertifika (What-if tamamlandığında)
    hub/page.tsx:         Intelligence Hub — canlı politika uyarıları (CBAM, TSRS)
                          İklim teknoloji haberleri, metodoloji kütüphanesi
    ranking_engine.py:    UI GreenMetric (10.000 puan, 6 kategori, gap analizi)
                          THE Impact Rankings (SDG 13 + SDG 17 skoru)
    library_service.py:   Akademik makale bankası (İTÜ, Sabancı, Atlas)
                          Simülasyon bağlamına göre makale öneri motoru
+   routes/university.py: /university/ranking · /university/calculate · /university/demo
+   routes/library.py:    /library/papers · /library/recommend · /library/papers/public
    /p/[slug]/page.tsx:   Halka açık ESG profili (/p/itu, /p/atlas, /p/akbank)
+   api.ts:               university + library endpoint helper'ları eklendi
 
-   ── EKSİK / SONRAKİ ADIM ──
-   [ ] routes/university.py  → ranking_engine API endpoint'i
-   [ ] routes/library.py     → makale arama + öneri endpoint'i
-   [ ] api.ts: university + library çağrıları
-   [ ] university/page.tsx canlı API'ye bağlanacak (şu an statik demo)
+✅ DONE — Sprint 16 (Jun 2026) — ANTIGRAVITY-DIRECTIVE-018
+   Magic Import (AI Sütun Eşleme):
+     import_engine.py:   17 emisyon alanı için heuristik örüntü eşleme
+                         XLSX/CSV parse (openpyxl), güven skoru (0.0–1.0)
+                         Eşleme onay + kayıt motoru (apply_mapping)
+     routes/import_route.py: POST /import/preview · POST /import/confirm
+     veri-girisi/page.tsx:   "✨ Magic Import" butonu + sürükle-bırak panel
+                              Sütun eşleme tablosu, düzenlenebilir select'ler
+   EUDR Uydu Orman Analizi:
+     eudr/page.tsx:       NDVI sütunu (0.0–1.0 orman örtüsü skoru)
+                          NdviBar bileşeni (yeşil/amber/kırmızı renk kodlama)
+                          CertificateModal: EUDR uyum sertifikası / uyumsuzluk raporu
+                          "🛰️ NDVI Modu" toggle + tedarikçi başına sertifika butonu
+   Boardroom Mode (YK Sunum Modu):
+     dashboard/page.tsx:  "👔 YK Sunum Moduna Geç" toggle
+                          Boardroom: 4 büyük metrik kartı (A+, €2.4M, 3.2 yıl, 2047)
+                          YK tavsiye paneli; normal: mevcut KpiGrid/grafikler
+
+✅ DONE — Sprint 17 (Jun 2026) — ANTIGRAVITY-DIRECTIVE-019
+   Admin Cockpit (/admin):
+     admin/layout.tsx:    Dark mode admin nav (SustainHub + ADMIN rozeti)
+     admin/page.tsx:      5 KPI şeridi (şirket, emisyon, rapor, ihracatçı, lead)
+                          Tab 1 — Şirket Yönetimi: tablo (plan, skor, CBAM/EUDR, CO₂e)
+                          Tab 2 — 7 Bilge Portalı: YK üye kartları, durum rozeti, davet
+                          Tab 3 — Marketplace Leads: simülasyon aktivite akışı, "Sıcak Lead"
+   AI Pitch Deck Sync:
+     routes/stats.py:     GET /stats/global (public) — platform metrikleri + demo multiplier
+                          GET /stats/admin/companies (admin) — tüm şirket listesi
+                          GET /stats/admin/overview (admin) — plan dağılımı
+     pitch-deck.html:     Slide 6 canlı stat kartları (şirket/rapor/karbon/yatırım)
+                          /stats/global'den fetch → DOM güncelleme; API yoksa fallback
+   Multi-Currency Stripe:
+     abonelik/page.tsx:   ₺/€/£/$ para birimi seçici
+                          navigator.language ile otomatik algılama (TR→₺, GB→£, EU→€)
+                          Fiyatlar USD'den anlık dönüştürülüyor
+   Hotfix — 404 Düzeltmeleri:
+     proxy.ts:            / (ana sayfa) auth gerekmeden public — frictionless giriş
+                          /tr → /tr yönlendirmesi kaldırıldı (404 engellendi)
+     app/tr/page.tsx:     /tr → /tr/dashboard server-side redirect
+
+   api.ts:                api.stats.global / adminCompanies / adminOverview eklendi
+   main.py:               stats router kaydedildi
 
 TARGET END PHASE 1 — GÜNCELLEME (Q3 2026):
    30 paid customer · ₺6M ARR Turkey · sustainhub.online live
