@@ -78,6 +78,11 @@ app.include_router(chat.router)
 from .routes import finance_api
 app.include_router(finance_api.router)
 
+# University Gateway routes
+from .routes import university, library
+app.include_router(university.router)
+app.include_router(library.router)
+
 
 @app.on_event("startup")
 async def startup():

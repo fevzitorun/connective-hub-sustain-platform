@@ -173,4 +173,21 @@ export const api = {
     }) => request<unknown>('/macc/calculate', { method: 'POST', body: JSON.stringify(data) }),
     demo: (sector: string) => request<unknown>(`/macc/demo/${sector}`),
   },
+
+  university: {
+    ranking: () => request<unknown>('/university/ranking'),
+    calculate: (data: {
+      ev_fleet_percentage: number
+      renewable_energy_percentage: number
+      recycling_rate?: number
+      water_recycling_pct?: number
+    }) => request<unknown>('/university/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    demo: () => request<unknown>('/university/demo'),
+  },
+
+  library: {
+    papers: () => request<unknown>('/library/papers'),
+    papersPublic: () => request<unknown>('/library/papers/public'),
+    recommend: (topic: string) => request<unknown>(`/library/recommend?topic=${encodeURIComponent(topic)}`),
+  },
 }

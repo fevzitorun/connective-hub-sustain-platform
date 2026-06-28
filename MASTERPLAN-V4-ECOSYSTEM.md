@@ -634,23 +634,59 @@ PHASE 1 — BEACHHEAD (Now → Q4 2026) — €1.5M Seed
 ✅ DONE — Sprint 1 (May 2026)
    CarbonSense MVP: auth, data entry, Scope 1/2/3, AI report (TSRS)
 
-→ Sprint 2 (Jul–Sep 2026)
-   CarbonSense: OCR invoices, audit trail, KSRU access, materiality
-   Earth Intelligence: AFAD + NDVI basic (satellite MVP)
-   Bank Finance: GAR dashboard MVP
-   Brand: sustain.ai domain + full rebrand
+✅ DONE — Sprint 2–3 (Jun 2026)
+   RBAC (admin/editor/data_entry/auditor/viewer), draft versioning
+   Bulk upload (CSV/XLSX), validation engine, approval workflow
+   Audit trail (TSRS 1 Md.9, CSV export), benchmark service (8 sektör)
+   CBAM beyan modülü, EUDR tedarik zinciri riski
+   Brand: SustainHub.online rebrand, sidebar v2, 6 yeni sayfa
 
-→ Sprint 3 (Oct–Dec 2026)
-   CarbonSense: PCF module (ISO 14067), PPTX output, infographics
-   ESG Public Page: company.sustain.ai
-   Research Institute: first Turkey Sustainability Index published
-   Supplier Scope 3 portal
-   COP31 Turkey: PR push, Sustain Summit event
+✅ DONE — Sprint 4–5 (Jun 2026)
+   Word export (python-docx), Stripe abonelik (Free/Pro/Enterprise)
+   Onboarding wizard (3 adım), rate limiting middleware
+   Benchmark RadarChart (recharts, 3 seri: şirket/sektör/best-in-class)
+   SBTi Target Engine (1.5°C yol haritası, 2030/2050 gap analizi)
+   ESG Credit Scoring (AAA→D, yeşil tahvil uygunluğu, 5 bileşen)
+   NASA EARTHDATA Power API entegrasyonu (gerçek iklim verisi)
+   AFAD deprem bölgeleri + DSİ sel riski (fiziksel risk skoru)
+   CSRD Çift Önemlilik Matrisi (ESRS E1-E5, S1-S4, G1)
+   GAR Portal (BankGradeCard, recharts BarChart, AB Taksonomisi)
+   CI/CD: GitHub Actions (pytest + next build + Vercel staging)
 
-TARGET END PHASE 1:
-   30 paid customers · ₺6M ARR Turkey · sustain.ai live
-   Research Institute: first index + 50 publications
-   Earth Intelligence: basic physical risk for all customers
+✅ DONE — Sprint 15 / Global Launch (Jun 2026) — SustainHub-OS v1.0
+   MACC Servisi (11 önlem, sektör filtreli, maliyet-etkinlik sıralamalı)
+   i18n Middleware (/en default, /tr rotaları, Accept-Language tespiti)
+   Vercel deployment config (nextjs framework, güvenlik headers)
+   Branding: sustainhub.ai → sustainhub.online (tüm servisler)
+   require_role bug fix (5 route düzeltildi, CI stabilitesi)
+   CI: alembic → create_all, tsc → next build (next-env.d.ts sorunu çözüldü)
+
+   ── ÜNİVERSİTE GATEWAY MODÜLÜ (Academic-Industrial Nexus) ──
+   university/page.tsx:  THE Impact + UI GreenMetric canlı sıralama tahmincisi
+                         Gap analizi (ulaşım +450 puan, enerji +600 puan)
+                         Atlas/İTÜ/Sabancı kampüs KPI paneli
+   academy/page.tsx:     Sanal ESG Simülatörü (GES slider, EV filo slider)
+                         "SustainHub Onaylı ESG Analisti" sertifika akışı
+                         Blockchain tabanlı sertifika (What-if tamamlandığında)
+   hub/page.tsx:         Intelligence Hub — canlı politika uyarıları (CBAM, TSRS)
+                         İklim teknoloji haberleri, metodoloji kütüphanesi
+   ranking_engine.py:    UI GreenMetric (10.000 puan, 6 kategori, gap analizi)
+                         THE Impact Rankings (SDG 13 + SDG 17 skoru)
+   library_service.py:   Akademik makale bankası (İTÜ, Sabancı, Atlas)
+                         Simülasyon bağlamına göre makale öneri motoru
+   /p/[slug]/page.tsx:   Halka açık ESG profili (/p/itu, /p/atlas, /p/akbank)
+
+   ── EKSİK / SONRAKİ ADIM ──
+   [ ] routes/university.py  → ranking_engine API endpoint'i
+   [ ] routes/library.py     → makale arama + öneri endpoint'i
+   [ ] api.ts: university + library çağrıları
+   [ ] university/page.tsx canlı API'ye bağlanacak (şu an statik demo)
+
+TARGET END PHASE 1 — GÜNCELLEME (Q3 2026):
+   30 paid customer · ₺6M ARR Turkey · sustainhub.online live
+   Üniversite pilot: Atlas, İTÜ, Sabancı (3 kampüs)
+   Research Institute: ilk Turkey Sustainability Index yayını
+   Earth Intelligence: tüm müşteriler için fiziksel risk aktif
 
 PHASE 2 — EXPANSION (Q1 2027 → Q4 2027) — $8–12M Series A
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
