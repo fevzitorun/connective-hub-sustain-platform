@@ -401,6 +401,15 @@ export const api = {
     categories: () => request<{ categories: unknown[] }>('/api/scope3/categories'),
   },
 
+  reportBuilder: {
+    demo: () => request<unknown>('/api/report-builder/demo'),
+    build: (data: { company_name: string; report_year: number; frameworks: string[]; extra_sections?: string[]; language?: string }) =>
+      request<unknown>('/api/report-builder/build', { method: 'POST', body: JSON.stringify(data) }),
+    frameworks: () => request<unknown[]>('/api/report-builder/frameworks'),
+    templates: () => request<unknown[]>('/api/report-builder/templates'),
+    sections: () => request<unknown[]>('/api/report-builder/sections'),
+  },
+
   tsrs: {
     demo: () => request<unknown>('/api/tsrs/demo'),
     assess: (data: {

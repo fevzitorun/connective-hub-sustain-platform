@@ -144,6 +144,10 @@ app.include_router(issb.router)
 from .routes import tsrs
 app.include_router(tsrs.router)
 
+# Sprint 39 — Report Builder
+from .routes import report_builder
+app.include_router(report_builder.router)
+
 
 @app.on_event("startup")
 async def startup():
