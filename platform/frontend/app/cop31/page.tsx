@@ -117,12 +117,13 @@ export default function COP31Page() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {DEADLINES.map(d => {
-            const colors = {
+            const COLOR_MAP = {
               urgent: { bg: 'rgba(220,38,38,0.08)', border: 'rgba(220,38,38,0.25)', tag: '#ef4444', dot: '#ef4444' },
               soon:   { bg: 'rgba(217,119,6,0.08)', border: 'rgba(217,119,6,0.25)', tag: '#f59e0b', dot: '#f59e0b' },
               cop31:  { bg: 'rgba(5,150,105,0.1)',  border: 'rgba(5,150,105,0.3)',  tag: '#34d399', dot: '#34d399' },
               uk:     { bg: 'rgba(29,78,216,0.08)', border: 'rgba(29,78,216,0.25)', tag: '#60a5fa', dot: '#60a5fa' },
-            }[d.status]
+            } as const
+            const colors = COLOR_MAP[d.status as keyof typeof COLOR_MAP] ?? COLOR_MAP.soon
             return (
               <div key={d.label} className="rounded-xl p-4 border"
                 style={{ background: colors.bg, borderColor: colors.border }}>

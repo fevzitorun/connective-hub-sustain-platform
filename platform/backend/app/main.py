@@ -6,9 +6,10 @@ from .models import audit as audit_model  # noqa: F401
 from .models import report_template as template_model  # noqa: F401
 from .routes import auth, emissions, reports, dashboard, templates
 from .routes import drafts, bulk_upload, validation, users
-from .routes import benchmarks, audit, cbam, eudr
+from .routes import benchmarks, audit, cbam, eudr, iso14064, verification
 from .routes import payments
 from .routes import satellite, materiality, credit_score, scores, suppliers, integration
+from .routes import sector
 from .middleware.rate_limit import RateLimitMiddleware
 
 app = FastAPI(
@@ -50,6 +51,9 @@ app.include_router(audit.router)
 app.include_router(cbam.router)
 app.include_router(eudr.router)
 app.include_router(templates.router)
+app.include_router(iso14064.router)
+app.include_router(sector.router)
+app.include_router(verification.router)
 
 # Sprint 4 routes
 app.include_router(payments.router)

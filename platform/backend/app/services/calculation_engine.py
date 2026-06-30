@@ -12,28 +12,42 @@ EMISSION_FACTORS: dict[str, float] = {
     "electricity_TR_grid_2023": 0.4489,
     "electricity_TR_grid_2022": 0.4816,
     "electricity_UK_grid_2024": 0.2117,   # UK DESNZ 2024
+    
+    # ETKB 2022
+    "electricity_TR_grid_2022_ETKB": 0.435,
 
     # Yakıtlar (GHG Protocol)
     "natural_gas":    2.0404,  # kg CO₂e/m³
+    "natural_gas_IPCC2006": 1.936,
+    
     "diesel":         2.6762,  # kg CO₂e/litre
+    "diesel_DEFRA2022": 2.68787,
+    
     "lpg":            1.6318,  # kg CO₂e/kg
+    "lpg_DEFRA2022":  1.55709,
+    
     "coal_bituminous": 2.4248, # kg CO₂e/kg
-    "coal_lignite":   1.1000,
+    "coal_IPCC2006":   2.27,
 
     # Kara taşımacılığı (DEFRA 2024)
     "car_petrol":     0.17049, # kg CO₂e/km
     "car_diesel":     0.16394,
     "company_vehicle_avg": 0.16800,
+    "company_vehicle_avg_DEFRA2022": 0.170,
 
     # Hava yolculuğu (DEFRA 2024)
     "flight_shorthaul": 0.15530,  # kg CO₂e/kişi-km
     "flight_longhaul":  0.19085,
+    "flight_shorthaul_DEFRA2022": 0.153,
 
     # Atık (DEFRA 2024)
     "waste_landfill": 0.5858,  # kg CO₂e/kg
     "waste_recycled": 0.0213,
+    "waste_landfill_DEFRA2022": 0.573,
+    
+    # Kaçak emisyon
+    "fugitive_refrigerant_IPCC": 1430.0, # R134a default
 }
-
 SECTOR_BENCHMARKS: dict[str, float] = {
     "banking":      2.4,   # tCO₂e/çalışan
     "cement":     320.0,
@@ -60,6 +74,11 @@ class EmissionInput:
     lpg_kg: Optional[float] = None
     coal_tons: Optional[float] = None
     company_vehicles_km: Optional[float] = None
+    fugitive_emissions_kg: Optional[float] = None
+    calculation_standard: str = "ghg_protocol"
+    
+    # Sektörel Aktivite (Ton ürün, m2 konaklama, öğrenci sayısı vs.)
+    sector_activity_value: Optional[float] = None
 
     # Kapsam 2
     electricity_kwh: float = 0.0
@@ -85,8 +104,12 @@ class EmissionResult:
     scope2_market_co2e: float
     scope3_co2e: float
     total_co2e: float
+    sectoral_estimated_co2e: Optional[float] = None
     breakdown: dict[str, float] = field(default_factory=dict)
     methodology_notes: list[str] = field(default_factory=list)
+
+from .sector_factors import get_sector_factor
+
 
 
 def _factor(year: int, source: str) -> float:
@@ -185,6 +208,83 @@ def calculate_emissions(data: EmissionInput) -> EmissionResult:
         breakdown=breakdown,
         methodology_notes=notes,
     )
+
+def calculate_iso14064(data: EmissionInput) -> EmissionResult:
+    """
+    ISO 14064-1 standardına göre hesaplama (IPCC 2006, DEFRA 2022, ETKB 2022).
+    """
+    breakdown: dict[str, float] = {}
+    
+    # 1. Doğrudan Emisyonlar (Kapsam 1)
+    s1_breakdown = {}
+    if data.natural_gas_m3:
+        s1_breakdown["Doğalgaz"] = round(data.natural_gas_m3 * EMISSION_FACTORS["natural_gas_IPCC2006"] / 1000, 3)
+    if data.diesel_liters:
+        s1_breakdown["Dizel"] = round(data.diesel_liters * EMISSION_FACTORS["diesel_DEFRA2022"] / 1000, 3)
+    if data.lpg_kg:
+        s1_breakdown["LPG"] = round(data.lpg_kg * EMISSION_FACTORS["lpg_DEFRA2022"] / 1000, 3)
+    if data.coal_tons:
+        s1_breakdown["Kömür"] = round(data.coal_tons * EMISSION_FACTORS["coal_IPCC2006"], 3)
+    if data.company_vehicles_km:
+        s1_breakdown["Şirket araçları"] = round(data.company_vehicles_km * EMISSION_FACTORS["company_vehicle_avg_DEFRA2022"] / 1000, 3)
+    if data.fugitive_emissions_kg:
+        s1_breakdown["Kaçak Emisyonlar"] = round(data.fugitive_emissions_kg * EMISSION_FACTORS["fugitive_refrigerant_IPCC"] / 1000, 3)
+        
+    scope1 = sum(s1_breakdown.values())
+    
+    # 2. Enerji Dolaylı Emisyonlar (Kapsam 2)
+    s2_breakdown = {}
+    # Use ETKB 2022 for grid electricity by default in ISO 14064 mode for TR
+    grid_factor = EMISSION_FACTORS["electricity_TR_grid_2022_ETKB"]
+    scope2_loc = round(data.electricity_kwh * grid_factor / 1000, 3)
+    s2_breakdown["Satın Alınan Elektrik"] = scope2_loc
+    
+    scope2_mkt = 0.0 if data.electricity_source == "renewable_certificate" else scope2_loc
+
+    # 3. Diğer Dolaylı Emisyonlar (Kapsam 3)
+    s3_breakdown = {}
+    if data.business_travel_flight_km:
+        s3_breakdown["İş seyahati (uçuş)"] = round(data.business_travel_flight_km * EMISSION_FACTORS["flight_shorthaul_DEFRA2022"] / 1000, 3)
+    if data.employee_commute_km:
+        s3_breakdown["Çalışan ulaşımı"] = round(data.employee_commute_km * EMISSION_FACTORS["car_petrol"] / 1000, 3)
+    if data.waste_tons:
+        s3_breakdown["Atık"] = round(data.waste_tons * EMISSION_FACTORS["waste_landfill_DEFRA2022"], 3)
+    if data.financed_emissions_co2e:
+        s3_breakdown["Finanse edilmiş emisyonlar (PCAF)"] = round(data.financed_emissions_co2e, 3)
+
+    scope3 = sum(s3_breakdown.values())
+    
+    total = round(scope1 + scope2_loc + scope3, 3)
+    
+    # Sektörel tahmin hesaplaması (eğer aktivite verisi girildiyse)
+    sector_est = None
+    if data.sector and data.sector_activity_value:
+        sf = get_sector_factor(data.sector)
+        if sf:
+            sector_est = round(data.sector_activity_value * sf["factor"], 3)
+    
+    breakdown = {
+        "1. Doğrudan Emisyonlar (Kapsam 1)": {**s1_breakdown, "_toplam": scope1},
+        "2. Enerji Dolaylı Emisyonlar (Kapsam 2)": {**s2_breakdown, "_toplam": scope2_loc},
+        "3. Diğer Dolaylı Emisyonlar (Kapsam 3)": {**s3_breakdown, "_toplam": scope3},
+    }
+    
+    notes = [
+        "ISO 14064-1 Kurumsal Karbon Ayak İzi Standardı",
+        "IPCC 2006, DEFRA 2022, ETKB 2022 çarpanları kullanıldı"
+    ]
+    
+    return EmissionResult(
+        scope1_co2e=scope1,
+        scope2_location_co2e=scope2_loc,
+        scope2_market_co2e=scope2_mkt,
+        scope3_co2e=scope3,
+        total_co2e=total,
+        sectoral_estimated_co2e=sector_est,
+        breakdown=breakdown,
+        methodology_notes=notes,
+    )
+
 
 
 # ─── TSRS uyumluluk skoru ─────────────────────────────────────────────────────

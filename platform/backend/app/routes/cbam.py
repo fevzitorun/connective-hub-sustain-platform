@@ -132,3 +132,20 @@ async def list_declarations(current_user=Depends(get_current_user)):
     """Şirkete ait CBAM beyanları (Phase 4'te DB'den çekilecek)."""
     require_role("auditor")(current_user)
     return {"declarations": [], "message": "DB entegrasyonu Phase 4'te eklenecek."}
+
+from ..database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..services.cbam_engine import import_from_iso14064
+
+@router.get("/import-preview/{year}")
+async def preview_iso14064_import(
+    year: int,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """ISO 14064 verilerinden CBAM için önizleme getirir."""
+    data = await import_from_iso14064(db, str(current_user.company_id), year)
+    if not data:
+        raise HTTPException(status_code=404, detail="ISO 14064 verisi bulunamadı")
+    return data
+

@@ -103,4 +103,6 @@ async def estimate_score(data: HealthCheckRequest):
         "vs_sector": f"Sektör ortalamasının {'%' + str(round(abs(1 - ratio) * 100)) + ' altında' if ratio < 1 else '%' + str(round((ratio - 1) * 100)) + ' üzerinde'}",
         "quick_wins": QUICK_WINS.get(grade_label, QUICK_WINS["B"]),
         "cta": "Detaylı analiz ve resmi GRI/TSRS raporu için ücretsiz deneme başlatın.",
+        "estimated_electricity_kwh": electricity_kwh,
+        "estimated_natural_gas_m3": gas_m3,
     }

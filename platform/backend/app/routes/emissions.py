@@ -245,3 +245,47 @@ async def list_emissions(
         }
         for r in records
     ]
+
+class Scope3DataIn(BaseModel):
+    year: int
+    breakdown: dict
+    activity_metric: Optional[dict] = None
+
+@router.post("/scope3", status_code=201)
+async def save_scope3(
+    body: Scope3DataIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if not current_user.company_id:
+        raise HTTPException(400, "Şirket bilgisi bulunamadı")
+        
+    result = await db.execute(
+        select(EmissionRecord).where(
+            EmissionRecord.company_id == current_user.company_id,
+            EmissionRecord.year == body.year
+        )
+    )
+    record = result.scalar_one_or_none()
+    
+    # Kapsam 3 toplamını breakdown değerlerinin toplamı olarak hesapla
+    total_scope3 = sum(float(val) for val in body.breakdown.values() if isinstance(val, (int, float)))
+    
+    if not record:
+        record = EmissionRecord(
+            company_id=current_user.company_id,
+            year=body.year,
+            scope3_breakdown=body.breakdown,
+            scope3_co2e=total_scope3,
+            activity_metric=body.activity_metric
+        )
+        db.add(record)
+    else:
+        record.scope3_breakdown = body.breakdown
+        record.scope3_co2e = total_scope3
+        if body.activity_metric is not None:
+            record.activity_metric = body.activity_metric
+            
+    await db.commit()
+    return {"success": True, "year": body.year, "scope3_co2e": total_scope3}
+

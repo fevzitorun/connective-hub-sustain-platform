@@ -387,6 +387,17 @@ export default function VeriGirisiPage() {
   const [selectedStandard, setSelectedStandard] = useState('tsrs-v2')
   const [ocrLoading, setOcrLoading] = useState(false)
   const [importMode, setImportMode] = useState(false)
+  
+  // Scope 3 15 Kategorili Detay State
+  const [scope3Breakdown, setScope3Breakdown] = useState<Record<string, number>>({})
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null)
+  
+  const toggleAccordion = (cat: string) => setOpenAccordion(openAccordion === cat ? null : cat)
+
+  const handleScope3Change = (cat: string, val: string) => {
+    const num = parseFloat(val) || 0
+    setScope3Breakdown(prev => ({ ...prev, [cat]: num }))
+  }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return
@@ -436,6 +447,25 @@ export default function VeriGirisiPage() {
     setData(prev => ({ ...prev, [key]: val }))
   }, [])
 
+  const handleHealthCheckImport = async () => {
+    try {
+      const result = await api.healthCheck.estimate({
+        sector: data.sector as string,
+        employee_count: data.employee_count || 100
+      })
+      
+      setData(prev => ({
+        ...prev,
+        electricity_kwh: result.estimated_electricity_kwh ?? prev.electricity_kwh,
+        natural_gas_m3: result.estimated_natural_gas_m3 ?? prev.natural_gas_m3,
+      }))
+      
+      toast.success('Health Check tahmini Kapsam 1/2 verileri dolduruldu.')
+    } catch (e) {
+      toast.error('Health Check verisi alınamadı.')
+    }
+  }
+
   // Recalculate preview on every data change
   useEffect(() => {
     const total =
@@ -454,6 +484,15 @@ export default function VeriGirisiPage() {
     setSaving(true)
     try {
       const saved = await api.emissions.save(data)
+      
+      // Save scope 3 details
+      if (Object.keys(scope3Breakdown).length > 0) {
+        await api.emissions.saveScope3({
+          year: data.year,
+          breakdown: scope3Breakdown
+        })
+      }
+      
       toast.success('Veriler kaydedildi')
       const standardCode = selectedStandard.split('-')[0]
       const report = await api.reports.generate({ emission_id: saved.id, standard: standardCode })
@@ -497,6 +536,13 @@ export default function VeriGirisiPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={handleHealthCheckImport}
+            className="font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 border shadow-sm transition-all hover:scale-105"
+            style={{ background: '#dcfce7', color: '#166534', borderColor: '#bbf7d0' }}
+          >
+            🩺 Sağlık Taramasından Aktar
+          </button>
           <button
             onClick={() => setImportMode(m => !m)}
             className="font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 border shadow-sm transition-all hover:scale-105"
@@ -625,25 +671,51 @@ export default function VeriGirisiPage() {
               </div>
             )}
 
-            {/* KAPSAM 3 */}
+            {/* KAPSAM 3 - 15 KATEGORİ (AKORDİYON) */}
             {activeTab === 'scope3' && (
               <div className="space-y-4">
-                <SectionHeader icon="🔗" title="Kapsam 3 — Değer Zinciri Emisyonları"
-                  subtitle="DEFRA 2024 emisyon faktörleri" />
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="İş Uçuşları (Kısa Mesafe)" unit="km/yıl"
-                    value={data.business_flights_shorthaul ?? 0}
-                    onChange={v => set('business_flights_shorthaul', v)}
-                    hint={`0,1553 kg CO₂e/km · = ${((data.business_flights_shorthaul ?? 0) * EMISSION_FACTORS.flight_shorthaul).toFixed(1)} ton`} />
-                  <Field label="İş Uçuşları (Uzun Mesafe)" unit="km/yıl"
-                    value={data.business_flights_longhaul ?? 0}
-                    onChange={v => set('business_flights_longhaul', v)}
-                    hint={`0,1909 kg CO₂e/km · = ${((data.business_flights_longhaul ?? 0) * EMISSION_FACTORS.flight_longhaul).toFixed(1)} ton`} />
-                  <Field label="Çalışan İşe Gidiş-Geliş" unit="km/yıl"
-                    value={data.employee_commute_km ?? 0} onChange={v => set('employee_commute_km', v)}
-                    hint="Tüm çalışanların yıllık toplam km'si" />
-                  <Field label="Atık (Düzenli Depolama)" unit="ton/yıl"
-                    value={data.waste_tons ?? 0} onChange={v => set('waste_tons', v)} />
+                <SectionHeader icon="🔗" title="Kapsam 3 — 15 Kategori Detaylandırma"
+                  subtitle="ISO 14064-1 standardına göre değer zinciri kategorileri" />
+                
+                <div className="space-y-2">
+                  {[
+                    { id: 'cat1', title: '1. Satın Alınan Malzemeler ve Hizmetler' },
+                    { id: 'cat2', title: '2. Sermaye Malları' },
+                    { id: 'cat3', title: '3. Yakıt ve Enerji Faaliyetleri (Kapsam 1/2 hariç)' },
+                    { id: 'cat4', title: '4. Yukarı Yönlü Taşıma ve Dağıtım (Lojistik)' },
+                    { id: 'cat5', title: '5. Operasyonlarda Üretilen Atıklar' },
+                    { id: 'cat6', title: '6. İş Seyahatleri' },
+                    { id: 'cat7', title: '7. Çalışanların İşe Gidiş-Gelişleri' },
+                    { id: 'cat8', title: '8. Yukarı Yönlü Kiralanan Varlıklar' },
+                    { id: 'cat9', title: '9. Satılan Ürünlerin Nakliyesi (Aşağı Yönlü Lojistik)' },
+                    { id: 'cat10', title: '10. Satılan Ürünlerin İşlenmesi' },
+                    { id: 'cat11', title: '11. Satılan Ürünlerin Kullanımı' },
+                    { id: 'cat12', title: '12. Satılan Ürünlerin Ömrünü Tamamlaması (Bertaraf)' },
+                    { id: 'cat13', title: '13. Aşağı Yönlü Kiralanan Varlıklar' },
+                    { id: 'cat14', title: '14. Franchise İşletmeler' },
+                    { id: 'cat15', title: '15. Finansal Yatırımlar (Finanse Edilen Emisyonlar)' },
+                  ].map(cat => (
+                    <div key={cat.id} className="border rounded-xl overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+                      <button 
+                        onClick={() => toggleAccordion(cat.id)}
+                        className="w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 flex justify-between items-center font-semibold text-sm text-slate-700"
+                      >
+                        {cat.title}
+                        <span className="text-slate-400">{openAccordion === cat.id ? '▲' : '▼'}</span>
+                      </button>
+                      {openAccordion === cat.id && (
+                        <div className="p-4 bg-white border-t" style={{ borderColor: 'var(--border)' }}>
+                          <Field 
+                            label="Toplam Emisyon (Tahmini)" 
+                            unit="ton CO₂e"
+                            value={scope3Breakdown[cat.id] ?? 0}
+                            onChange={v => handleScope3Change(cat.id, v)}
+                            placeholder="0"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -729,31 +801,46 @@ export default function VeriGirisiPage() {
           </div>
 
           {/* Tab navigation */}
-          <div className="flex gap-3 mt-4">
-            {activeTab !== 'scope1' && (
+          <div className="flex justify-between items-center mt-4">
+            <div className="flex gap-3">
+              {activeTab !== 'scope1' && (
+                <button
+                  className="px-4 py-2 rounded-lg text-sm font-medium border"
+                  style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                  onClick={() => {
+                    const order = ['scope1', 'scope2', 'scope3', 'sektorel'] as const
+                    const idx = order.indexOf(activeTab as typeof order[number])
+                    setActiveTab(order[idx - 1] as typeof activeTab)
+                  }}>
+                  ← Önceki
+                </button>
+              )}
+              {activeTab !== 'sektorel' && (
+                <button
+                  className="px-4 py-2 rounded-lg text-sm font-medium"
+                  style={{ background: 'var(--green-100)', color: 'var(--green-800)' }}
+                  onClick={() => {
+                    const order = ['scope1', 'scope2', 'scope3', 'sektorel'] as const
+                    const idx = order.indexOf(activeTab as typeof order[number])
+                    setActiveTab(order[idx + 1] as typeof activeTab)
+                  }}>
+                  Sonraki →
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2">
               <button
-                className="px-4 py-2 rounded-lg text-sm font-medium border"
-                style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                onClick={() => {
-                  const order = ['scope1', 'scope2', 'scope3', 'sektorel'] as const
-                  const idx = order.indexOf(activeTab as typeof order[number])
-                  setActiveTab(order[idx - 1] as typeof activeTab)
-                }}>
-                ← Önceki
+                onClick={() => setImportMode(true)}
+                className="px-4 py-2 font-bold rounded-xl text-sm transition-all"
+                style={{ background: 'var(--green-100)', color: 'var(--green-700)' }}>
+                ✨ AI Magic Import
               </button>
-            )}
-            {activeTab !== 'sektorel' && (
               <button
-                className="px-4 py-2 rounded-lg text-sm font-medium"
-                style={{ background: 'var(--green-100)', color: 'var(--green-800)' }}
-                onClick={() => {
-                  const order = ['scope1', 'scope2', 'scope3', 'sektorel'] as const
-                  const idx = order.indexOf(activeTab as typeof order[number])
-                  setActiveTab(order[idx + 1] as typeof activeTab)
-                }}>
-                Sonraki →
+                onClick={handleHealthCheckImport}
+                className="px-4 py-2 font-bold rounded-xl text-sm transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
+                🩺 Sağlık Taramasından Aktar
               </button>
-            )}
+            </div>
           </div>
         </div>
 

@@ -65,3 +65,55 @@ def get_cbam_summary(sector: str, goods_tons: float, total_emissions: float = No
         "eu_ets_price": EU_ETS_DEFAULT_PRICE_EUR,
         "estimated_tax_eur": round(tax_eur, 2)
     }
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from ..models import EmissionRecord
+from .calculation_engine import EmissionInput, calculate_iso14064
+
+async def import_from_iso14064(db: AsyncSession, company_id: str, year: int) -> dict:
+    stmt = select(EmissionRecord).where(
+        EmissionRecord.company_id == company_id,
+        EmissionRecord.year == year
+    )
+    res = await db.execute(stmt)
+    record = res.scalar_one_or_none()
+    
+    if not record:
+        return None
+        
+    input_data = EmissionInput(
+        company_id=str(company_id),
+        year=record.year,
+        electricity_kwh=record.electricity_kwh or 0.0,
+        natural_gas_m3=record.natural_gas_m3,
+        diesel_liters=record.diesel_liters,
+        lpg_kg=record.lpg_kg,
+        coal_tons=record.coal_tons,
+        company_vehicles_km=record.company_vehicles_km,
+        fugitive_emissions_kg=record.fugitive_emissions_kg,
+        business_travel_flight_km=record.business_travel_flight_km,
+        employee_commute_km=record.employee_commute_km,
+        waste_tons=record.waste_tons,
+        financed_emissions_co2e=record.financed_emissions_co2e
+    )
+    
+    result = calculate_iso14064(input_data)
+    
+    # Map to CBAM sectors roughly based on typical mapping if exact match fails
+    sector_map = {
+        "manufacturing": "çelik", 
+        "cement": "çimento", 
+        "energy": "elektrik"
+    }
+    mapped_sector = sector_map.get(record.sector, "çelik") # fallback to steel
+    
+    return {
+        "year": year,
+        "sector": mapped_sector,
+        "direct_emissions": result.scope1_co2e,
+        "indirect_emissions": result.scope2_location_co2e,
+        "total_cbam_emissions": round(result.scope1_co2e + result.scope2_location_co2e, 2),
+        "iso14064_record_id": record.id
+    }
+

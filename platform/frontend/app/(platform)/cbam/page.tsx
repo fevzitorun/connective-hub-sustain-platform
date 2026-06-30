@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { Download, Globe, ShieldAlert, Euro } from 'lucide-react'
+import { Download, Globe, ShieldAlert, Euro, FileDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 
@@ -8,6 +8,10 @@ export default function CbamPage() {
   const [sector, setSector] = useState("çelik")
   const [goodsTons, setGoodsTons] = useState(1000)
   const [customFactor, setCustomFactor] = useState("")
+  
+  const [importYear, setImportYear] = useState(2024)
+  const [importing, setImporting] = useState(false)
+  const [previewData, setPreviewData] = useState<any>(null)
   
   // CBAM Engine Simulation Logic (Frontend Replica for instant feedback)
   const euEtsPrice = 71.0
@@ -31,6 +35,27 @@ export default function CbamPage() {
     }, 1500)
   }
 
+  const handlePreviewImport = async () => {
+    setImporting(true)
+    try {
+      const data = await api.cbam.importPreview(importYear)
+      setPreviewData(data)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Veri alınamadı')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const handleConfirmImport = () => {
+    setSector(previewData.sector)
+    // Custom factor = total_emissions / goodsTons. We assume goodsTons is already set correctly by user or keep current.
+    const calculatedFactor = previewData.total_cbam_emissions / goodsTons
+    setCustomFactor(calculatedFactor.toFixed(3))
+    toast.success('ISO 14064 verileri aktarıldı. Özel faktör güncellendi.')
+    setPreviewData(null)
+  }
+
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8">
       <div>
@@ -44,7 +69,48 @@ export default function CbamPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Ürün Yoğunluğu & İhracat Verileri</h2>
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
+              <h2 className="text-lg font-bold text-slate-800">Ürün Yoğunluğu & İhracat Verileri</h2>
+              <div className="flex items-center gap-2">
+                <select 
+                  value={importYear} 
+                  onChange={e => setImportYear(Number(e.target.value))}
+                  className="px-2 py-1 border rounded text-sm"
+                >
+                  <option value={2024}>2024</option>
+                  <option value={2023}>2023</option>
+                  <option value={2022}>2022</option>
+                </select>
+                <button 
+                  onClick={handlePreviewImport}
+                  disabled={importing}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-2"
+                >
+                  <FileDown size={14} /> 
+                  ISO 14064'ten Aktar
+                </button>
+              </div>
+            </div>
+
+            {previewData && (
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6">
+                <h3 className="font-bold text-blue-900 mb-2">İçe Aktarım Önizlemesi ({previewData.year})</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm text-blue-800 mb-4">
+                  <p>Doğrudan (Scope 1): {previewData.direct_emissions} t</p>
+                  <p>Dolaylı (Scope 2): {previewData.indirect_emissions} t</p>
+                  <p className="font-bold col-span-2">Toplam CBAM Emisyonu: {previewData.total_cbam_emissions} t</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleConfirmImport} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm">
+                    Onayla ve Aktar
+                  </button>
+                  <button onClick={() => setPreviewData(null)} className="bg-white text-slate-600 px-4 py-2 rounded-lg font-bold text-sm border">
+                    İptal
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">İhraç Edilen Sektör/Ürün</label>
@@ -69,7 +135,7 @@ export default function CbamPage() {
                 <input type="number" step="0.01" value={customFactor} onChange={e => setCustomFactor(e.target.value)}
                   placeholder={`Sektör varsayılanı: ${sectorFactors[sector]}`}
                   className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                <p className="text-xs text-slate-400 mt-1">Sertifikalı EPD veya özel ölçümünüz varsa buraya girerek varsayılan değeri (Default Value) ezin.</p>
+                <p className="text-xs text-slate-400 mt-1">Sertifikalı EPD veya özel ölçümünüz (örn. ISO 14064 aktarımı) varsa buraya girerek varsayılan değeri (Default Value) ezin.</p>
               </div>
             </div>
           </div>

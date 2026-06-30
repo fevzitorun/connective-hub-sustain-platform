@@ -43,9 +43,21 @@ export const api = {
       request<CalcPreview>('/emissions/calculate', { method: 'POST', body: JSON.stringify(data) }),
     save: (data: Partial<EmissionData>) =>
       request<{ id: string } & EmissionData>('/emissions', { method: 'POST', body: JSON.stringify(data) }),
+    saveScope3: (data: { year: number; breakdown: Record<string, number>; activity_metric?: Record<string, number> }) =>
+      request<{ success: boolean; scope3_co2e: number }>('/emissions/scope3', { method: 'POST', body: JSON.stringify(data) }),
     list: () =>
       request<EmissionData[]>('/emissions'),
     get: (id: string) => request<EmissionData>(`/emissions/${id}`),
+  },
+
+  iso14064: {
+    calculate: (data: Partial<EmissionData>) =>
+      request<{ status: string; iso14064_result: any }>('/iso14064/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    report: (year: number) => 
+      request<{ status: string; year: number; iso14064_result: any; company_id: string }>(`/iso14064/report/${year}`),
+    exportDocxUrl: (year: number) => `${API_URL}/iso14064/export/${year}?format=docx`,
+    trend: (companyId: string, years: string = "2022,2023,2024") =>
+      request<{ base_year: number; base_year_total: number; latest_year: number; latest_total: number; total_reduction_pct: number; trend: any[] }>(`/iso14064/trend/${companyId}?years=${years}`),
   },
 
   reports: {
@@ -95,6 +107,8 @@ export const api = {
       request<{ cbam_duty_eur: number; embedded_co2_total: number; eu_ets_price: number }>(
         '/cbam/calculate', { method: 'POST', body: JSON.stringify(data) }
       ),
+    importPreview: (year: number) =>
+      request<{ sector: string; embedded_co2: number; goods_tons?: number }>(`/cbam/import-preview/${year}`),
   },
 
   audit: {
@@ -248,6 +262,8 @@ export const api = {
         percentile: number; total_tco2e: number; intensity_per_employee: number
         sector_avg_intensity: number; sector_label: string
         vs_sector: string; quick_wins: string[]; cta: string
+        estimated_electricity_kwh?: number
+        estimated_natural_gas_m3?: number
       }>('/health-check/estimate', { method: 'POST', body: JSON.stringify(data) }),
   },
 

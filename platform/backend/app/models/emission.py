@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
+from sqlalchemy.dialects.postgresql import JSONB
 from ..database import Base
 
 class EmissionRecord(Base):
@@ -13,6 +14,7 @@ class EmissionRecord(Base):
     company_id: Mapped[str] = mapped_column(ForeignKey("companies.id"), nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     reporting_boundary: Mapped[str] = mapped_column(String(30), default="operational_control")
+    calculation_standard: Mapped[str] = mapped_column(String(30), default="ghg_protocol")
 
     # Kapsam 1
     natural_gas_m3: Mapped[float | None] = mapped_column(Numeric(15, 2))
@@ -20,6 +22,7 @@ class EmissionRecord(Base):
     lpg_kg: Mapped[float | None] = mapped_column(Numeric(15, 2))
     coal_tons: Mapped[float | None] = mapped_column(Numeric(15, 2))
     company_vehicles_km: Mapped[float | None] = mapped_column(Numeric(15, 2))
+    fugitive_emissions_kg: Mapped[float | None] = mapped_column(Numeric(15, 2))
     scope1_co2e: Mapped[float | None] = mapped_column(Numeric(15, 3))
 
     # Kapsam 2
@@ -36,6 +39,10 @@ class EmissionRecord(Base):
     waste_tons: Mapped[float | None] = mapped_column(Numeric(15, 3))
     water_m3: Mapped[float | None] = mapped_column(Numeric(15, 2))
     scope3_co2e: Mapped[float | None] = mapped_column(Numeric(15, 3))
+    scope3_breakdown: Mapped[dict | None] = mapped_column(JSONB)
+    
+    # Sektörel Aktivite Metrikleri
+    activity_metric: Mapped[dict | None] = mapped_column(JSONB)
 
     # Bankacılık
     loan_portfolio_tl: Mapped[float | None] = mapped_column(Numeric(20, 2))
