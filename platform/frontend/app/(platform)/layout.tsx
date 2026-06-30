@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Footer } from '@/components/layout/Footer'
 import { DemoWizard } from '@/components/layout/DemoWizard'
+import { CopilotPanel } from '@/components/copilot/CopilotPanel'
 
 export default function PlatformLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function PlatformLayout({ children }: { children: ReactNode }) {
         <Footer />
       </main>
       <DemoWizard />
+      <CopilotPanel />
     </div>
   )
 }

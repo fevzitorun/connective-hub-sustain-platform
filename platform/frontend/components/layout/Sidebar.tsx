@@ -31,6 +31,7 @@ const navItems = [
   ]},
   { section: 'Intelligence', items: [
     { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },
+    { href: '/tcsi', label: 'Turkey ESG Index', icon: '🏆', badge: 'COP31' },
     { href: '/scenarios', label: 'TCFD War-Room', icon: '🌊' },
     { href: '/simulator', label: 'ROI Simulator', icon: '⚡' },
     { href: '/university', label: 'University Portal', icon: '🏛️' },

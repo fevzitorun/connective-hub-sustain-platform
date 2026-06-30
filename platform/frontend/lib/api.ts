@@ -286,6 +286,18 @@ export const api = {
     demo: () => request<unknown>('/tcfd/demo', { method: 'POST' }),
   },
 
+  copilot: {
+    chat: (messages: { role: string; content: string }[], companyContext?: Record<string, string>) =>
+      request<{ content: string; role: string; tokens_used: number }>(
+        '/copilot/chat',
+        { method: 'POST', body: JSON.stringify({ messages, company_context: companyContext }) }
+      ),
+    prompts: () =>
+      request<{ prompts: Array<{ tr: string; en: string; icon: string }> }>('/copilot/prompts'),
+    health: () =>
+      request<{ status: string; api_key_configured: boolean }>('/copilot/health'),
+  },
+
   gar: {
     demo: (jurisdiction: 'bddk' | 'fca' | 'trnc' | 'consolidated' = 'bddk') =>
       request<{

@@ -107,6 +107,10 @@ app.include_router(supplier_audit.router)
 from .routes import gar_bank
 app.include_router(gar_bank.router)
 
+# Sprint 25 — Sustain Copilot (AI Assistant)
+from .routes import copilot
+app.include_router(copilot.router)
+
 
 @app.on_event("startup")
 async def startup():
