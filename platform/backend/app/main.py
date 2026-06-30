@@ -148,6 +148,10 @@ app.include_router(tsrs.router)
 from .routes import report_builder
 app.include_router(report_builder.router)
 
+# Sprint 40 — SASB + UN SDG
+from .routes import sasb_sdg
+app.include_router(sasb_sdg.router)
+
 
 @app.on_event("startup")
 async def startup():

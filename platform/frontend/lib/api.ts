@@ -401,6 +401,14 @@ export const api = {
     categories: () => request<{ categories: unknown[] }>('/api/scope3/categories'),
   },
 
+  sasbSdg: {
+    demo: () => request<unknown>('/api/sasb-sdg/demo'),
+    assess: (data: { company_name: string; sector_id: string; metric_values?: Record<string, number>; relevant_sdgs?: number[] | null }) =>
+      request<unknown>('/api/sasb-sdg/assess', { method: 'POST', body: JSON.stringify(data) }),
+    sectors: () => request<unknown[]>('/api/sasb-sdg/sectors'),
+    sdgs: () => request<unknown[]>('/api/sasb-sdg/sdgs'),
+  },
+
   reportBuilder: {
     demo: () => request<unknown>('/api/report-builder/demo'),
     build: (data: { company_name: string; report_year: number; frameworks: string[]; extra_sections?: string[]; language?: string }) =>

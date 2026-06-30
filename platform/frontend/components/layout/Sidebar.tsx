@@ -31,6 +31,7 @@ const navItems = [
     { href: '/scope3', label: 'Scope 3 Value Chain', icon: '🔗', badge: 'NEW' },
     { href: '/issb', label: 'ISSB IFRS S1+S2', icon: '📋', badge: 'NEW' },
     { href: '/tsrs', label: 'TSRS 1+2 (KGK)', icon: '🇹🇷', badge: 'NEW' },
+    { href: '/sasb-sdg', label: 'SASB + SDG', icon: '📊', badge: 'NEW' },
     { href: '/uydu', label: 'Earth Intelligence', icon: '🛰️', badge: 'NEW' },
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦', badge: 'PCAF' },
     { href: '/gar/kobi-dashboard', label: 'KOBİ Portföy', icon: '🏪' },
