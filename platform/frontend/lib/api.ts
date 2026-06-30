@@ -286,6 +286,41 @@ export const api = {
     demo: () => request<unknown>('/tcfd/demo', { method: 'POST' }),
   },
 
+  gar: {
+    demo: (jurisdiction: 'bddk' | 'fca' | 'trnc' | 'consolidated' = 'bddk') =>
+      request<{
+        portfolio: {
+          jurisdiction: string; currency: string; total_outstanding_eur: number
+          gar_ratio_pct: number; green_eur: number; transition_eur: number; brown_eur: number
+          taxonomy_breakdown_pct: { green: number; transition: number; brown: number }
+        }
+        pcaf: {
+          scope3_cat15_tco2e: number; total_financed_emissions_tco2e: number
+          data_quality_avg: number; standard: string; methodology: string
+        }
+        borrowers: Array<{
+          name: string; sector: string; nace_code: string; taxonomy_status: string
+          outstanding_eur: number; attribution_factor_pct: number
+          financed_emissions_tco2e: number; data_quality: number
+          esg_score: number; esg_grade: string; emission_intensity: number
+        }>
+        stress_test: {
+          iea_nz_2050: { scenario: string; portfolio_at_risk_pct: number; stranded_asset_risk_eur: number; transition_cost_eur: number }
+          ngfs_delayed: { scenario: string; portfolio_at_risk_pct: number; stranded_asset_risk_eur: number; transition_cost_eur: number }
+        }
+        compliance: Record<string, string>
+      }>(`/gar/demo?jurisdiction=${jurisdiction}`),
+    calculate: (data: {
+      borrowers: Array<{
+        name: string; sector_key: string; nace_code: string
+        outstanding_eur: number; evic_eur: number; revenue_eur: number
+        reported_emissions_tco2e?: number; data_quality?: number
+      }>
+      jurisdiction?: string; currency?: string
+    }) => request<unknown>('/gar/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    taxonomySectors: () => request<{ nace_taxonomy: Record<string, string>; sector_intensity_tco2e_per_eur_m: Record<string, number> }>('/gar/taxonomy/sectors'),
+  },
+
   supplierAudit: {
     questions: () => request<{ questions: Array<{ id: string; category: string; question: string; weight: number; red_flag_if: string | null }> }>('/supplier-audit/questions'),
     score: (data: { supplier_name: string; responses: Record<string, string>; notes?: string }) =>

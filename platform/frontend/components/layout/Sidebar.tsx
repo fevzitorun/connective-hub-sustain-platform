@@ -27,7 +27,7 @@ const navItems = [
     { href: '/benchmark', label: 'Benchmark', icon: '📈' },
     { href: '/hedefler', label: 'Targets (SBTi)', icon: '🎯' },
     { href: '/uydu', label: 'Earth Intelligence', icon: '🛰️', badge: 'NEW' },
-    { href: '/gar', label: 'Bank GAR Portal', icon: '🏦' },
+    { href: '/gar', label: 'Bank GAR Portal', icon: '🏦', badge: 'PCAF' },
   ]},
   { section: 'Intelligence', items: [
     { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },

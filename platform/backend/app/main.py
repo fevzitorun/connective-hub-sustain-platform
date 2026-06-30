@@ -103,6 +103,10 @@ from .routes import tcfd, supplier_audit
 app.include_router(tcfd.router)
 app.include_router(supplier_audit.router)
 
+# Sprint 24 — GAR Bank Intelligence (PCAF + EU Taxonomy)
+from .routes import gar_bank
+app.include_router(gar_bank.router)
+
 
 @app.on_event("startup")
 async def startup():
