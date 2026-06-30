@@ -401,6 +401,17 @@ export const api = {
     categories: () => request<{ categories: unknown[] }>('/api/scope3/categories'),
   },
 
+  tsrs: {
+    demo: () => request<unknown>('/api/tsrs/demo'),
+    assess: (data: {
+      company_name: string; segment: string
+      pillar_scores: Record<string, number>; checklist_done: string[]
+      scope1_tco2e: number; scope2_tco2e: number; scope3_tco2e: number
+      scenarios_count?: number; has_target?: boolean
+    }) => request<unknown>('/api/tsrs/assess', { method: 'POST', body: JSON.stringify(data) }),
+    standards: () => request<unknown>('/api/tsrs/standards'),
+  },
+
   issb: {
     demo: () => request<unknown>('/api/issb/demo'),
     assess: (data: {

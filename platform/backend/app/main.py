@@ -140,6 +140,10 @@ app.include_router(scope3.router)
 from .routes import issb
 app.include_router(issb.router)
 
+# Sprint 38 — TSRS 1 + 2
+from .routes import tsrs
+app.include_router(tsrs.router)
+
 
 @app.on_event("startup")
 async def startup():
