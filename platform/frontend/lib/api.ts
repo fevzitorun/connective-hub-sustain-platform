@@ -60,6 +60,18 @@ export const api = {
       request<{ base_year: number; base_year_total: number; latest_year: number; latest_total: number; total_reduction_pct: number; trend: any[] }>(`/iso14064/trend/${companyId}?years=${years}`),
   },
 
+  ukSdr: {
+    assess: (data: {
+      company_name?: string; maturity_score: number
+      scope1_co2e?: number; scope2_co2e?: number; scope3_co2e?: number
+      uk_revenue_pct?: number; eu_revenue_pct?: number
+      taxonomy_alignment_pct?: number; sustainable_investment_pct?: number
+      has_science_targets?: boolean; has_verified_data?: boolean; entity_type?: string
+    }) => request<{ status: string; result: any }>('/uk-sdr/assess', { method: 'POST', body: JSON.stringify(data) }),
+    demo: () => request<{ status: string; result: any }>('/uk-sdr/demo'),
+    paiIndicators: () => request<{ indicators: any[]; total: number }>('/uk-sdr/pai-indicators'),
+  },
+
   reports: {
     generate: (payload: { emission_id: string; standard: string; language?: string; assurance_firm?: string }) =>
       request<{ id: string; status: string }>(

@@ -30,6 +30,7 @@ const navItems = [
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦', badge: 'PCAF' },
     { href: '/gar/kobi-dashboard', label: 'KOBİ Portföy', icon: '🏪' },
     { href: '/iso14064', label: 'Karbon Ayak İzi', icon: '🌿', badge: 'ISO' },
+    { href: '/uk-sdr', label: 'FCA SDR + SFDR', icon: '🇬🇧', badge: 'UK' },
   ]},
   { section: 'Intelligence', items: [
     { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },
