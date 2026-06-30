@@ -8,7 +8,9 @@ from ..services.kobi_credit_score_engine import (
     BANK_CATEGORIES,
     RATING_THRESHOLDS,
     SECTOR_BENCHMARKS,
+    KNOCK_OUT_QUESTIONS,
     DEMO_RESULT,
+    DEMO_RESULT_KNOCKOUT,
 )
 
 router = APIRouter(prefix="/kobi-credit-score", tags=["KOBİ ESG Credit Score"])
@@ -55,3 +57,23 @@ async def list_rating_thresholds() -> list:
         {"min_score": t, "grade": g, "label": l}
         for t, g, l in RATING_THRESHOLDS
     ]
+
+
+@router.get("/demo-knockout")
+async def kobi_knockout_demo() -> dict[str, Any]:
+    """Demo: RBA v9.0 Sıfır Tolerans knock-out (S11=0 human rights violation)"""
+    return DEMO_RESULT_KNOCKOUT
+
+
+@router.get("/knock-out-rules")
+async def list_knock_out_rules() -> dict[str, Any]:
+    """Zero-tolerance knock-out questions per RBA v9.0 + Ziraat Bank ÇSEYP"""
+    return {
+        "knock_out_questions": KNOCK_OUT_QUESTIONS,
+        "policy_source": "RBA v9.0 §A1.1 + Ziraat Bankası ÇSEYP §4.2",
+        "consequence": "Otomatik D Rating + C Kategori. Kredi süreci dondurulur.",
+        "remediation_path": (
+            "KOBİ bağımsız denetim mekanizması kurduğunu ve ihlali giderdiğini "
+            "belgeleyen resmi kanıt sunduğunda yeniden değerlendirme yapılır."
+        ),
+    }

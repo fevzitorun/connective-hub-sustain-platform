@@ -6,6 +6,233 @@ BİST-100: 2024 rapor dönemi · BİST-tüm: 2025 · Büyük şirketler: 2026
 """
 from typing import Any
 
+# ── Türk Şirketleri Net Zero Hedefleri Kıyaslaması ───────────────────────────
+# Kaynak: 2024-2025 TSRS/ESG rapor dönemleri, SBTi veritabanı
+TURKISH_COMPANY_NET_ZERO_BENCHMARKS: list[dict] = [
+    {
+        "company": "Arçelik A.Ş.",
+        "sector": "Dayanıklı Tüketim / İmalat",
+        "net_zero_year": 2050,
+        "standard": "SBTi Kurumsal Net Sıfır Standardı",
+        "nzba_member": False,
+        "base_year": 2022,
+        "target_2030": {
+            "scope": "Kapsam 1+2+3 (ürün kullanımı)",
+            "reduction_pct": 42,
+            "type": "Mutlak azaltım",
+        },
+        "target_2050": {
+            "scope": "Tüm değer zinciri (Kapsam 1+2+3)",
+            "reduction_pct": 90,
+            "residual_offset": "Kalan %10 karbon giderim projeleri",
+        },
+        "key_initiatives": [
+            "BREEAM sertifikalı yeşil fabrikalar",
+            "Yenilenebilir enerji (YEK-G) anlaşmaları",
+            "Ürün enerji verimliliği (A+++ sınıfı)",
+        ],
+    },
+    {
+        "company": "Akbank T.A.Ş.",
+        "sector": "Bankacılık / Finans",
+        "net_zero_year": 2050,
+        "standard": "Net-Sıfır Bankacılık Birliği (NZBA)",
+        "nzba_member": True,
+        "base_year": 2019,
+        "target_2030": {
+            "scope": "Operasyonel Kapsam 1+2",
+            "reduction_pct": 90,
+            "type": "Mutlak azaltım",
+        },
+        "portfolio_targets": {
+            "sectors_covered": ["Çimento", "Enerji", "Demir-Çelik"],
+            "methodology": "PCAF + sektörel azaltım ara hedefleri",
+            "financed_emissions": "PCAF Kapsam 3 Kat.15 (Finanse Edilen Emisyonlar)",
+        },
+        "target_2050": {
+            "scope": "Kredi portföyü karbonsuzlaştırma",
+            "reduction_pct": 100,
+            "residual_offset": "PCAF uyumlu karbon kredileri",
+        },
+        "key_initiatives": [
+            "Yeşil/sürdürülebilir kredi portföyü büyümesi",
+            "PCAF DQS iyileştirme (2024 ort: 4.1 → 2027 hedef: 2.8)",
+            "SustainHub KOBİ ESG Skoru entegrasyonu",
+        ],
+    },
+    {
+        "company": "Tüpraş",
+        "sector": "Enerji / Rafinerici",
+        "net_zero_year": 2050,
+        "standard": "Şirket iç taahhüdü (Stratejik Dönüşüm Planı 2025 güncellemesi)",
+        "nzba_member": False,
+        "base_year": 2017,
+        "target_2030": {
+            "scope": "Kapsam 1+2",
+            "reduction_pct": 20,  # 2025 güncellemesi ile 27%'den 20%'ye revize edildi
+            "type": "Mutlak azaltım",
+            "note": "2025 revizyonu: %27 → %20 (jeopolitik/operasyonel gerçekler)",
+        },
+        "target_2035": {
+            "scope": "Kapsam 1+2",
+            "reduction_pct": 25,  # %35'ten güncellendi
+        },
+        "target_2050": {
+            "scope": "Tüm operasyonlar",
+            "label": "Karbon Nötr",
+        },
+        "strategic_investments_usd": {
+            "sustainable_refining": 3_900_000_000,
+            "zero_carbon_electricity_gw_2030": 1.6,
+            "zero_carbon_electricity_gw_2035": 2.5,
+            "saf_unit": "İzmir SAF üretim ünitesi (devam)",
+            "green_hydrogen_mw_2030": 128,  # revize (400'den güncellendi)
+            "total_investment_2035": 8_250_000_000,
+        },
+        "key_initiatives": [
+            "Sürdürülebilir Havacılık Yakıtı (SAF) üretimi",
+            "Sıfır karbonlu elektrik (1.6 GW GES/RES 2030)",
+            "Yeşil hidrojen (128 MW elektrolizör 2030)",
+            "ISO 50001 enerji verimliliği sistemi",
+        ],
+    },
+    {
+        "company": "Migros Ticaret A.Ş.",
+        "sector": "Perakende",
+        "net_zero_year": 2050,
+        "standard": "SBTi onaylı",
+        "nzba_member": False,
+        "base_year": 2021,
+        "target_2030": {
+            "scope_1_2": {"reduction_pct": 42.65, "type": "Mutlak azaltım"},
+            "scope_3_cat1": {"reduction_pct": 32, "type": "Mutlak azaltım"},
+        },
+        "target_2050": {
+            "scope": "Tüm değer zinciri",
+            "label": "Net Sıfır",
+        },
+        "key_initiatives": [
+            "Çatı ve arazi GES yatırımları (YEK-G)",
+            "Mağaza enerji yoğunluğu %35 azaltımı (2030)",
+            "Jet Kasa operasyonel verimlilik",
+            "Tedarikçi ESG denetimi (2025: 1.514 denetim)",
+        ],
+    },
+    {
+        "company": "Ziraat Bankası",
+        "sector": "Bankacılık / Finans",
+        "net_zero_year": None,
+        "standard": "ÇSEYP (Çevresel ve Sosyal Etki Yönetimi Politikası)",
+        "nzba_member": False,
+        "materiality_threshold": {
+            "basis": "Konsolide Özkaynak",
+            "pct": 1.0,
+            "amount_tl": 7_330_000_000,
+            "year": 2025,
+        },
+        "exclusion_list": [
+            "Çocuk işçi çalıştırma",
+            "Zorla ve cebren çalıştırma",
+            "Ağır insan hakları ihlalleri",
+            "Asbest madenciliği ve imalatı",
+            "Kış bombası üretimi",
+        ],
+        "key_initiatives": [
+            "KOBİ ESG Kredi Skoru entegrasyonu",
+            "PCAF Kapsam 3 Kat.15 raporlaması",
+            "Yeşil kredi portföyü büyümesi",
+        ],
+    },
+]
+
+# ── Sektörel Finansal Önemlilik Eşikleri (TSRS 1 Md.22 + TSRS 2 Md.7) ────────
+# Şirketler bu eşiği aşan iklim risklerini "finansal açıdan önemli" olarak raporlar.
+# Kaynak: 2024-2025 TSRS pilot raporları
+FINANCIAL_MATERIALITY_THRESHOLDS: list[dict] = [
+    {
+        "company": "Tüpraş",
+        "sector": "Enerji / Rafinerici",
+        "threshold_basis": "FAVÖK (EBITDA)",
+        "threshold_pct": 5.0,
+        "note": "FAVÖK'ün %5'ini aşan iklim riskleri raporlama kapsamına girer",
+    },
+    {
+        "company": "Bupa Acıbadem Sigorta",
+        "sector": "Sigorta",
+        "threshold_basis": "Vergi Öncesi Konsolide Kâr",
+        "threshold_pct": 5.0,
+        "note": "Sigorta sektörü için bütünsel performans ölçümüne uygun",
+    },
+    {
+        "company": "Ziraat Bankası",
+        "sector": "Bankacılık",
+        "threshold_basis": "Konsolide Özkaynak",
+        "threshold_pct": 1.0,
+        "threshold_amount_tl": 7_330_000_000,
+        "note": "2025 itibarıyla 7.33 milyar TL özkaynak tabanlı eşik",
+    },
+    {
+        "company": "Alarko Holding",
+        "sector": "İnşaat / Enerji Holding",
+        "threshold_basis": "Toplam Varlıklar",
+        "threshold_pct": 2.0,
+        "note": "Bilanço bazlı eşik; gayrimenkul ve enerji varlıkları dahil",
+    },
+    {
+        "company": "ENKA İnşaat",
+        "sector": "İnşaat / EPC",
+        "threshold_basis": "Yıllık Hasılat (Ciro)",
+        "threshold_pct": 0.5,
+        "note": "Konservatif eşik; büyük uluslararası proje portföyü nedeniyle",
+    },
+    {
+        "company": "OYAK Çimento",
+        "sector": "Çimento / İnşaat Malzemeleri",
+        "threshold_basis": "Yıllık Ciro",
+        "threshold_pct": 1.0,
+        "note": "Çimento sektörü yüksek fiziksel iklim riski",
+    },
+    {
+        "company": "Afyon Çimento",
+        "sector": "Çimento",
+        "threshold_basis": "Toplam Hasılat",
+        "threshold_pct": 0.3,
+        "note": "Konservatif yaklaşım; küçük-orta ölçekli çimento üreticisi",
+    },
+]
+
+# ── TSRS Geçiş Muafiyetleri ────────────────────────────────────────────────────
+TSRS_TRANSITION_RELIEFS: list[dict] = [
+    {
+        "ref": "TSRS 1 — E5",
+        "label": "Sadece İklim (Year 1)",
+        "description": "İlk raporlama yılında yalnızca iklimle ilgili (TSRS 2) bilgilerin sunulması yeterlidir.",
+        "applicable_years": 1,
+        "benefit": "Diğer sürdürülebilirlik konuları (su, atık, sosyal) bir yıl ertelenebilir",
+    },
+    {
+        "ref": "TSRS 1 — E6 / TSRS 2 — C3",
+        "label": "Karşılaştırmalı Bilgi Muafiyeti",
+        "description": "İlk raporlama yılında önceki döneme ait karşılaştırmalı veri sunulması zorunlu değildir.",
+        "applicable_years": 1,
+        "benefit": "Baz yılı verisini toplama süresini uzatır",
+    },
+    {
+        "ref": "TSRS 2 — C4.b",
+        "label": "Kapsam 3 Ertelemesi",
+        "description": "Şirketler (bankaların finanse edilen emisyonları dahil) ilk iki raporlama yılında Kapsam 3 açıklamak zorunda değildir.",
+        "applicable_years": 2,
+        "benefit": "Değer zinciri veri toplama altyapısı kurulması için zaman tanır",
+    },
+    {
+        "ref": "TSRS 1 — E4",
+        "label": "Geç Yayımlama İmkânı",
+        "description": "İlk yıl sürdürülebilirlik raporu, finansal tablolardan daha geç yayımlanabilir.",
+        "applicable_years": 1,
+        "benefit": "Kurumların hazırlık sürecini tamamlaması için esneklik",
+    },
+]
+
 # ── Zorunluluk takvimi ─────────────────────────────────────────────────────────
 TSRS_DEADLINES = [
     {
@@ -308,6 +535,9 @@ def full_tsrs_assessment(
         "disclosure_ready": overall >= 65 and checklist_score >= 75,
         "kktc_consolidation_rule": KKTC_CONSOLIDATION_RULE,
         "tsrs_vs_uk_srs": TSRS_VS_UK_SRS,
+        "net_zero_benchmarks": TURKISH_COMPANY_NET_ZERO_BENCHMARKS,
+        "materiality_thresholds": FINANCIAL_MATERIALITY_THRESHOLDS,
+        "transition_reliefs": TSRS_TRANSITION_RELIEFS,
     }
 
 

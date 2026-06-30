@@ -1,14 +1,31 @@
 """
 KOBİ ESG Kredi Skoru Motoru
-Metodoloji: Ziraat Bankası 33-soru modeline dayalı, PCAF uyumlu
+Metodoloji: Ziraat Bankası 33-soru modeli + RBA v9.0 Sıfır Tolerans kuralları
 Ağırlık: E(40%) + S(30%) + G(30%)
 Derecelendirme: AAA → D (MSCI/S&P uyumlu)
 Banka Risk Kategorisi: A (Prime) / B+ (İyi) / B- (İzlemede) / C (Riskli)
+
+KO (Knock-Out) Kuralı — RBA v9.0 Sıfır Tolerans:
+  Çocuk işçi, zorla çalıştırma veya ağır insan hakları ihlali tespitinde
+  hesaplanan ESG skoru ne olursa olsun otomatik D rating + C Kategori.
+  Kredi süreci dondurulur; yalnızca aksiyon planı hayata geçirilirse
+  yeniden değerlendirme yapılır (RBA v9.0 §A1.1, Ziraat ÇSEYP §4.2).
 """
 from typing import Any
 
 # ── Pillar ağırlıkları ─────────────────────────────────────────────────────────
 PILLAR_WEIGHTS = {"E": 0.40, "S": 0.30, "G": 0.30}
+
+# ── RBA v9.0 + Banka ÇSEYP Sıfır Tolerans Knock-Out Soruları ─────────────────
+# Bu soruların cevabı 0 ise (ihlal var), otomatik D+C override tetiklenir.
+# Kaynak: RBA v9.0 §A1.1 "Sıfır Tolerans Konuları" + Ziraat ÇSEYP "Finanse
+# Edilmeyen Faaliyetler Listesi"
+KNOCK_OUT_QUESTIONS: dict[str, str] = {
+    "S11": "Çocuk işçi / zorla çalıştırma / ağır insan hakları ihlali",
+}
+
+# Ağır bulgular: tek başına KO olmaz ama ikisi birden → otomatik C kategori
+SEVERE_FLAG_QUESTIONS: set[str] = {"E11", "G06"}
 
 # ── 33 Soru (11 Çevresel + 11 Sosyal + 11 Yönetişim) ─────────────────────────
 ESG_QUESTIONS: list[dict] = [
@@ -334,17 +351,23 @@ def _get_bank_category(score: float) -> dict:
 def calculate_kobi_credit_score(
     company_name: str,
     sector: str,
-    answers: dict[str, int],  # question_id → 0 or 1 (partial: 0/1 only)
+    answers: dict[str, int],  # question_id → 0 or 1
 ) -> dict[str, Any]:
     """
     answers: {question_id: 0 or 1}
     Missing questions treated as 0 (unanswered = not compliant).
-    Returns full assessment with rating, bank category, gaps, action plan.
+
+    KO (Knock-Out) override:
+      If any KNOCK_OUT_QUESTIONS question is answered 0 (violation confirmed),
+      rating is forced to D and bank category to C, regardless of computed score.
+      Source: RBA v9.0 §A1.1 + Ziraat Bank ÇSEYP "Finanse Edilmeyen Faaliyetler".
     """
     pillar_scores: dict[str, float] = {"E": 0, "S": 0, "G": 0}
     pillar_max: dict[str, float]    = {"E": 0, "S": 0, "G": 0}
     red_flags: list[dict] = []
     gaps: list[dict] = []
+    knock_out_triggered: list[dict] = []
+    severe_flags_triggered: list[str] = []
 
     for q in ESG_QUESTIONS:
         pid = q["pillar"]
@@ -361,12 +384,32 @@ def calculate_kobi_credit_score(
                 "action": q["action"],
                 "weight": w,
             })
+            # Check knock-out rule (RBA v9.0 Sıfır Tolerans)
+            if q["id"] in KNOCK_OUT_QUESTIONS:
+                knock_out_triggered.append({
+                    "id": q["id"],
+                    "reason": KNOCK_OUT_QUESTIONS[q["id"]],
+                    "pillar": pid,
+                    "question_tr": q["tr"],
+                    "rba_ref": "RBA v9.0 §A1.1 — Çocuk İşçi / Zorla Çalıştırma",
+                    "bank_policy": "Ziraat ÇSEYP §4.2 — Finanse Edilmeyen Faaliyetler",
+                    "consequence": "Otomatik D Rating + C Kategori. Kredi süreci donduruldu.",
+                    "remediation": (
+                        "KOBİ, taşeron zincirinde bağımsız denetim mekanizması kurduğunu "
+                        "ve ihlali giderdiğini belgelemeden kredi süreci yeniden başlatılamaz."
+                    ),
+                })
+            # Check severe flag
+            if q["id"] in SEVERE_FLAG_QUESTIONS:
+                severe_flags_triggered.append(q["id"])
+
         if q["red_flag"] and val == 0:
             red_flags.append({
                 "id": q["id"],
                 "pillar": pid,
                 "question_tr": q["tr"],
-                "severity": "HIGH" if w >= 10 else "MEDIUM",
+                "severity": "KNOCK-OUT" if q["id"] in KNOCK_OUT_QUESTIONS
+                            else ("HIGH" if w >= 10 else "MEDIUM"),
             })
 
     # Pillar percentages (0–100)
@@ -375,23 +418,42 @@ def calculate_kobi_credit_score(
         for p in ("E", "S", "G")
     }
 
-    # Weighted total score
-    total_score = round(
+    # Weighted total score (computed regardless — shown for educational purposes)
+    computed_score = round(
         pillar_pct["E"] * PILLAR_WEIGHTS["E"]
         + pillar_pct["S"] * PILLAR_WEIGHTS["S"]
         + pillar_pct["G"] * PILLAR_WEIGHTS["G"],
         1,
     )
 
-    rating, rating_label = _get_rating(total_score)
-    bank_cat = _get_bank_category(total_score)
+    # ── Apply knock-out override ────────────────────────────────────────────────
+    is_knock_out = len(knock_out_triggered) > 0
+    # Two or more severe flags also force C category (but not D rating)
+    is_severe_double = len(severe_flags_triggered) >= 2
+
+    if is_knock_out:
+        total_score = computed_score  # display the computed score for transparency
+        rating = "D"
+        rating_label = "Kritik — Sıfır Tolerans İhlali | Kredi Süreci Durduruldu"
+        bank_cat = BANK_CATEGORIES[-1]  # forced C
+        bank_cat = {**bank_cat, "financing": "KREDİ DURDURULDU — Sıfır Tolerans İhlali (RBA v9.0 §A1.1)"}
+    elif is_severe_double:
+        total_score = computed_score
+        rating, rating_label = _get_rating(computed_score)
+        # Force to C (worst) regardless of score
+        bank_cat = {**BANK_CATEGORIES[-1],
+                    "description": "Çift ağır ihlal (Çevre + Yönetişim) — C kategori zorunlu.",
+                    "financing": "Gelişmiş Durum Tespiti (EDD) — İki Ağır İhlal"}
+    else:
+        total_score = computed_score
+        rating, rating_label = _get_rating(total_score)
+        bank_cat = _get_bank_category(total_score)
 
     bench = SECTOR_BENCHMARKS.get(sector, {"sector_avg": 50, "top_quartile": 70, "label": sector})
     percentile = round(
-        min(99, max(1, (total_score / bench["top_quartile"]) * 75)), 0
-    )
+        min(99, max(1, (computed_score / bench["top_quartile"]) * 75)), 0
+    ) if not is_knock_out else 1
 
-    # Top-5 priority gaps (by weight desc)
     top_gaps = sorted(gaps, key=lambda x: -x["weight"])[:5]
 
     return {
@@ -399,6 +461,10 @@ def calculate_kobi_credit_score(
         "sector": sector,
         "sector_label": bench["label"],
         "total_score": total_score,
+        "computed_score": computed_score,
+        "is_knock_out": is_knock_out,
+        "knock_out_details": knock_out_triggered,
+        "is_severe_double_flag": is_severe_double,
         "rating": rating,
         "rating_label": rating_label,
         "bank_category": bank_cat["category"],
@@ -418,10 +484,11 @@ def calculate_kobi_credit_score(
         "percentile": percentile,
         "questions_answered": sum(1 for v in answers.values() if v > 0),
         "total_questions": len(ESG_QUESTIONS),
+        "rba_methodology": "RBA v9.0 + ISO 26000 | 33-soru Ziraat Bank modeli",
     }
 
 
-# ── Demo verisi — Örnek KOBİ ─────────────────────────────────────────────────
+# ── Demo verisi — Normal KOBİ (BB / B-) ───────────────────────────────────────
 DEMO_ANSWERS: dict[str, int] = {
     "E01": 1, "E02": 0, "E03": 1, "E04": 0, "E05": 1,
     "E06": 0, "E07": 1, "E08": 0, "E09": 0, "E10": 0, "E11": 1,
@@ -435,4 +502,16 @@ DEMO_RESULT = calculate_kobi_credit_score(
     company_name="Örnek Tekstil A.Ş.",
     sector="textile",
     answers=DEMO_ANSWERS,
+)
+
+# ── Demo verisi — Knock-Out Senaryosu (S11=0: insan hakları ihlali) ───────────
+DEMO_ANSWERS_KNOCKOUT: dict[str, int] = {
+    **DEMO_ANSWERS,
+    "S11": 0,  # İnsan hakları ihlali tespiti → otomatik D + kredi durduruldu
+}
+
+DEMO_RESULT_KNOCKOUT = calculate_kobi_credit_score(
+    company_name="Riskli Tekstil Ltd.",
+    sector="textile",
+    answers=DEMO_ANSWERS_KNOCKOUT,
 )

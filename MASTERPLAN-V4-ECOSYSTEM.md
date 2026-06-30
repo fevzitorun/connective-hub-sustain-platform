@@ -1069,6 +1069,40 @@ SustainHub'ın KOBİ ESG Kredi Skoru modülü, banka KOBİ portföyü PCAF DQS'i
 **PCAF Bağlantısı:** KOBİ skoru → DQS 4.9→3.5 iyileştirme → GAR raporlama kalitesi  
 **Ticari Model:** ₺2,400/KOBİ/year (banka API) | ₺30K/year doğrudan KOBİ erişimi
 
+### RBA v9.0 Knock-Out Kuralı (Sprint 43 — Kritik Güncelleme)
+
+RBA v9.0 §A1.1 "Sıfır Tolerans" kuralları + Ziraat Bankası ÇSEYP §4.2 "Finanse Edilmeyen Faaliyetler" entegrasyonu:
+
+| Durum | ESG Skoru | Rating | Banka Kategorisi | Sonuç |
+|-------|----------|--------|-----------------|-------|
+| S11=0 (İnsan hakları / çocuk işçi ihlali) | Hesaplanan değer (örn. 51.6) | **D (override)** | **C (override)** | **Kredi durduruldu** |
+| E11=0 + G06=0 (çift ağır bayrak) | Hesaplanan değer | Hesaplanan | **C (override)** | Gelişmiş Durum Tespiti |
+| Normal eksiklikler | Hesaplanan değer | Hesaplanan | Hesaplanan | Standart işlem |
+
+**Kurtuluş yolu:** KOBİ bağımsız denetim mekanizması kurduğunu belgelerse yeniden değerlendirme açılır (geçiş finansmanı yaklaşımı).
+
+### Türk Şirketleri Net Zero Hedefleri (TSRS Raporlama Fırsatı)
+
+| Şirket | Hedef Yıl | Standart | 2030 Hedefi |
+|--------|----------|---------|-------------|
+| Arçelik | 2050 | SBTi NZ | K1+2+3 -%42 |
+| Akbank | 2050 | NZBA üyesi | K1+2 -%90 |
+| Tüpraş | 2050 | Şirket taahhüdü | K1+2 -%20 |
+| Migros | 2050 | SBTi onaylı | K1+2 -%42.65 |
+| Ziraat | — | ÇSEYP | KOBİ ESG Skoru |
+
+**SustainHub değeri:** Her bir şirket, bu hedefleri TSRS 2 Md.33 kapsamında raporlamak zorunda. SustainHub SBTi Target Calculator (Sprint 35) + TSRS Modülü (Sprint 38) bu süreci tamamen otomatize eder.
+
+### Tedarikçi ESG Denetimi — Kurumsal Piyasa Doğrulaması
+
+| Şirket | Ölçek | SustainHub Değer Önerisi |
+|--------|-------|--------------------------|
+| Tüpraş | 36 kritik tedarikçi ÇSY denetimi / yıl | RBA v9.0 dijital form → otomatik Red Flag |
+| Migros | 1.514 denetim/yıl, 474 kriter | KOBİ ESG Skoru → tedarikçi önceliklendirme |
+| ENKA | Yüksek riskli taşeron %10'u denetleme hedefi | EUDR + H&S entegrasyon |
+
+Bu holding-ölçekli denetim operasyonları Excel/e-posta üzerinden yönetilmektedir. SustainHub dijitalleştirme fırsatı: **₺600K–₺2M/yıl kurumsal lisans**.
+
 ---
 
 ## 11. COMPETITIVE MOATS

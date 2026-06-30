@@ -5,7 +5,11 @@ from typing import Any
 from ..services.tsrs_engine import (
     full_tsrs_assessment,
     TSRS1_PILLARS, TSRS2_PILLARS, KGK_CHECKLIST,
-    TSRS_DEADLINES, DEMO_RESULT,
+    TSRS_DEADLINES,
+    TURKISH_COMPANY_NET_ZERO_BENCHMARKS,
+    FINANCIAL_MATERIALITY_THRESHOLDS,
+    TSRS_TRANSITION_RELIEFS,
+    DEMO_RESULT,
 )
 
 router = APIRouter(prefix="/tsrs", tags=["TSRS"])
@@ -50,4 +54,17 @@ async def tsrs_standards() -> dict[str, Any]:
         "tsrs2_pillars": TSRS2_PILLARS,
         "kgk_checklist": KGK_CHECKLIST,
         "deadlines": TSRS_DEADLINES,
+        "transition_reliefs": TSRS_TRANSITION_RELIEFS,
     }
+
+
+@router.get("/net-zero-benchmarks")
+async def tsrs_net_zero_benchmarks() -> list[dict]:
+    """Türk şirketlerinin Net Zero hedefleri (Arçelik, Akbank, Tüpraş, Migros, Ziraat)"""
+    return TURKISH_COMPANY_NET_ZERO_BENCHMARKS
+
+
+@router.get("/materiality-thresholds")
+async def tsrs_materiality_thresholds() -> list[dict]:
+    """Sektörel TSRS finansal önemlilik eşikleri (TSRS 1 Md.22 + TSRS 2 Md.7)"""
+    return FINANCIAL_MATERIALITY_THRESHOLDS
