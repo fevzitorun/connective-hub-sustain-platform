@@ -9,6 +9,8 @@ from ..services.issb_engine import (
     S2_CROSS_INDUSTRY_METRICS,
     TCFD_ISSB_CROSSWALK,
     SCENARIO_BANDS,
+    UK_SRS_AMENDMENTS,
+    ISSB_ADOPTION_MAP,
     DEMO_RESULT,
 )
 
@@ -62,3 +64,15 @@ async def issb_standards() -> dict[str, Any]:
 @router.get("/tcfd-crosswalk")
 async def issb_tcfd_crosswalk() -> list[dict]:
     return TCFD_ISSB_CROSSWALK
+
+
+@router.get("/uk-srs-amendments")
+async def issb_uk_srs_amendments() -> list[dict]:
+    """UK SRS 6 amendments vs IFRS S1/S2 (FRC, August 2024)"""
+    return UK_SRS_AMENDMENTS
+
+
+@router.get("/adoption-map")
+async def issb_adoption_map() -> list[dict]:
+    """Jurisdiction-level IFRS S1/S2 adoption tracker"""
+    return ISSB_ADOPTION_MAP

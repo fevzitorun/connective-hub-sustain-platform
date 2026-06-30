@@ -250,6 +250,73 @@ TCFD_ISSB_CROSSWALK = [
     },
 ]
 
+# ── UK SRS vs IFRS S1/S2: 6 UK-specific amendments ──────────────────────────
+# UK SRS published August 2024 by FRC/BEIS; effective FYB 1 January 2025
+# Both UK SRS 1 & UK SRS 2 are structurally identical to IFRS S1/S2 with 6 amendments.
+UK_SRS_AMENDMENTS = [
+    {
+        "ref": "Amendment 1",
+        "topic": "Label & Authority",
+        "ifrs_text": "IFRS S1/S2 issued by ISSB (IFRS Foundation)",
+        "uk_srs_text": "UK SRS 1/2 issued by UK FRC under BEIS authority",
+        "materiality": "Low — administrative",
+        "icon": "🏛️",
+    },
+    {
+        "ref": "Amendment 2",
+        "topic": "Effective Date",
+        "ifrs_text": "Annual periods beginning on or after 1 January 2024",
+        "uk_srs_text": "Annual periods beginning on or after 1 January 2025 (UK mandatory)",
+        "materiality": "Medium — UK companies gain 12-month later start",
+        "icon": "📅",
+    },
+    {
+        "ref": "Amendment 3",
+        "topic": "Proportionality Relief (Smaller Listed)",
+        "ifrs_text": "No explicit relief for smaller listed entities",
+        "uk_srs_text": "Proportionality provisions: smaller Tier 2 listed companies may phase-in climate disclosures over 2 years",
+        "materiality": "High — significant relief for AIM/AQSE companies",
+        "icon": "⚖️",
+    },
+    {
+        "ref": "Amendment 4",
+        "topic": "Climate-First Phasing",
+        "ifrs_text": "IFRS S1 (general) and S2 (climate) apply together from Year 1",
+        "uk_srs_text": "UK SRS 2 (climate) may be applied alone in Year 1; UK SRS 1 follows Year 2",
+        "materiality": "High — allows climate-only reporting in first year",
+        "icon": "🌡️",
+    },
+    {
+        "ref": "Amendment 5",
+        "topic": "UK Transition Plan (CTPR)",
+        "ifrs_text": "Transition plan disclosures per ISSB S2 §B36–B37",
+        "uk_srs_text": "Additional UK Climate Transition Plan Requirement (CTPR) aligned with TPT Disclosure Framework",
+        "materiality": "Medium — adds UK TPT sector pathways",
+        "icon": "🗺️",
+    },
+    {
+        "ref": "Amendment 6",
+        "topic": "FCA TCFD Compatibility",
+        "ifrs_text": "ISSB replaces TCFD as the global climate disclosure framework",
+        "uk_srs_text": "UK SRS must align with FCA's TCFD-based Listing Rules (LR 9.8.6R); dual compliance supported",
+        "materiality": "Medium — UK SRS = TCFD-compliant by design",
+        "icon": "🇬🇧",
+    },
+]
+
+# ── Adoption tracker: which jurisdictions have adopted IFRS S1/S2 ─────────────
+ISSB_ADOPTION_MAP: list[dict] = [
+    {"jurisdiction": "United Kingdom", "code": "UK", "standard": "UK SRS 1+2", "effective": "FYB Jan 2025", "mandatory_scope": "Premium + Standard listed (FCA)", "status": "Mandatory"},
+    {"jurisdiction": "Turkey", "code": "TR", "standard": "TSRS 1+2 (KGK)", "effective": "FYB Jan 2024 (BİST-100)", "mandatory_scope": "BİST-100 → all listed → banks → large cos", "status": "Mandatory (phased)"},
+    {"jurisdiction": "Australia", "code": "AU", "standard": "AASB S1+S2", "effective": "FYB Jan 2025 (large)","mandatory_scope": "Large entities, financial institutions", "status": "Mandatory"},
+    {"jurisdiction": "Japan", "code": "JP", "standard": "SSBJ S1+S2", "effective": "FYB Apr 2027", "mandatory_scope": "TSE Prime listed", "status": "Phased"},
+    {"jurisdiction": "Singapore", "code": "SG", "standard": "SGX ISSB-aligned", "effective": "FY2025", "mandatory_scope": "SGX-listed companies", "status": "Mandatory"},
+    {"jurisdiction": "Canada", "code": "CA", "standard": "CSSB S1+S2", "effective": "FYB Jan 2025 (voluntary)", "mandatory_scope": "Voluntary; regulatory mandate pending", "status": "Voluntary"},
+    {"jurisdiction": "GCC / UAE", "code": "AE", "standard": "ISSB S1+S2 (direct)", "effective": "FY2026", "mandatory_scope": "Financial institutions; ADGM/DIFC firms", "status": "Phased"},
+    {"jurisdiction": "EU", "code": "EU", "standard": "ESRS (CSRD) — ISSB interop", "effective": "FY2024 (large PIEs)", "mandatory_scope": "Large EU companies + EU-listed", "status": "Mandatory (ESRS)"},
+    {"jurisdiction": "KKTC", "code": "CY-N", "standard": "TSRS 1+2 (consolidated under TR parent)", "effective": "FYB Jan 2024 (via TR consolidation)", "mandatory_scope": "Subsidiaries of TR-listed parents (TSRS 1 §20 + App. Guide B38)", "status": "Via consolidation"},
+]
+
 # ── Readiness scoring ─────────────────────────────────────────────────────────
 READINESS_BANDS = [
     {"min": 0,  "max": 25, "label": "Initial",    "color": "#ef4444", "bg": "#fef2f2",
@@ -394,6 +461,8 @@ def full_issb_assessment(
         "s2_pillars": S2_PILLARS,
         "tcfd_crosswalk": TCFD_ISSB_CROSSWALK,
         "scenario_bands": SCENARIO_BANDS,
+        "uk_srs_amendments": UK_SRS_AMENDMENTS,
+        "issb_adoption_map": ISSB_ADOPTION_MAP,
         "standards": {
             "s1": "IFRS S1 — General Sustainability-related Financial Disclosures (June 2023)",
             "s2": "IFRS S2 — Climate-related Disclosures (June 2023)",

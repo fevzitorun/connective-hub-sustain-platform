@@ -4,7 +4,9 @@ from typing import Any
 
 from ..services.report_builder_engine import (
     build_report_outline,
-    FRAMEWORKS, REPORT_TEMPLATES, SECTION_LIBRARY, DEMO_RESULT,
+    FRAMEWORKS, REPORT_TEMPLATES, SECTION_LIBRARY,
+    XBRL_TAG_LIBRARY, XBRL_FILING_INFO,
+    DEMO_RESULT,
 )
 
 router = APIRouter(prefix="/report-builder", tags=["Report Builder"])
@@ -47,3 +49,9 @@ async def list_templates() -> list[dict]:
 @router.get("/sections")
 async def list_sections() -> list[dict]:
     return SECTION_LIBRARY
+
+
+@router.get("/xbrl-tags")
+async def list_xbrl_tags() -> dict[str, Any]:
+    """KGK XBRL taxonomy tag library (quantitative + qualitative)"""
+    return {"tags": XBRL_TAG_LIBRARY, "filing_info": XBRL_FILING_INFO}

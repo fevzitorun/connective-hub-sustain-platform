@@ -72,6 +72,96 @@ ESG_GRADE_THRESHOLDS: list[tuple[int, str]] = [
     (50, "BB"), (40, "B"), (30, "CCC"), (0, "D"),
 ]
 
+# ── PCAF Veri Kalite Skoru (DQS) ─────────────────────────────────────────────
+# PCAF Standard v2, Part B — Asset Class: Corporate Loans & Bonds
+# DQS 1 (en iyi) → 5 (en kötü); banka portföy raporlarında ağırlıklı ortalama hesaplanır.
+PCAF_DQS_LEVELS: list[dict] = [
+    {
+        "score": 1,
+        "label": "Doğrulanmış Raporlanan Emisyonlar",
+        "data_source": "Şirketin 3. tarafça denetlenmiş GHG raporu (Scope 1+2+3)",
+        "accuracy": "En Yüksek",
+        "color": "#10b981",
+        "typical_use": "Büyük halka açık şirketler — TSRS/ISSB raporlaması var",
+    },
+    {
+        "score": 2,
+        "label": "Raporlanan Emisyonlar (Denetimsiz)",
+        "data_source": "Şirketin kendi GHG raporu (bağımsız güvence yok)",
+        "accuracy": "Yüksek",
+        "color": "#3b82f6",
+        "typical_use": "Orta ölçekli şirketler — sürdürülebilirlik raporu yayınlıyor",
+    },
+    {
+        "score": 3,
+        "label": "Aktivite Tabanlı Hesaplama",
+        "data_source": "Aktivite verisi (enerji, yakıt, üretim) × emisyon faktörü",
+        "accuracy": "Orta",
+        "color": "#f59e0b",
+        "typical_use": "Küçük şirketler — finansal+operasyonel verilerden tahmin",
+    },
+    {
+        "score": 4,
+        "label": "Ekonomik Aktivite Tahmini",
+        "data_source": "Sektör emisyon yoğunluğu × ciro/EVIC",
+        "accuracy": "Düşük-Orta",
+        "color": "#f97316",
+        "typical_use": "KOBİ portföyleri — fiziksel veri yok, finansal proxy",
+    },
+    {
+        "score": 5,
+        "label": "Varlık Sınıfı Proxy",
+        "data_source": "Sektör/ülke ortalama emisyon yoğunluğu",
+        "accuracy": "En Düşük",
+        "color": "#ef4444",
+        "typical_use": "Veri yokluğunda ülke-sektör ortalama kullanımı",
+    },
+]
+
+# ── Akbank T.A.Ş. PCAF DQS Kıyaslaması (2024 rapor dönemi) ─────────────────
+AKBANK_PCAF_BENCHMARK: dict = {
+    "bank": "Akbank T.A.Ş.",
+    "report_year": 2024,
+    "asset_classes": [
+        {
+            "class": "Kurumsal Krediler",
+            "dqs": 4.1,
+            "portfolio_share_pct": 45,
+            "note": "Büyük şirketlerde DQS 3; KOBİ ağırlıklı portföyde 4–5 arası",
+            "improvement_path": "TSRS 2 raporlaması zorunlu hale geldikçe DQS 3'e geçiş bekleniyor (2026)",
+        },
+        {
+            "class": "Proje Finansmanı",
+            "dqs": 3.7,
+            "portfolio_share_pct": 20,
+            "note": "Yenilenebilir enerji projeleri DQS 2; altyapı DQS 4",
+            "improvement_path": "Yeşil/sürdürülebilir proje finansmanı arttıkça DQS 3'ün altına düşülecek",
+        },
+        {
+            "class": "Gayrimenkul Kredileri",
+            "dqs": 4.8,
+            "portfolio_share_pct": 15,
+            "note": "EPC (enerji kimlik belgesi) verisi yetersiz; proxy kullanımı zorunlu",
+            "improvement_path": "EPBD uyumlu EPC verisi entegrasyonu ile DQS 3'e geçiş",
+        },
+        {
+            "class": "Küçük İşletme Kredileri",
+            "dqs": 4.9,
+            "portfolio_share_pct": 20,
+            "note": "KOBİ'lerde veri boşluğu en büyük zorluk; KOBİ ESG Kredi Skoru ile iyileştirme",
+            "improvement_path": "SustainHub KOBİ ESG Skoru ile DQS 3.5'e çekilebilir",
+        },
+    ],
+    "portfolio_weighted_dqs": 4.1,
+    "industry_target_2025": 3.5,
+    "industry_target_2027": 2.8,
+    "attribution_factor_note": (
+        "Attribution Factor = Drawn Balance / EVIC — "
+        "PCAF Standard v2 Part B §4.2. "
+        "Facilitated emissions (Kapsam 3 Kat.15) %33 ağırlıkla dahil edilir."
+    ),
+}
+
 
 @dataclass
 class BorrowerInput:

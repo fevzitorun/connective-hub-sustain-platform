@@ -186,6 +186,67 @@ KGK_CHECKLIST = [
     {"id": "k12", "category": "Güvence", "text": "Veri izleme ve denetim izi oluşturuldu"},
 ]
 
+# ── KKTC Konsolidasyon Kuralı (TSRS 1 Md.20 + Uygulama Kılavuzu B38) ────────
+# Kuzey Kıbrıs Türk Cumhuriyeti'nde faaliyet gösteren Türk banka/şirket iştirakleri
+# tek raporlama birimi olarak ana ortaklığın TSRS raporuna konsolide edilir.
+KKTC_CONSOLIDATION_RULE = {
+    "rule_ref": "TSRS 1 Madde 20 + Uygulama Kılavuzu B38",
+    "summary": "KKTC'deki iştiraklerin emisyonları ve sürdürülebilirlik verileri, Türkiye'deki ana ortaklığın TSRS raporuna Kapsam 3 Kategori 15 (Finanse Edilen Emisyonlar) kapsamında dahil edilir.",
+    "jurisdiction": "KKTC",
+    "applicable_to": [
+        "Türk bankaların KKTC şubeleri",
+        "Türk holdinglerin KKTC iştirakleri",
+        "BİST-listeli şirketlerin KKTC bağlı ortaklıkları",
+    ],
+    "reporting_treatment": "Konsolide raporlama — tek raporlama birimi",
+    "emissions_scope": "Kapsam 1+2 (KKTC operasyonları) + Kapsam 3 Kat.15 (finanse edilen)",
+    "deadline": "Ana ortaklığın TSRS deadline'ı geçerli (bankalar: 30 Haziran 2025)",
+    "note": "KKTC, CSRD veya UK SRS kapsamında değil; TSRS tek geçerli çerçeve.",
+    "pcaf_dqs_note": "KKTC portföyleri için PCAF Veri Kalite Skoru ortalama 3.5–4.5 arası beklenmektedir (aktivite verisi bazlı).",
+}
+
+# ── TSRS vs UK SRS: Temel Farklar ────────────────────────────────────────────
+TSRS_VS_UK_SRS = {
+    "shared_base": "Her iki standart da IFRS S1 ve S2 temeline dayanır (IOSCO onaylı, Temmuz 2023)",
+    "differences": [
+        {
+            "topic": "Yayımlayan Kuruluş",
+            "tsrs": "KGK (Kamu Gözetimi Kurumu), Türkiye — 2023",
+            "uk_srs": "FRC (Financial Reporting Council), UK — 2024",
+        },
+        {
+            "topic": "Zorunluluk Başlangıcı",
+            "tsrs": "BİST-100: 2024 · Bankalar: Haz 2025 · Büyük şirketler: 2026",
+            "uk_srs": "Premium + Standard listeli: FYB Ocak 2025",
+        },
+        {
+            "topic": "İlk Yıl Esnekliği",
+            "tsrs": "TSRS 1 (Genel) + TSRS 2 (İklim) birlikte zorunlu",
+            "uk_srs": "İklim-önce uygulama: Y1'de yalnızca UK SRS 2 yeterli",
+        },
+        {
+            "topic": "Geçiş Planı",
+            "tsrs": "TSRS 2 §B36 — iklim geçiş planı açıklaması zorunlu",
+            "uk_srs": "UK CTPR (Climate Transition Plan Requirement) + TPT sektör yolları",
+        },
+        {
+            "topic": "Küçük Şirket Rahatlığı",
+            "tsrs": "KOBİ'lere 2027+ gönüllü geçiş; Ticaret Bakanlığı Sorumlu® programı",
+            "uk_srs": "AIM/AQSE için 2 yıllık aşamalı geçiş imkânı",
+        },
+        {
+            "topic": "Düzenleyici Uyum",
+            "tsrs": "SPK Tebliği + BDDK düzenlemeleri (bankalar)",
+            "uk_srs": "FCA Listeleme Kuralları (LR 9.8.6R) + TCFD çift uyum",
+        },
+    ],
+    "tri_jurisdictional_note": (
+        "Türk bankalar Türkiye + UK + KKTC'de faaliyet gösteriyorsa: "
+        "Ana konsolide rapor TSRS'ye göre; UK şubesi için UK SRS ek açıklaması; "
+        "KKTC operasyonları TSRS ana raporuna konsolide edilir."
+    ),
+}
+
 # ── Hazırlık band'ları ─────────────────────────────────────────────────────────
 TSRS_READINESS_BANDS = [
     {"min": 0,  "max": 25, "label": "Başlangıç",  "color": "#ef4444", "desc": "TSRS uyumu için acil hazırlık gerekiyor"},
@@ -245,6 +306,8 @@ def full_tsrs_assessment(
         "kgk_checklist": KGK_CHECKLIST,
         "deadlines": TSRS_DEADLINES,
         "disclosure_ready": overall >= 65 and checklist_score >= 75,
+        "kktc_consolidation_rule": KKTC_CONSOLIDATION_RULE,
+        "tsrs_vs_uk_srs": TSRS_VS_UK_SRS,
     }
 
 

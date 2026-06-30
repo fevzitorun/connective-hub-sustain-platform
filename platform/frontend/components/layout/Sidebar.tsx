@@ -37,6 +37,7 @@ const navItems = [
     { href: '/uydu', label: 'Earth Intelligence', icon: '🛰️', badge: 'NEW' },
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦', badge: 'PCAF' },
     { href: '/gar/kobi-dashboard', label: 'KOBİ Portföy', icon: '🏪' },
+    { href: '/kobi-credit-score', label: 'KOBİ ESG Credit Score', icon: '🏅', badge: 'NEW' },
     { href: '/iso14064', label: 'Karbon Ayak İzi', icon: '🌿', badge: 'ISO' },
     { href: '/pcf', label: 'Ürün PCF (ISO 14067)', icon: '📦', badge: 'NEW' },
     { href: '/uk-sdr', label: 'FCA SDR + SFDR', icon: '🇬🇧', badge: 'UK' },

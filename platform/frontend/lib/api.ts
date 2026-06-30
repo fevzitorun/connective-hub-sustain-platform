@@ -529,6 +529,15 @@ export const api = {
     listRuns: (limit = 20) => request<{ runs: unknown[] }>(`/api/autopilot/runs?limit=${limit}`),
   },
 
+  kobiCreditScore: {
+    demo: () => request<unknown>('/kobi-credit-score/demo'),
+    assess: (data: { company_name: string; sector: string; answers: Record<string, number> }) =>
+      request<unknown>('/kobi-credit-score/assess', { method: 'POST', body: JSON.stringify(data) }),
+    questions: () => request<unknown[]>('/kobi-credit-score/questions'),
+    bankCategories: () => request<unknown[]>('/kobi-credit-score/bank-categories'),
+    sectors: () => request<unknown>('/kobi-credit-score/sectors'),
+  },
+
   stats: {
     global: () => request<{
       platform: string

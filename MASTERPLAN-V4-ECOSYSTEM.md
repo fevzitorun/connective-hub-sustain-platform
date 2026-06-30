@@ -827,6 +827,40 @@ PHASE 1 — BEACHHEAD (Now → Q4 2026) — €1.5M Seed
    Sidebar:                  ESG Health Check (🩺 NEW), Satellite Verify → Earth Intelligence
    api.ts:                   healthCheck.estimate genişletildi, tcfd.scenarios physical_risk_base
 
+✅ DONE — Sprint 37 (Jun 2026) — ISSB IFRS S1+S2 Module
+   issb/page.tsx:         4 tabs: Overview (ReadinessGauge + radar), S1 Disclosures, S2 Climate, TCFD Crosswalk
+   issb_engine.py:        S1/S2 pillars, 8 cross-industry metrics, TCFD→ISSB 10-row crosswalk, 4 scenario bands
+   UK_SRS_AMENDMENTS:     6 UK-specific amendments vs IFRS S1/S2 (FRC August 2024) — Amendment 1–6
+   ISSB_ADOPTION_MAP:     9 jurisdiction tracker (UK, TR, AU, JP, SG, CA, AE, EU, KKTC)
+
+✅ DONE — Sprint 38 (Jun 2026) — TSRS 1+2 (KGK) Module
+   tsrs/page.tsx:         5 tabs: Genel Bakış, TSRS 1, TSRS 2, KGK Kontrol Listesi, Takvim
+   tsrs_engine.py:        5 deadline segments, TSRS1+2 pillars, 12-item KGK checklist
+   KKTC_CONSOLIDATION:    TSRS 1 §20 + Uygulama Kılavuzu B38 — KKTC ops → TR parent consolidation
+   TSRS_VS_UK_SRS:        Tri-jurisdictional comparison (TR + UK + KKTC) with shared IFRS S1/S2 base
+
+✅ DONE — Sprint 39 (Jun 2026) — Report Builder
+   report-builder/page.tsx: 3 tabs: Templates, Build, Preview
+   report_builder_engine.py: 6 frameworks, 5 templates, 20-section library
+   XBRL_TAG_LIBRARY:      KGK Ulusal Taksonomisi — 36 etiket (8 zorunlu): GHG, Enerji, Su, Finans, SASB, Metin
+   XBRL_FILING_INFO:      KGK dijital platform, XHTML+inline XBRL, zorunlu 2025
+
+✅ DONE — Sprint 40 (Jun 2026) — SASB + UN SDG
+   sasb-sdg/page.tsx:     9 SICS sektörü × 4 metrik, 17 SDG, sektör→SDG haritalama
+
+✅ DONE — Sprint 41 (Jun 2026) — Water + ESRS E2–E5
+   water-esrs/page.tsx:   ISO 14046 blue/green/grey, ESRS E2+E3+E4+E5 = 23 açıklama
+
+✅ DONE — Sprint 42 (Jun 2026) — ESG Benchmark (3-Series Radar)
+   esg-benchmark/page.tsx: 8 boyut, 5 sektör, 3-series radar, 13 çerçeve skoru
+
+✅ DONE — Sprint 43 (Tem 2026) — KOBİ ESG Kredi Skoru
+   kobi-credit-score/page.tsx: 4 tabs: Demo, Değerlendirme, Sonuçlar, Aksiyon Planı
+   kobi_credit_score_engine.py: 33 soru (E×11 + S×11 + G×11), E(40%)+S(30%)+G(30%)
+   Rating: AAA → D · Banka Kategorisi: A / B+ / B- / C (Ziraat Bank modeli)
+   PCAF bağlantısı: KOBİ skoru → DQS 4.9→3.5 iyileştirme potansiyeli
+   AKBANK_PCAF_BENCHMARK: Kurumsal DQS 4.1, Proje Finansmanı 3.7, KOBİ 4.9
+
 ✅ DONE — Sprint 23 (Jun 2026) — Compliance Tracker Tri-Jurisdictional Rebuild
    compliance/page.tsx:     7 düzenleme (TSRS + BDDK GAR + FCA SDR + CBAM + EUDR + CSRD + KKTC MB)
                              Jurisdiction filtresi: 🇹🇷 BDDK / 🇬🇧 FCA / 🇪🇺 AB / 🇨🇾 KKTC
@@ -990,6 +1024,50 @@ The platform is no longer a single product — it's a 6-product ecosystem with a
 | 2028 | €10M | 500 | All 6 products live, DACH active |
 | 2029 | €22M | 1,200 | GCC entry, Research Institute brand |
 | 2030 | €40M+ | 2,500 | Series B, US market exploration |
+
+### SaaS Pricing Tiers (Confirmed — NotebookLM Validated, June 2026)
+
+| Tier | TRY/year | EUR/year | Target | Key Features |
+|------|----------|----------|--------|--------------|
+| **Starter** | ₺30,000 | €800 | KOBİ, early adopters | Carbon tracking, basic reports, 1 user |
+| **Professional** | ₺72,000 | €2,000 | Mid-size companies | All frameworks, TSRS reports, 5 users |
+| **Enterprise** | ₺180,000+ | €5,000+ | Large cos, holding groups | Full platform, GAR, API, unlimited users |
+| **KSRU Partner** | ₺120,000 | €3,300 | Ticaret Bakanlığı Sorumlu® registrants | Sorumlu® scoring + subsidy calculator |
+
+> **Exchange rate basis:** 1 EUR = ~36 TRY (floating; TRY tiers anchored separately)
+
+### B2B2B Bank Distribution Model
+
+The Turkish bank channel represents a strategic multiplier on direct SaaS ARR:
+
+```
+Ziraat / Akbank / Garanti BBVA / İş Bankası
+    ├── KOBİ Portföyü (her banka: 2,000–50,000 KOBİ)
+    ├── KOBİ ESG Kredi Skoru → PCAF DQS iyileştirme
+    ├── SustainHub whitelabel OR referral commission
+    └── Bank ESG Tier:  Bakiye × Attribution Factor → GAR raporlaması
+```
+
+**Revenue model:** Per-KOBİ fee (₺2,400/KOBİ/year) OR bank enterprise license (₺1.2M/year per Tier-1 bank).
+
+### PCAF DQS Improvement Roadmap (Akbank Benchmark)
+
+| Asset Class | Current DQS | Target 2026 | Target 2028 | Driver |
+|-------------|------------|-------------|-------------|--------|
+| Kurumsal Krediler | 4.1 | 3.5 | 2.8 | TSRS zorunlu raporlama |
+| Proje Finansmanı | 3.7 | 3.0 | 2.2 | Yeşil kredi büyümesi |
+| Gayrimenkul | 4.8 | 4.0 | 3.2 | EPC veri entegrasyonu |
+| KOBİ Kredileri | 4.9 | 3.5 | 2.8 | KOBİ ESG Skoru (Sprint 43) |
+
+SustainHub'ın KOBİ ESG Kredi Skoru modülü, banka KOBİ portföyü PCAF DQS'ini ortalama 1.4 puan iyileştirme potansiyeli taşımaktadır.
+
+### Sprint 43 — KOBİ ESG Kredi Skoru (Temmuz 2026)
+
+**Metodoloji:** Ziraat Bankası 33-soru modeli · E(40%) + S(30%) + G(30%)  
+**Rating:** AAA → D (MSCI/S&P uyumlu)  
+**Banka Kategorisi:** A (Prime, PD≤2%) / B+ (İyi, PD≤5%) / B- (İzlemede, PD≤10%) / C (Riskli)  
+**PCAF Bağlantısı:** KOBİ skoru → DQS 4.9→3.5 iyileştirme → GAR raporlama kalitesi  
+**Ticari Model:** ₺2,400/KOBİ/year (banka API) | ₺30K/year doğrudan KOBİ erişimi
 
 ---
 

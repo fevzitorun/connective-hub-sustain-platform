@@ -160,6 +160,10 @@ app.include_router(water_esrs.router)
 from .routes import esg_benchmark
 app.include_router(esg_benchmark.router)
 
+# Sprint 43 — KOBİ ESG Credit Score
+from .routes import kobi_credit_score
+app.include_router(kobi_credit_score.router)
+
 
 @app.on_event("startup")
 async def startup():
