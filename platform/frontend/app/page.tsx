@@ -5,16 +5,16 @@ import { Factory, Landmark, Truck, GraduationCap, ArrowRight, ShieldCheck, Globe
 import { API_URL } from '@/lib/constants'
 
 const SECTORS = [
-  { value: 'manufacturing', label: 'Üretim / Sanayi' },
-  { value: 'banking',       label: 'Bankacılık / Finans' },
-  { value: 'retail',        label: 'Perakende / Ticaret' },
-  { value: 'energy',        label: 'Enerji' },
-  { value: 'construction',  label: 'İnşaat / Gayrimenkul' },
-  { value: 'logistics',     label: 'Lojistik / Taşımacılık' },
-  { value: 'textile',       label: 'Tekstil / Hazır Giyim' },
-  { value: 'food',          label: 'Gıda / İçecek' },
-  { value: 'tech',          label: 'Teknoloji / Yazılım' },
-  { value: 'other',         label: 'Diğer' },
+  { value: 'manufacturing', label: 'Manufacturing / Industry' },
+  { value: 'banking',       label: 'Banking / Finance' },
+  { value: 'retail',        label: 'Retail / Trade' },
+  { value: 'energy',        label: 'Energy' },
+  { value: 'construction',  label: 'Construction / Real Estate' },
+  { value: 'logistics',     label: 'Logistics / Transportation' },
+  { value: 'textile',       label: 'Textile / Apparel' },
+  { value: 'food',          label: 'Food & Beverage' },
+  { value: 'tech',          label: 'Technology / Software' },
+  { value: 'other',         label: 'Other' },
 ]
 
 type HealthResult = {
@@ -32,7 +32,7 @@ function EsgHealthWidget() {
   const [error, setError] = useState('')
 
   async function handleCheck() {
-    if (!employees || parseInt(employees) <= 0) { setError('Çalışan sayısını girin'); return }
+    if (!employees || parseInt(employees) <= 0) { setError('Please enter employee count'); return }
     setError(''); setLoading(true); setResult(null)
     try {
       const res = await fetch(`${API_URL}/health-check/estimate`, {
@@ -44,10 +44,10 @@ function EsgHealthWidget() {
           electricity_kwh: kwh ? parseFloat(kwh) : undefined,
         }),
       })
-      if (!res.ok) throw new Error('Hesaplama hatası')
+      if (!res.ok) throw new Error('Calculation error')
       setResult(await res.json())
     } catch {
-      setError('Şu an bağlantı kurulamadı. Lütfen tekrar deneyin.')
+      setError('Connection failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -59,15 +59,15 @@ function EsgHealthWidget() {
         <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xl">
           <div className="text-center mb-6">
             <div className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 mb-3">
-              ⚡ 10 Saniyede Ücretsiz
+              ⚡ Free in 10 Seconds
             </div>
-            <h3 className="text-2xl font-black text-slate-900">ESG Sağlık Kontrolü</h3>
-            <p className="text-slate-500 text-sm mt-1">3 bilgi, anında Sustain-Score</p>
+            <h3 className="text-2xl font-black text-slate-900">ESG Health Check</h3>
+            <p className="text-slate-500 text-sm mt-1">3 inputs, instant Sustain-Score</p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sektör</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sector</label>
               <select
                 value={sector} onChange={e => setSector(e.target.value)}
                 className="mt-1 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -75,18 +75,18 @@ function EsgHealthWidget() {
               </select>
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Çalışan Sayısı</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Employee Count</label>
               <input
-                type="number" placeholder="örn: 500" value={employees}
+                type="number" placeholder="e.g. 500" value={employees}
                 onChange={e => setEmployees(e.target.value)}
                 className="mt-1 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Yıllık Elektrik Tüketimi (kWh) <span className="font-normal text-slate-400">— opsiyonel</span>
+                Annual Electricity Usage (kWh) <span className="font-normal text-slate-400">— optional</span>
               </label>
               <input
-                type="number" placeholder="örn: 1500000 (bilinmiyorsa boş bırakın)"
+                type="number" placeholder="e.g. 1500000 (leave blank if unknown)"
                 value={kwh} onChange={e => setKwh(e.target.value)}
                 className="mt-1 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
@@ -95,10 +95,10 @@ function EsgHealthWidget() {
               onClick={handleCheck} disabled={loading}
               className="w-full py-3.5 rounded-2xl text-white font-black text-base transition-all disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 8px 24px rgba(16,185,129,0.3)' }}>
-              {loading ? 'Hesaplanıyor…' : 'Sustain-Skor\'umu Gör →'}
+              {loading ? 'Calculating…' : 'See My Sustain Score →'}
             </button>
           </div>
-          <p className="text-center text-xs text-slate-400 mt-4">Kayıt gerektirmez · Veri saklanmaz</p>
+          <p className="text-center text-xs text-slate-400 mt-4">No sign-up required · Data not stored</p>
         </div>
       ) : (
         <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xl">
@@ -110,7 +110,7 @@ function EsgHealthWidget() {
             </div>
             <div className="text-3xl font-black text-slate-900">{result.score}<span className="text-lg text-slate-400">/100</span></div>
             <p className="text-sm font-semibold mt-1" style={{ color: result.grade_color }}>
-              {result.sector_label} sektöründe üst %{100 - result.percentile}
+              Top {100 - result.percentile}% in {result.sector_label}
             </p>
             <p className="text-xs text-slate-500 mt-1">{result.vs_sector}</p>
           </div>
@@ -118,18 +118,18 @@ function EsgHealthWidget() {
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <div className="rounded-xl p-3 text-center bg-slate-50">
-              <div className="text-xl font-black text-slate-800">{result.total_tco2e.toLocaleString('tr-TR')}</div>
-              <div className="text-xs text-slate-500">ton CO₂e / yıl (tahmini)</div>
+              <div className="text-xl font-black text-slate-800">{result.total_tco2e.toLocaleString('en-GB')}</div>
+              <div className="text-xs text-slate-500">tCO₂e / year (estimate)</div>
             </div>
             <div className="rounded-xl p-3 text-center bg-slate-50">
-              <div className="text-xl font-black text-slate-800">%{result.percentile}</div>
-              <div className="text-xs text-slate-500">sektör yüzdeliği</div>
+              <div className="text-xl font-black text-slate-800">{result.percentile}%</div>
+              <div className="text-xs text-slate-500">sector percentile</div>
             </div>
           </div>
 
           {/* Quick Wins */}
           <div className="mb-6">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hızlı Kazanımlar</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Quick Wins</p>
             <ul className="space-y-1.5">
               {result.quick_wins.map(w => (
                 <li key={w} className="flex items-start gap-2 text-sm text-slate-600">
@@ -142,10 +142,10 @@ function EsgHealthWidget() {
           <Link href="/register"
             className="block w-full py-3 rounded-2xl text-center text-white font-bold text-sm"
             style={{ background: '#0f172a' }}>
-            Resmi Rapor + Detaylı Analiz İçin Ücretsiz Başla →
+            Start Free — Official Report + Detailed Analysis →
           </Link>
           <button onClick={() => setResult(null)} className="w-full mt-2 py-2 text-xs text-slate-400 hover:text-slate-600">
-            Yeniden hesapla
+            Recalculate
           </button>
         </div>
       )}
@@ -159,24 +159,28 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-xl font-bold shadow-lg shadow-emerald-500/20">🌿</div>
             <div>
               <span className="font-black text-2xl tracking-tight text-slate-900">SustainHub</span>
               <span className="text-emerald-600 font-bold ml-1">.online</span>
             </div>
-          </div>
-          <div className="hidden md:flex items-center gap-8 font-semibold text-sm text-slate-600">
-            <Link href="#platform" className="hover:text-emerald-600 transition-colors">Platform</Link>
-            <Link href="#solutions" className="hover:text-emerald-600 transition-colors">Solutions</Link>
-            <Link href="/pitch-deck.html" className="hover:text-emerald-600 transition-colors">Investors</Link>
+          </Link>
+          <div className="hidden lg:flex items-center gap-6 font-semibold text-sm text-slate-600">
+            <Link href="/products" className="hover:text-emerald-600 transition-colors">Products</Link>
+            <Link href="/about" className="hover:text-emerald-600 transition-colors">About Us</Link>
+            <Link href="/cop31" className="hover:text-emerald-600 transition-colors font-bold text-amber-600">COP31 Special</Link>
+            <Link href="/data-library" className="hover:text-emerald-600 transition-colors">AI Data Library</Link>
+            <Link href="/news-insights" className="hover:text-emerald-600 transition-colors">News & Insights</Link>
+            <Link href="/careers" className="hover:text-emerald-600 transition-colors">Careers</Link>
+            <Link href="/contact" className="hover:text-emerald-600 transition-colors">Contact</Link>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="hidden md:block text-sm font-bold text-slate-600 hover:text-slate-900">
               Sign In
             </Link>
-            <Link href="/dashboard" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg hover:shadow-xl">
-              Launch Platform <ArrowRight size={16} />
+            <Link href="/request-demo" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg hover:shadow-xl">
+              Request a Demo <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -204,7 +208,7 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-8">
-            <Link href="/dashboard" className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-lg transition-all shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)] flex items-center justify-center gap-3">
+            <Link href="/request-demo" className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-lg transition-all shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)] flex items-center justify-center gap-3">
               Enter The Ecosystem
             </Link>
             <Link href="/pitch-deck.html" className="w-full sm:w-auto bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 px-8 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3">
@@ -276,14 +280,14 @@ export default function LandingPage() {
       <section id="health-check" className="py-24 px-6 bg-slate-900">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <div className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-900 text-emerald-400 mb-4 uppercase tracking-widest">
-            Rakiplerimiz e-posta bekletiyor. Biz saniyeler içinde gösteriyoruz.
+            NO EMAIL GATES. GET INSTANT RESULTS IN SECONDS.
           </div>
           <h2 className="text-4xl font-black text-white mb-4">
-            Şirketinizin ESG Skorunu<br />
-            <span className="text-emerald-400">Ücretsiz Hesaplayın</span>
+            Check Your Company's ESG Score<br />
+            <span className="text-emerald-400">For Free Instantly</span>
           </h2>
           <p className="text-slate-400 max-w-xl mx-auto">
-            Sektör, çalışan sayısı ve enerji tüketiminizi girin — AI motorumuz tahmini Sustain-Score ve hızlı kazanım önerilerinizi anında üretsin.
+            Enter your sector, employee count, and energy consumption — our AI engine will generate your estimated Sustain-Score and quick-win suggestions immediately.
           </p>
         </div>
         <EsgHealthWidget />

@@ -1078,9 +1078,30 @@ EMISSION FACTOR SOURCES (versioned, updated annually)
 
 ---
 
+## 13. SITEMAP & PUBLIC PAGE ARCHITECTURE
+
+To support international expansion and establish a unified brand presence, the public-facing ecosystem is structured entirely in English with a premium, minimal aesthetic, utilizing the following architecture:
+
+### 13.1. Sitemap (Public Facing)
+- **Home (/)**: Main entry point showcasing SustainHub as the Operating System for Green Transition. Features high-converting hero section, value propositions (Four Worlds), trust layers, and the ESG Health Check widget.
+- **Product (/products)**: Outlining the 6 core components (CarbonSense, Grid+, RemoteOps, Earth Intelligence, Climate Risk, Sustain Finance) with pricing tiers (Starter, Professional, Enterprise, Bank GAR).
+- **About Us (/about)**: Mission, vision, Connective Hub ecosystem synergy, and team overview (Istanbul & London hubs).
+- **Careers (/careers)**: Talent acquisition funnel for expanding engineering, AI, and business development teams. (Coming Soon)
+- **Sustain AI Data Library (/data-library)**: Public database of sustainability papers, academic research, and policy summaries. (Coming Soon)
+- **News & Insights (/news-insights)**: Corporate announcements, regulatory change-logs, and sustainability thought leadership. (Coming Soon)
+- **COP31 (/cop31)**: Special feature page highlighting Turkey's COP31 bidding status, local compliance deadlines (BDDK, KGK, CBAM), countdown timer, and downloadable preparedness guides.
+- **Contact Us (/contact)**: High-touch enterprise sales inquiry and partner onboarding form. (Coming Soon)
+- **Request a Demo (/request-demo)**: Fast-track redirect/onboarding interface into the platform's registration system.
+
+### 13.2. Coming Soon Status Protocol
+Pages marked as "Coming Soon" (Careers, Data Library, News & Insights, Contact Us) are rendered with a premium, glassmorphism waitlist signup form to build user interest and capture leads before full feature rollout.
+
+---
+
 *Connective Hub Dijital Teknolojiler Ltd.*
 *Ataşehir Dijital Teknokent, Istanbul · London, UK*
 *MASTERPLAN V4 — June 2026*
 *CONFIDENTIAL — For authorised recipients only*
 
 *"Sustain is not a reporting tool. Sustain is a Sustainability Intelligence Ecosystem."*
+

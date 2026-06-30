@@ -22,7 +22,7 @@ function Countdown() {
 
   return (
     <div className="flex gap-4 justify-center my-8">
-      {[{ v: days, l: 'Gün' }, { v: hours, l: 'Saat' }, { v: minutes, l: 'Dakika' }, { v: seconds, l: 'Saniye' }].map(u => (
+      {[{ v: days, l: 'Days' }, { v: hours, l: 'Hours' }, { v: minutes, l: 'Minutes' }, { v: seconds, l: 'Seconds' }].map(u => (
         <div key={u.l} className="text-center">
           <div className="text-4xl md:text-6xl font-black tabular-nums"
             style={{ background: 'linear-gradient(135deg,#34d399,#60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -36,21 +36,21 @@ function Countdown() {
 }
 
 const DEADLINES = [
-  { date: 'Ağustos 2026', label: 'BDDK TSRS Pilot Raporlama', status: 'urgent', tag: 'BDDK' },
-  { date: 'Eylül 2026',   label: 'KGK TSRS 1&2 Sınırlı Güvence Son Tarihi', status: 'urgent', tag: 'KGK' },
-  { date: 'Ekim 2026',    label: 'BDDK GAR İlk Dönem Beyanı', status: 'soon', tag: 'GAR' },
-  { date: 'Kasım 2026',   label: 'COP31 — Türkiye Ulusal Katkı Beyanı (NDC)', status: 'cop31', tag: 'COP31' },
-  { date: 'Aralık 2026',  label: 'CBAM Tam Uygulama Başlangıcı', status: 'soon', tag: 'CBAM' },
-  { date: 'Ocak 2027',    label: 'FCA UK SRS Zorunlu Uyum (Listed Companies)', status: 'uk', tag: 'FCA' },
+  { date: 'August 2026', label: 'BDDK TSRS Pilot Reporting Deadline', status: 'urgent', tag: 'BDDK' },
+  { date: 'September 2026',   label: 'KGK TSRS 1&2 Limited Assurance Deadline', status: 'urgent', tag: 'KGK' },
+  { date: 'October 2026',    label: 'BDDK GAR First Period Declaration', status: 'soon', tag: 'GAR' },
+  { date: 'November 2026',   label: 'COP31 — Turkey National Contribution Declaration (NDC)', status: 'cop31', tag: 'COP31' },
+  { date: 'December 2026',  label: 'CBAM Full Implementation Start', status: 'soon', tag: 'CBAM' },
+  { date: 'January 2027',    label: 'FCA UK SRS Mandatory Compliance (Listed Companies)', status: 'uk', tag: 'FCA' },
 ]
 
 const FEATURES = [
-  { icon: '🇹🇷', title: 'TSRS Uyum Motoru', desc: 'KGK\'nın TSRS 1&2 standartlarını (IFRS S1/S2 temelli) tam destekler. Sınırlı güvence şablonları dahil.' },
-  { icon: '🏦', title: 'BDDK GAR Portalı', desc: 'Yeşil Varlık Oranı hesaplama, PCAF finanse edilen emisyonlar ve EU Taxonomy sınıflandırması tek ekranda.' },
-  { icon: '🛰️', title: 'Uydu Doğrulama', desc: 'ESA Sentinel-2 ve NASA verileriyle fiziksel iklim riski. Greenwashing koruması için "Sustain Verified" rozeti.' },
-  { icon: '🤖', title: 'AI Copilot', desc: 'Claude AI destekli asistan — "COP31 için ne hazırlamalıyım?" sorusunu anında yanıtlar, aksiyon planı çıkarır.' },
-  { icon: '🌡️', title: 'TCFD Senaryo Analizi', desc: 'IEA Net Zero 2050 ve NGFS senaryolarıyla CFO\'ya yönelik CapEx/OpEx iklim finansal etki matrisi.' },
-  { icon: '🌍', title: 'Üç Yargı Bölgesi', desc: 'TR (BDDK+KGK) + UK (FCA+UK SRS) + KKTC (Merkez Bankası) — tek lisansla üç regülatörü kapsıyor.' },
+  { icon: '🇹🇷', title: 'TSRS Compliance Engine', desc: 'Fully supports KGK\'s TSRS 1&2 standards (based on IFRS S1/S2), including limited assurance reporting templates.' },
+  { icon: '🏦', title: 'BDDK GAR Portal', desc: 'Green Asset Ratio calculations, PCAF financed emissions, and EU Taxonomy alignment in a single dashboard.' },
+  { icon: '🛰️', title: 'Satellite Verification', desc: 'Asset-level physical climate risk via ESA Sentinel-2 and NASA data. Avoid greenwashing with "Sustain Verified" badges.' },
+  { icon: '🤖', title: 'AI Copilot', desc: 'Claude-powered assistant — instantly answers "How should I prepare for COP31?" and generates action plans.' },
+  { icon: '🌡️', title: 'TCFD Scenario Analysis', desc: 'CapEx/OpEx climate financial impact matrix for CFOs using IEA Net Zero 2050 and NGFS projections.' },
+  { icon: '🌍', title: 'Tri-Jurisdictional Scope', desc: 'Turkey (BDDK+KGK) + UK (FCA+UK SRS) + KKTC (Central Bank) — three jurisdictions under a single license.' },
 ]
 
 export default function COP31Page() {
@@ -67,13 +67,13 @@ export default function COP31Page() {
           <span className="font-black text-white">SustainHub</span>
           <span className="text-xs text-emerald-400">× COP31</span>
         </Link>
-        <div className="flex gap-3">
-          <Link href="/urunler" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">Ürünler</Link>
-          <Link href="/tcsi" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">TCSI 2026</Link>
-          <Link href="/login" className="text-sm px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:border-emerald-500 transition-colors">Giriş</Link>
-          <Link href="/register" className="text-sm px-4 py-2 rounded-lg font-bold text-white transition-colors"
+        <div className="flex gap-3 items-center">
+          <Link href="/products" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">Products</Link>
+          <Link href="/about" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">About Us</Link>
+          <Link href="/login" className="text-sm px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:border-emerald-500 transition-colors">Sign In</Link>
+          <Link href="/request-demo" className="text-sm px-4 py-2 rounded-lg font-bold text-white transition-colors"
             style={{ background: 'linear-gradient(135deg,#059669,#0284c7)' }}>
-            Demo Talep Et
+            Request Demo
           </Link>
         </div>
       </nav>
@@ -82,30 +82,25 @@ export default function COP31Page() {
       <section className="text-center px-6 pt-20 pb-12 max-w-4xl mx-auto">
         <div className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full mb-8 border"
           style={{ background: 'rgba(217,119,6,0.1)', borderColor: 'rgba(217,119,6,0.3)', color: '#fbbf24' }}>
-          🇹🇷 COP31 Türkiye Özel Edisyonu
+          🇹🇷 COP31 Turkey Special Edition
         </div>
         <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6">
-          COP31 Türkiye'de.
+          COP31 is in Turkey.
           <br />
           <span style={{ background: 'linear-gradient(135deg,#34d399,#60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Sürdürülebilirlik Platformunuz Hazır mı?
+            Is Your Sustainability Platform Ready?
           </span>
         </h1>
         <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
-          BDDK zorunlu TSRS raporlaması, GAR beyanı ve PCAF finanse edilen emisyonlar —
-          tümü COP31 öncesinde hayata geçiyor. SustainHub, 34 Türk bankası ve 200+ büyük şirket
-          için hazır.
+          BDDK mandatory TSRS reporting, GAR declarations, and PCAF financed emissions — 
+          all going live ahead of COP31. SustainHub is ready for 34 Turkish banks and 200+ enterprise corporations.
         </p>
         <Countdown />
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/register"
+          <Link href="/request-demo"
             className="px-8 py-4 rounded-xl font-black text-white text-base transition-all hover:scale-105"
             style={{ background: 'linear-gradient(135deg,#059669,#0284c7)' }}>
-            Ücretsiz Demo → 60 Saniyede Başla
-          </Link>
-          <Link href="/tcsi"
-            className="px-8 py-4 rounded-xl font-bold text-emerald-400 text-base border border-emerald-500/30 hover:border-emerald-500 transition-colors">
-            TCSI 2026 Raporu İncele
+            Free Demo → Start in 60 Seconds
           </Link>
         </div>
       </section>
@@ -113,7 +108,7 @@ export default function COP31Page() {
       {/* Deadlines */}
       <section className="max-w-5xl mx-auto px-6 py-12">
         <h2 className="text-2xl font-black text-white text-center mb-8">
-          COP31 Öncesi Kritik Son Tarihler
+          Critical Deadlines Pre-COP31
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {DEADLINES.map(d => {
@@ -144,9 +139,9 @@ export default function COP31Page() {
       {/* Features */}
       <section className="max-w-6xl mx-auto px-6 py-12">
         <h2 className="text-2xl font-black text-white text-center mb-2">
-          COP31 İçin İhtiyacınız Olan Her Şey
+          Everything You Need for COP31
         </h2>
-        <p className="text-slate-500 text-center text-sm mb-10">Tek platform, üç yargı bölgesi, sıfır danışman maliyeti.</p>
+        <p className="text-slate-500 text-center text-sm mb-10">One platform, three jurisdictions, zero advisor friction.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {FEATURES.map(f => (
             <div key={f.title} className="rounded-2xl p-6 border border-white/5 hover:border-emerald-500/20 transition-all group"
@@ -163,16 +158,15 @@ export default function COP31Page() {
       <section className="max-w-2xl mx-auto px-6 py-16 text-center">
         <div className="rounded-2xl p-8 border" style={{ background: 'rgba(5,150,105,0.05)', borderColor: 'rgba(5,150,105,0.2)' }}>
           <div className="text-3xl mb-4">📥</div>
-          <h2 className="text-2xl font-black text-white mb-2">COP31 Hazırlık Rehberini İndir</h2>
+          <h2 className="text-2xl font-black text-white mb-2">Download COP31 Readiness Guide</h2>
           <p className="text-slate-400 text-sm mb-6">
-            TSRS uyum takvimi, GAR hesaplama rehberi ve PCAF metodoloji kılavuzunu içeren
-            ücretsiz PDF'yi hemen alın.
+            Get your free PDF including TSRS compliance timelines, GAR calculation guides, and PCAF methodology instructions.
           </p>
           {!submitted ? (
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
-                placeholder="kurumsal@email.com"
+                placeholder="corporate@email.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm"
@@ -182,15 +176,15 @@ export default function COP31Page() {
                 className="px-6 py-3 rounded-xl font-black text-white text-sm transition-all hover:scale-105 flex-shrink-0"
                 style={{ background: 'linear-gradient(135deg,#059669,#0284c7)' }}
               >
-                Rehberi Gönder →
+                Send Guide →
               </button>
             </div>
           ) : (
             <div className="py-4">
               <div className="text-4xl mb-2">✅</div>
-              <p className="text-emerald-400 font-bold">Teşekkürler! Rehber {email} adresine gönderildi.</p>
-              <p className="text-slate-500 text-xs mt-1">Demo talep etmek ister misiniz?{' '}
-                <Link href="/register" className="text-emerald-400 hover:underline">Hemen başlayın →</Link>
+              <p className="text-emerald-400 font-bold">Thank you! The guide has been sent to {email}.</p>
+              <p className="text-slate-500 text-xs mt-1">Would you like to request a demo?{' '}
+                <Link href="/request-demo" className="text-emerald-400 hover:underline">Get started now →</Link>
               </p>
             </div>
           )}
@@ -201,10 +195,10 @@ export default function COP31Page() {
       <section className="border-t border-b border-white/5 py-10">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { n: '34', l: 'Türk Bankası', s: 'BDDK GAR Zorunluluğu' },
-            { n: '200+', l: 'Büyük Şirket', s: 'TSRS Raporlama Yükümlülüğü' },
-            { n: '3', l: 'Yargı Bölgesi', s: 'TR + UK + KKTC' },
-            { n: '60s', l: 'Demo', s: 'Kayıttan ilk rapora' },
+            { n: '34', l: 'Turkish Banks', s: 'BDDK GAR Mandate' },
+            { n: '200+', l: 'Enterprises', s: 'TSRS Reporting Mandate' },
+            { n: '3', l: 'Jurisdictions', s: 'TR + UK + KKTC' },
+            { n: '60s', l: 'Demo Launch', s: 'From sign-up to first report' },
           ].map(s => (
             <div key={s.l}>
               <div className="text-3xl font-black" style={{ color: '#34d399' }}>{s.n}</div>
@@ -217,8 +211,8 @@ export default function COP31Page() {
 
       {/* Footer mini */}
       <footer className="text-center py-8 text-xs text-slate-600 px-6">
-        <p>SustainHub.online — Connective Hub Dijital Teknolojiler Ltd. · İstanbul Teknokent + Londra</p>
-        <p className="mt-1">BDDK · KGK · FCA · KKTC Merkez Bankası · ISSB · PCAF · EU Taxonomy uyumlu</p>
+        <p>SustainHub.online — Connective Hub Digital Technologies Ltd. · Istanbul & London</p>
+        <p className="mt-1">BDDK · KGK · FCA · KKTC Central Bank · ISSB · PCAF · EU Taxonomy Compliant</p>
       </footer>
     </div>
   )
