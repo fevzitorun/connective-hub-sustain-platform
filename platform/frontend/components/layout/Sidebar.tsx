@@ -28,6 +28,7 @@ const navItems = [
     { href: '/hedefler', label: 'Targets (SBTi)', icon: '🎯' },
     { href: '/uydu', label: 'Earth Intelligence', icon: '🛰️', badge: 'NEW' },
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦', badge: 'PCAF' },
+    { href: '/gar/kobi-dashboard', label: 'KOBİ Portföy', icon: '🏪' },
   ]},
   { section: 'Intelligence', items: [
     { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },
