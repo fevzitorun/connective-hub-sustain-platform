@@ -19,21 +19,25 @@ const navItems = [
     { href: '/cbam', label: 'CBAM Declaration', icon: '🏭' },
     { href: '/eudr', label: 'EUDR Supply', icon: '🌳' },
   ]},
-  { section: 'Analytics', items: [
-    { href: '/university', label: 'University Portal', icon: '🏛️', badge: 'NEW' },
-    { href: '/academy', label: 'SustainHub Academy', icon: '🎓', badge: 'NEW' },
-    { href: '/maturity', label: 'Maturity Test', icon: '🎯', badge: 'NEW' },
-    { href: '/scenarios', label: 'TCFD War-Room', icon: '🌊', badge: 'NEW' },
-    { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },
+  { section: 'Climate & ESG', items: [
+    { href: '/tcfd', label: 'TCFD Scenarios', icon: '🌡️', badge: 'NEW' },
+    { href: '/sroi', label: 'SROI Calculator', icon: '💹', badge: 'NEW' },
+    { href: '/tedarikciler', label: 'Supplier ESG Audit', icon: '🔗', badge: 'NEW' },
     { href: '/benchmark', label: 'Benchmark', icon: '📈' },
-    { href: '/simulator', label: 'ROI Simulator', icon: '⚡', badge: 'NEW' },
     { href: '/hedefler', label: 'Targets (SBTi)', icon: '🎯' },
     { href: '/uydu', label: 'Satellite Verify', icon: '🛰️' },
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦' },
+  ]},
+  { section: 'Intelligence', items: [
+    { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },
+    { href: '/scenarios', label: 'TCFD War-Room', icon: '🌊' },
+    { href: '/simulator', label: 'ROI Simulator', icon: '⚡' },
+    { href: '/university', label: 'University Portal', icon: '🏛️' },
+    { href: '/academy', label: 'Academy', icon: '🎓' },
     { href: '/esg', label: 'Public ESG Page', icon: '🌟' },
   ]},
   { section: 'Support', items: [
-    { href: '/entegrasyon', label: 'Integrations', icon: '🔗' },
+    { href: '/entegrasyon', label: 'Integrations', icon: '🔌' },
     { href: '/destekler', label: 'Subsidies', icon: '💰' },
   ]},
   { section: 'Account', items: [

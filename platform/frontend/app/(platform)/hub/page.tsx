@@ -66,6 +66,13 @@ export default function HubPage() {
         <p className="text-lg text-slate-500 max-w-2xl">
           Global regülasyonlar, inovatif iklim teknolojileri ve sektörel başarı hikayeleri için günlük düşünce kuruluşunuz (Think-Tank).
         </p>
+        {/* PR Tagline */}
+        <div className="mt-5 px-6 py-3 rounded-2xl inline-block" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
+          <p className="text-sm font-semibold italic" style={{ color: '#065f46' }}>
+            "SustainHub turns TCFD climate scenarios into board-ready financial impact matrices in under 60 seconds —{' '}
+            <span className="font-bold not-italic">powered by IEA WEO 2024 data.</span>"
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
