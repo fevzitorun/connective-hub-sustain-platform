@@ -33,6 +33,8 @@ const navItems = [
     { href: '/iso14064', label: 'Karbon Ayak İzi', icon: '🌿', badge: 'ISO' },
     { href: '/pcf', label: 'Ürün PCF (ISO 14067)', icon: '📦', badge: 'NEW' },
     { href: '/uk-sdr', label: 'FCA SDR + SFDR', icon: '🇬🇧', badge: 'UK' },
+    { href: '/cdp', label: 'CDP Questionnaire', icon: '🌍', badge: 'CDP' },
+    { href: '/eu-taxonomy', label: 'EU Taxonomy', icon: '🇪🇺', badge: 'NEW' },
   ]},
   { section: 'Intelligence', items: [
     { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },

@@ -383,6 +383,28 @@ export const api = {
       }>('/supplier-audit/score', { method: 'POST', body: JSON.stringify(data) }),
   },
 
+  cdp: {
+    demo: () => request<unknown>('/api/cdp/demo'),
+    assess: (data: {
+      company_name: string; maturity_score: number
+      has_scope3: boolean; has_sbti: boolean; has_verification: boolean; has_re_target: boolean; sector: string
+      custom_answers?: Record<string, number>
+    }) => request<unknown>('/api/cdp/assess', { method: 'POST', body: JSON.stringify(data) }),
+    questionnaire: () => request<{ sections: unknown[]; bands: unknown[] }>('/api/cdp/questionnaire'),
+  },
+
+  euTaxonomy: {
+    demo: () => request<unknown>('/api/eu-taxonomy/demo'),
+    assess: (data: {
+      nace_code: string; emissions_intensity?: number
+      renewable_pct: number; recycling_rate: number; water_intensity?: number
+      has_biodiversity_plan: boolean; has_pollution_controls: boolean; climate_adaptation_plan: boolean
+      dnsh_answers?: Record<string, boolean>
+    }) => request<unknown>('/api/eu-taxonomy/assess', { method: 'POST', body: JSON.stringify(data) }),
+    objectives: () => request<{ objectives: unknown[] }>('/api/eu-taxonomy/objectives'),
+    naceSectors: () => request<{ sectors: unknown[] }>('/api/eu-taxonomy/nace-sectors'),
+  },
+
   autopilot: {
     demo: () => request<{
       rules: Array<{

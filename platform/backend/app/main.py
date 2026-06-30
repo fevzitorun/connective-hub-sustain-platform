@@ -121,6 +121,11 @@ app.include_router(copilot.router)
 from .routes import autopilot
 app.include_router(autopilot.router)
 
+# Sprint 33 — CDP + EU Taxonomy
+from .routes import cdp, eu_taxonomy
+app.include_router(cdp.router)
+app.include_router(eu_taxonomy.router)
+
 
 @app.on_event("startup")
 async def startup():
