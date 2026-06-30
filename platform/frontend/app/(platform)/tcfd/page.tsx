@@ -11,6 +11,8 @@ type Scenario = {
   cbam_exposure_eur: number; transition_capex_eur: number
   physical_damage_eur: number; net_financial_impact_eur: number
   opportunities: string[]; risks: string[]; recommendation: string
+  capex_risk_eur: number; oprev_loss_eur: number
+  opex_increase_eur: number; climate_adj_asset_value_eur: number
 }
 
 type TCFDResult = {
@@ -254,6 +256,151 @@ export default function TCFDPage() {
             )
           })()}
         </>
+      )}
+
+      {/* Executive Financial Impact Table — CFO / Board View */}
+      {result && (
+        <div className="rounded-2xl border-2 overflow-hidden" style={{ borderColor: '#334155' }}>
+          {/* Table Header */}
+          <div className="px-6 py-4 flex items-center justify-between" style={{ background: '#0f172a' }}>
+            <div>
+              <h2 className="font-black text-white text-base">Executive Financial Impact Matrix</h2>
+              <p className="text-xs mt-0.5" style={{ color: '#94a3b8' }}>
+                CFO &amp; Board-Level Climate Risk — TCFD / IFRS S2 · IEA WEO 2024
+              </p>
+            </div>
+            <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#065f46', color: '#a7f3d0' }}>
+              Banker-Ready Report
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ background: '#1e293b' }}>
+                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style={{ color: '#94a3b8', width: '28%' }}>
+                    Finansal Metrik
+                  </th>
+                  {result.scenarios.map(s => {
+                    const style = SCENARIO_STYLE[s.scenario_id]
+                    return (
+                      <th key={s.scenario_id} className="px-5 py-3 text-right text-xs font-bold" style={{ color: style.badgeText, background: style.badge, width: '24%' }}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span>{style.icon}</span>
+                          <span>{s.scenario_label}</span>
+                        </div>
+                        <div className="text-xs font-normal mt-0.5 opacity-70">{s.temp_rise}</div>
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  {
+                    label: 'CapEx Riski',
+                    sub: 'Fiziksel hasar onarım/yenileme',
+                    key: 'capex_risk_eur' as const,
+                    icon: '🏭',
+                    tooltip: 'Sel, kuraklık, fırtına gibi aşırı hava olaylarının neden olduğu tesis hasarını onarmak veya yenilemek için gereken sermaye yatırımı.',
+                  },
+                  {
+                    label: 'OpRev Kaybı',
+                    sub: 'Üretim durduğunda gelir kaybı',
+                    key: 'oprev_loss_eur' as const,
+                    icon: '📉',
+                    tooltip: 'İklim kaynaklı iş kesintileri (enerji kesintisi, taşkın, tedarik duruşu) nedeniyle yıllık gelirden düşen tutar.',
+                  },
+                  {
+                    label: 'OpEx Artışı',
+                    sub: 'Sigorta + enerji + tedarik',
+                    key: 'opex_increase_eur' as const,
+                    icon: '📊',
+                    tooltip: 'Artan sigorta primleri, enerji maliyeti (karbon fiyatı etkisi) ve tedarik zinciri dönüşüm masraflarının toplam etkisi.',
+                  },
+                  {
+                    label: 'CBAM Maruziyeti',
+                    sub: 'AB sınır karbon vergisi (yıllık)',
+                    key: 'cbam_exposure_eur' as const,
+                    icon: '🇪🇺',
+                    tooltip: 'AB\'ye ihracat yapan Türk üreticilerin 2026+ sonrasında karşılayacağı CBAM (Karbon Sınır Düzenleme Mekanizması) maliyeti.',
+                  },
+                  {
+                    label: 'Geçiş CAPEX',
+                    sub: 'Net-sıfır uyum yatırımı',
+                    key: 'transition_capex_eur' as const,
+                    icon: '⚡',
+                    tooltip: 'Yeşil enerji geçişi, karbon azaltım projeleri ve teknoloji yenileme için gereken tahmini yatırım tutarı.',
+                  },
+                  {
+                    label: 'İklim-Ayarlı Varlık Değeri',
+                    sub: 'Stranded asset iskontosu sonrası',
+                    key: 'climate_adj_asset_value_eur' as const,
+                    icon: '🏛️',
+                    tooltip: 'Şirketin toplam varlık değerinden iklim riski iskontosu düşüldükten sonra kalan tahmini piyasa değeri. Kredi teminat değerlendirmesinde kullanılır.',
+                    isPositive: true,
+                  },
+                ].map((row, i) => (
+                  <tr key={row.key} style={{ background: i % 2 === 0 ? '#fff' : '#f8fafc' }}
+                    className="border-b" >
+                    <td className="px-5 py-4">
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">{row.icon}</span>
+                        <div>
+                          <div className="font-bold text-xs" style={{ color: '#0f172a' }}>{row.label}</div>
+                          <div className="text-xs" style={{ color: '#64748b' }}>{row.sub}</div>
+                        </div>
+                      </div>
+                    </td>
+                    {result.scenarios.map(s => {
+                      const val = s[row.key]
+                      const isAsset = row.isPositive
+                      const fmtVal = val >= 1_000_000
+                        ? `€${(val / 1_000_000).toFixed(1)}M`
+                        : val >= 1_000
+                          ? `€${(val / 1_000).toFixed(0)}K`
+                          : `€${val.toFixed(0)}`
+                      const scenStyle = SCENARIO_STYLE[s.scenario_id]
+                      return (
+                        <td key={s.scenario_id} className="px-5 py-4 text-right">
+                          <span className="font-black text-sm" style={{ color: isAsset ? '#15803d' : scenStyle.badgeText }}>
+                            {isAsset ? '' : '−'}{fmtVal}
+                          </span>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+                {/* Net Impact Row */}
+                <tr style={{ background: '#0f172a' }}>
+                  <td className="px-5 py-4">
+                    <div className="font-black text-xs text-white">NET FİNANSAL ETKİ</div>
+                    <div className="text-xs" style={{ color: '#64748b' }}>Toplam iklim maliyet yükü</div>
+                  </td>
+                  {result.scenarios.map(s => {
+                    const net = Math.abs(s.net_financial_impact_eur)
+                    const fmtNet = net >= 1_000_000 ? `€${(net / 1_000_000).toFixed(1)}M` : `€${(net / 1_000).toFixed(0)}K`
+                    const scenStyle = SCENARIO_STYLE[s.scenario_id]
+                    return (
+                      <td key={s.scenario_id} className="px-5 py-4 text-right">
+                        <span className="font-black" style={{ color: scenStyle.border, fontSize: '1rem' }}>
+                          −{fmtNet}
+                        </span>
+                      </td>
+                    )
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-6 py-3 flex items-center gap-2" style={{ background: '#f0fdf4', borderTop: '1px solid #bbf7d0' }}>
+            <span className="text-xs" style={{ color: '#065f46' }}>
+              📌 Bu tablo TCFD / IFRS S2 Madde 29 kapsamında CFO ve Yönetim Kurulu raporlaması için hazırlanmıştır.
+              Veriler IEA WEO 2024 karbon fiyat senaryolarına ve sektörel fiziksel risk katsayılarına dayanmaktadır.
+            </span>
+          </div>
+        </div>
       )}
 
       {!result && (

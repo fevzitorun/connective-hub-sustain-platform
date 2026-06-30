@@ -1,7 +1,7 @@
 """
 TCFD (Task Force on Climate-related Financial Disclosures) Senaryo Motoru.
 3 senaryo: Paris 2°C · NDC · BAU 4°C
-Çıktı: Fiziksel Risk + Geçiş Riski + Finansal Etki Matrisi
+Çıktı: Fiziksel Risk + Geçiş Riski + Finansal Etki Matrisi + CFO Finansal Metrikleri
 """
 from dataclasses import dataclass, field
 from typing import Dict, List
@@ -42,6 +42,61 @@ SECTOR_TRANSITION_COST_PCT = {
     "default":        0.03,
 }
 
+# Varlık yoğunluğu katsayısı (ciro başına varlık değeri çarpanı) — CFO CapEx risk için
+SECTOR_ASSET_INTENSITY = {
+    "çelik":      1.8,   # Yüksek sabit varlık (yüksek fırın, hadde)
+    "çimento":    2.0,   # Fabrika + ocaklar
+    "alüminyum":  1.9,
+    "tekstil":    0.7,
+    "gıda":       0.6,
+    "bankacılık": 0.3,   # Finansal varlıklar ağırlıklı
+    "enerji":     2.5,   # Santral/şebeke
+    "lojistik":   1.2,
+    "üretim":     1.1,
+    "teknoloji":  0.2,
+    "perakende":  0.5,
+    "default":    0.8,
+}
+
+# İş kesintisi oranı — aşırı hava olayı başına yıllık ciro kayıp yüzdesi
+SECTOR_BIZ_INTERRUPTION_PCT = {
+    "çelik":      0.04,
+    "çimento":    0.03,
+    "alüminyum":  0.04,
+    "tekstil":    0.05,
+    "gıda":       0.06,   # Tedarik zinciri kesintisi yüksek
+    "bankacılık": 0.01,
+    "enerji":     0.08,
+    "lojistik":   0.07,
+    "üretim":     0.05,
+    "teknoloji":  0.02,
+    "perakende":  0.04,
+    "default":    0.04,
+}
+
+# İklim kaynaklı OpEx artışı (sigorta + enerji + tedarik) — ciro yüzdesi
+SECTOR_OPEX_CLIMATE_PCT = {
+    "çelik":      0.030,
+    "çimento":    0.025,
+    "alüminyum":  0.030,
+    "tekstil":    0.015,
+    "gıda":       0.020,
+    "bankacılık": 0.005,
+    "enerji":     0.040,
+    "lojistik":   0.025,
+    "üretim":     0.020,
+    "teknoloji":  0.005,
+    "perakende":  0.015,
+    "default":    0.020,
+}
+
+# Stranded asset iskonto oranı (varlık değerinden düşülecek iklim riski %)
+STRANDED_DISCOUNT = {
+    "paris_2c": 0.05,   # %5 varlık değer kaybı
+    "ndc":      0.18,   # %18
+    "bau_4c":   0.42,   # %42 — yıkıcı senaryo
+}
+
 
 @dataclass
 class ScenarioResult:
@@ -60,6 +115,11 @@ class ScenarioResult:
     opportunities: List[str]
     risks: List[str]
     recommendation: str
+    # CFO Finansal Etki Metrikleri (Eren Emre / Komunidad teklif modeli)
+    capex_risk_eur: float              # Fiziksel hasardan onarım/yenileme CAPEX riski
+    oprev_loss_eur: float              # Üretim kesintisinden gelir kaybı (yıllık)
+    opex_increase_eur: float           # Sigorta + enerji + tedarik maliyet artışı (yıllık)
+    climate_adj_asset_value_eur: float # İklim iskontolu varlık değeri (tahmini piyasa)
 
 
 @dataclass
@@ -90,6 +150,9 @@ def run_tcfd_scenarios(
 
     sector_key = sector.lower()
     transition_cost_pct = SECTOR_TRANSITION_COST_PCT.get(sector_key, SECTOR_TRANSITION_COST_PCT["default"])
+    asset_intensity     = SECTOR_ASSET_INTENSITY.get(sector_key, SECTOR_ASSET_INTENSITY["default"])
+    biz_interruption    = SECTOR_BIZ_INTERRUPTION_PCT.get(sector_key, SECTOR_BIZ_INTERRUPTION_PCT["default"])
+    opex_climate_pct    = SECTOR_OPEX_CLIMATE_PCT.get(sector_key, SECTOR_OPEX_CLIMATE_PCT["default"])
 
     scenarios: List[ScenarioResult] = []
 
@@ -125,6 +188,24 @@ def run_tcfd_scenarios(
 
         # Net etki: 2°C'de CAPEX yüksek ama zarar az; BAU'da zarar yüksek
         net_impact = -(transition_capex + physical_damage + cbam_exposure)
+
+        # ── CFO Finansal Etki Metrikleri ──────────────────────────────────────
+        # CapEx Risk: tesis/altyapı fiziksel hasar onarım/yenileme maliyeti
+        capex_risk = annual_revenue_eur * asset_intensity * 0.012 * phys_mult
+
+        # OpRev Loss: üretim duruşu nedeniyle gelir kaybı (iş kesintisi)
+        oprev_loss = annual_revenue_eur * biz_interruption * phys_mult
+
+        # OpEx Increase: artan sigorta primleri + enerji + tedarik zinciri maliyeti
+        # 2°C'de karbon fiyatı yüksek → enerji maliyeti yüksek; BAU'da sigorta patlıyor
+        carbon_opex_factor = cp_2030 / 130.0
+        opex_increase = annual_revenue_eur * opex_climate_pct * (1.0 + carbon_opex_factor * phys_mult * 0.4)
+
+        # Climate-Adjusted Asset Value: iklim riski iskontosu uygulanmış varlık değeri
+        # Proxy: ciro × varlık yoğunluğu × 8× PE çarpanı, stranded discount düşülür
+        asset_value_proxy = annual_revenue_eur * asset_intensity * 8.0
+        discount = STRANDED_DISCOUNT[sid]
+        climate_adj_asset = asset_value_proxy * (1.0 - discount)
 
         # Fırsatlar ve riskler senaryo bazında
         if sid == "paris_2c":
@@ -179,6 +260,10 @@ def run_tcfd_scenarios(
             opportunities=opportunities,
             risks=risks,
             recommendation=rec,
+            capex_risk_eur=round(capex_risk, 0),
+            oprev_loss_eur=round(oprev_loss, 0),
+            opex_increase_eur=round(opex_increase, 0),
+            climate_adj_asset_value_eur=round(climate_adj_asset, 0),
         ))
 
     best = min(scenarios, key=lambda s: abs(s.net_financial_impact_eur))

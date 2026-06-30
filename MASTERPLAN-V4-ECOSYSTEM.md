@@ -697,6 +697,7 @@ PHASE 1 — BEACHHEAD (Now → Q4 2026) — €1.5M Seed
                           YK tavsiye paneli; normal: mevcut KpiGrid/grafikler
 
 ✅ DONE — Sprint 17 (Jun 2026) — ANTIGRAVITY-DIRECTIVE-019
+
    Admin Cockpit (/admin):
      admin/layout.tsx:    Dark mode admin nav (SustainHub + ADMIN rozeti)
      admin/page.tsx:      5 KPI şeridi (şirket, emisyon, rapor, ihracatçı, lead)
@@ -720,6 +721,88 @@ PHASE 1 — BEACHHEAD (Now → Q4 2026) — €1.5M Seed
 
    api.ts:                api.stats.global / adminCompanies / adminOverview eklendi
    main.py:               stats router kaydedildi
+
+✅ DONE — Sprint 18 (Jun 2026) — ANTIGRAVITY-DIRECTIVE-022
+   ESG Health Check:
+     health-check/page.tsx:   95 soruluk interaktif anket (5 tema: Çevre, Sosyal, Yönetişim,
+                               Ekonomi, Tedarik Zinciri), Radar/Bar grafik sonuç paneli,
+                               "Strengths / Gaps / Action Plan" üçlü rapor kartı, PDF export
+     routes/health_check.py:  POST /health-check/score — 5 tema ağırlıklı puanlama motoru
+     health_check_engine.py:  ESG Olgunluk Skoru 0–100, öncelikli öneri sıralaması
+   SROI (Sosyal Yatırım Getirisi):
+     sroi/page.tsx:           6 sosyal etki kategorisi (İstihdam, Eğitim, Sağlık, Çevre,
+                               Altyapı, Kültür), Paydaş grubu tanımlaması, SROI oranı hesabı,
+                               "Her 1₺ → X₺ sosyal değer" çıktısı
+     routes/sroi.py:          POST /sroi/calculate — SROI oranı + toplam sosyal değer
+     sroi_engine.py:          Wellbeing değeri (HALY), deadweight, displacement, attribution
+                               katsayıları, 5 yıl NPV projeksiyonu
+   7 Bilge Advisory Suite (/admin → Tab 2):
+     7 YK üyesi için özelleştirilmiş stratejik danışmanlık notu paneli
+     Her üye: uzmanlık alanı rozeti, son aktivite, "Tavsiye Notu Üret" butonu
+     routes/advisory.py:      POST /advisory/generate — YK üyesine özgü AI notu
+   api.ts: healthCheck + sroi + advisory endpoint helper'ları eklendi
+   Sidebar güncellemesi: "Analytics & Impact" bölümü (/health-check, /sroi)
+
+✅ DONE — Sprint 19 (Jun 2026) — ANTIGRAVITY-DIRECTIVE-023
+   TCFD İklim Senaryo Analizi:
+     tcfd/page.tsx:           3 senaryo (Paris 2°C / NDC / BAU 4°C) tab kartları
+                               Şirket parametreleri formu (sektör, ciro, CO₂e, AB ihracat)
+                               KPI grid: Karbon Fiyatı, CBAM, CAPEX, Fiziksel Hasar
+                               Risk Bar grafikleri, Fırsatlar / Riskler paneli, öneri kutusu
+                               "🎯 Çelik Sektörü Demo" butonu (POST /tcfd/demo)
+     tcfd_engine.py:          IEA WEO 2024 karbon fiyat yörüngeleri (€130/75/25 — 2030)
+                               Sektörel transition cost PCT (12 sektör), fiziksel risk çarpanları
+                               Stranded asset risk seviyeleri (low/medium/high/critical)
+     routes/tcfd.py:          POST /tcfd/scenarios (auth) + POST /tcfd/demo (public)
+   Tedarikçi ESG Denetimi (Supplier Audit):
+     tedarikciler/page.tsx:   3-tab yapı (Davet / Durum / ESG Denetimi), ESG Denetimi tab'ı:
+                               15 soru × 5 kategori (Çalışma Hakları, İSG, Çevre, Etik, Tedarik)
+                               Yes/Partial/No yanıt butonları, kategori bazlı ilerleme barları
+                               Skor çemberi, Red Flag listesi, anında bağlamsal tavsiye
+     routes/supplier_audit.py: GET /supplier-audit/questions + POST /supplier-audit/score
+                               RBA v9.0 + ISO 26000 sorular, kırmızı bayrak tespiti
+   Intelligence Hub Güncellemesi:
+     hub/page.tsx:            6 Politika Özeti kartı eklendi (CSRD, Yeşil Tahvil, EUDR,
+                               TCFD→ISSB, CBAM, GHG Protocol) — renk kodlu kategori rozetleri
+                               PR Tagline: "SustainHub turns TCFD climate scenarios into
+                               board-ready financial impact matrices in under 60 seconds"
+   Sidebar: "Climate & ESG" bölümü eklendi (/tcfd, /sroi, /tedarikciler)
+   api.ts: api.tcfd + api.supplierAudit eklendi
+   Commit: e09d739 (Sprint 19 tamamlandı, TypeScript 0 hata)
+
+✅ DONE — Sprint 20 (Jun 2026) — ANTIGRAVITY-KOMUT-025 "CFO Financial Impact Matrix"
+   TCFD CFO Finansal Derinlik:
+     tcfd_engine.py:          4 yeni CFO metriği eklendi:
+                               CapEx Risk (fiziksel hasar onarım/yenileme CAPEX riski)
+                               OpRev Loss (üretim durduğunda gelir kaybı)
+                               OpEx Increase (sigorta + enerji + tedarik maliyet artışı)
+                               Climate-Adjusted Asset Value (stranded asset iskontosu sonrası)
+                               Yeni sektörel tablolar: ASSET_INTENSITY, BIZ_INTERRUPTION_PCT,
+                               OPEX_CLIMATE_PCT, STRANDED_DISCOUNT (12 sektör × 4 tablo)
+     tcfd/page.tsx:           "Executive Financial Impact Matrix" tablosu eklendi:
+                               6 satır (CapEx/OpRev/OpEx/CBAM/Geçiş CAPEX/İklim-Adj Varlık)
+                               3 sütun (senaryo renkleri), NET etki satırı, IFRS S2 dipnotu
+                               Dark header: "Banker-Ready Report" rozeti
+   Multi-Jurisdiction GAR:
+     gar/page.tsx:            Yargı bölgesi switcher eklendi: 🇹🇷 BDDK / 🇬🇧 FCA / 🇨🇾 KKTC
+                               Her yargı bölgesi için: para birimi, standart metni, renk,
+                               portföy verileri, yasal çerçeve bilgisi, denetim notu
+                               Turkish Bank demo için tri-jurisdictional uyum göstergesi
+   Pitch Deck:
+     pitch-deck.html:         Slide 7 eklendi: "The Only Tri-Jurisdictional ESG Platform"
+                               3 sütun (TR/UK/CY), her biri için 4 uyum kapasitesi listesi
+                               Anahtar iddia: "No other ESG platform handles BDDK GAR +
+                               FCA SDR + CSRD simultaneously in a single workflow"
+                               Nav güncellemesi: 7 slide'a çıkarıldı
+
+   ── STRATEJİK KARARLAR (Sprint 20 ile birlikte alındı) ──
+   Turkish Bank → İlk banka demo hedefi (TRNC + UK FCA + BDDK üçlü uyum)
+   Eren Emre Korkmaz → Oxford/OCTD bağlantısı, Komunidad distribütörü;
+                         SustainHub için Türkiye banka kanalı GTM partneri
+   Komunidad → Rakip değil, veri ortağı adayı; veya SustainHub Earth
+               Intelligence modülü ile kendi fiziksel risk motorunu kurar
+   Earth Intelligence → Sprint 21 hızlandırıldı: Copernicus + AFAD +
+                         NASA açık veri ile Komunidad bağımsız fiziksel risk modülü
 
 TARGET END PHASE 1 — GÜNCELLEME (Q3 2026):
    30 paid customer · ₺6M ARR Turkey · sustainhub.online live
@@ -816,9 +899,12 @@ The platform is no longer a single product — it's a 6-product ecosystem with a
 - KGK webinars + Sustain Research reports as lead magnet
 
 **Channel 2: Bank GAR (BDDK)**
-- Contact: Eren Emre Korkmaz (introduction)
+- First target: **Turkish Bank** — tri-jurisdictional (BDDK + FCA + KKTC), demo ready
+- GTM partner: **Eren Emre Korkmaz** (Oxford/OCTD, Komunidad distributor Turkey)
+  → Introduces SustainHub to Turkish bank network instead of Komunidad
+  → Oxford credibility + SustainHub's Turkey-specific compliance depth = combined offering
 - 34 banks, all need GAR → Finance module
-- 1 bank pilot = 50+ corporate clients in their portfolio
+- 1 bank pilot = 50–200 corporate clients in their loan portfolio (distribution flywheel)
 
 **Channel 3: KSRU Partner Network**
 - 20+ licensed sustainability professionals as resellers
@@ -884,10 +970,12 @@ Why this platform cannot be easily replicated:
 |------|-------|-------------|
 | Regulatory depth (TSRS + 10 frameworks) | Deep | 18–24 months |
 | 13-segment SASB library | Deep | 12 months |
+| **Tri-jurisdictional: BDDK + FCA SDR + CSRD in one platform** | **Very Deep** | **24+ months** |
 | Satellite verification pipeline | Very Deep | 24+ months |
 | Research Institute + proprietary indices | Structural | Never (data ownership) |
 | Real TSRS report training data (16+ reports) | Deep | Requires same data access |
 | Turkey-only: BDDK GAR + Responsible® subsidy calc | Very Deep | Regulatory expertise |
+| TCFD CFO Financial Matrix (CapEx/OpRev/OpEx/Asset) | Deep | 12 months |
 | CarbonSense ↔ Grid+ data integration | Deep | Requires both products |
 | AI quality (Analyst + Copilot trained on real data) | Deep | Requires training data |
 | Network effects (every company = Research data point) | Structural | 3-4 years |
