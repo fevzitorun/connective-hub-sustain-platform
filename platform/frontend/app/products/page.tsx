@@ -13,7 +13,7 @@ const PRODUCTS = [
     desc: 'A comprehensive carbon calculation and ESG reporting engine supporting the GHG Protocol, TSRS 1&2, CSRD/ESRS, GRI, and ISSB S2.',
     features: ['Scope 1/2/3 calculation', 'AI Report Generator (PDF/Word)', 'Multi-framework (TSRS, GRI, ISSB)', 'Magic Import (Excel/OCR)', 'XBRL digital filings'],
     target: 'All sectors · 200+ Enterprises · 70,000+ SMEs',
-    price: 'Starting from £1,200 / year',
+    price: '₺30.000 / yıl · €800 / year',
     cta: '/register',
     ctaText: 'Start Demo',
   },
@@ -27,7 +27,7 @@ const PRODUCTS = [
     desc: 'Asset-level physical climate risk screening using ESA Sentinel-2, NASA, and Copernicus data. Verifies green claims with independent satellite observation, issuing the "Sustain Verified" badge.',
     features: ['Flood / drought / earthquake risk', 'NDVI green space analysis', 'IPCC AR6 2050 projections', 'TCFD physical risk module', '"Sustain Verified" badge'],
     target: 'Banks · Insurance · Real Estate · Utilities',
-    price: '£80 / asset / year',
+    price: '₺72.000 / yıl · €2.000 / year',
     cta: '/dashboard',
     ctaText: 'Earth Demo',
   },
@@ -41,7 +41,7 @@ const PRODUCTS = [
     desc: 'Automated Green Asset Ratio (GAR) calculation portal matching BDDK/EBA guidelines. Scope 3 Category 15 financed emissions based on the PCAF Standard v2. EU Taxonomy classification.',
     features: ['GAR calculation (BDDK/EBA/FCA)', 'PCAF financed emissions', 'EU Taxonomy NACE mapping', 'SME ESG Credit Scoring (AAA→D)', 'Climate stress testing (IEA NZE/NGFS)'],
     target: '34 Turkish banks · Investment Funds · Insurance',
-    price: 'Enterprise Pricing',
+    price: '₺120.000 / yıl · €3.300 / year (KSRU)',
     cta: '/gar',
     ctaText: 'GAR Portal',
   },
@@ -55,7 +55,7 @@ const PRODUCTS = [
     desc: 'Climate-adjusted financial impact matrices designed for CFOs. Calculate CapEx, OpEx, and climate-adjusted asset values. Model transition and physical risks under IEA and NGFS scenarios.',
     features: ['TCFD 4-pillar reporting', 'CFO Financial Impact Matrix', 'IEA NZE 2050 / NGFS scenarios', 'Scope 3 Cat. 15 bridge', 'IFRS S2 / UK SRS output'],
     target: 'CFOs · Boards of Directors · Auditors',
-    price: 'Included in Professional Plan',
+    price: 'Professional planına dahil',
     cta: '/tcfd',
     ctaText: 'TCFD Module',
   },
@@ -69,7 +69,7 @@ const PRODUCTS = [
     desc: 'Smart meter integration, solar generation tracking, and energy efficiency scoring. Grid+ data feeds directly into CarbonSense Scope 2, eliminating manual utility invoice entry.',
     features: ['Real-time consumption monitoring', 'Solar + battery storage', 'Automated grid factor calculation', 'EV fleet charge management', 'AI demand forecasting'],
     target: 'Industries · Hospitals · Municipalities · Energy Co',
-    price: '£1,000 / site / year',
+    price: 'Q1 2027 — ön kayıt açık',
     cta: '/register',
     ctaText: 'Pre-register',
   },
@@ -187,13 +187,13 @@ export default function ProductsPage() {
       {/* Pricing CTA */}
       <section className="border-t border-white/5 py-16 text-center">
         <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-3xl font-black text-white mb-4">Which plan fits you?</h2>
+          <h2 className="text-3xl font-black text-white mb-4">Hangi plan size uygun?</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 text-sm">
             {[
-              { plan: 'Starter', price: '£1,200/yr', for: 'SMEs & Exporters', color: '#64748b' },
-              { plan: 'Professional', price: '£3,000/yr', for: 'Mid-sized Corp', color: '#10b981' },
-              { plan: 'Enterprise', price: 'Custom', for: 'Large Conglomerates', color: '#3b82f6' },
-              { plan: 'Bank GAR', price: 'Enterprise Custom', for: '34 BDDK Banks', color: '#f59e0b' },
+              { plan: 'Starter', price: '₺30.000/yıl', for: 'KOBİ & Erken Adopter', color: '#64748b' },
+              { plan: 'Professional', price: '₺72.000/yıl', for: 'Orta Ölçekli Şirket', color: '#10b981' },
+              { plan: 'Enterprise', price: '₺180.000+/yıl', for: 'Büyük Şirket & Holding', color: '#3b82f6' },
+              { plan: 'KSRU Partner', price: '₺120.000/yıl', for: 'Sorumlu® Tedarikçi', color: '#f59e0b' },
             ].map(t => (
               <div key={t.plan} className="rounded-xl p-4 border text-center"
                 style={{ borderColor: t.color + '30', background: t.color + '08' }}>

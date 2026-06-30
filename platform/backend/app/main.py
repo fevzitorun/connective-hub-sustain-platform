@@ -164,6 +164,10 @@ app.include_router(esg_benchmark.router)
 from .routes import kobi_credit_score
 app.include_router(kobi_credit_score.router)
 
+# Sprint 45 — Demo Request & Contact Form
+from .routes import demo_request
+app.include_router(demo_request.router)
+
 
 @app.on_event("startup")
 async def startup():

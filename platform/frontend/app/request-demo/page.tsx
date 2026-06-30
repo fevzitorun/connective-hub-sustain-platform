@@ -2,145 +2,194 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { API_URL } from '@/lib/constants'
+
+const SECTORS = [
+  { value: 'manufacturing', label: 'Üretim / Sanayi' },
+  { value: 'banking', label: 'Bankacılık / Finans' },
+  { value: 'retail', label: 'Perakende / Ticaret' },
+  { value: 'energy', label: 'Enerji' },
+  { value: 'construction', label: 'İnşaat / GYO' },
+  { value: 'logistics', label: 'Lojistik / Ulaşım' },
+  { value: 'textile', label: 'Tekstil / Hazır Giyim' },
+  { value: 'food', label: 'Gıda & İçecek' },
+  { value: 'tech', label: 'Teknoloji / Yazılım' },
+  { value: 'other', label: 'Diğer' },
+]
 
 export default function RequestDemoPage() {
-  const [formData, setFormData] = useState({ name: '', email: '', company: '', employees: '1-50', sector: 'manufacturing' })
+  const [formData, setFormData] = useState({
+    name: '', email: '', company: '', phone: '',
+    employees: '1-50', sector: 'manufacturing', message: '',
+  })
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [ref, setRef] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (formData.name && formData.email) {
+    if (!formData.name || !formData.email || !formData.company) return
+    setLoading(true); setError('')
+    try {
+      const res = await fetch(`${API_URL}/demo-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, source: 'website' }),
+      })
+      const data = await res.json() as { success?: boolean; ref?: string; detail?: string }
+      if (!res.ok) throw new Error(data.detail || 'Gönderim başarısız')
+      setRef(data.ref || '')
       setSubmitted(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bir hata oluştu, tekrar deneyin')
+    } finally {
+      setLoading(false)
     }
   }
 
+  const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setFormData(prev => ({ ...prev, [field]: e.target.value }))
+
   return (
-    <div className="min-h-screen" style={{ background: '#020c0a', color: '#f1f5f9' }}>
+    <div className="min-h-screen bg-slate-900 text-slate-100">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 z-50 backdrop-blur-sm" style={{ background: 'rgba(2,12,10,0.9)' }}>
+      <nav className="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 z-50 backdrop-blur-sm bg-slate-900/90">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl">🌿</span>
-          <span className="font-black text-white">SustainHub</span>
+          <span className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-base">🌿</span>
+          <span className="font-black text-white">SustainHub<span className="text-emerald-400">.online</span></span>
         </Link>
         <div className="flex gap-3 items-center">
-          <Link href="/products" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">Products</Link>
-          <Link href="/about" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">About Us</Link>
-          <Link href="/login" className="text-sm px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:border-emerald-500 transition-colors">Sign In</Link>
-          <Link href="/register" className="text-sm px-4 py-2 rounded-lg font-bold text-white" style={{ background: 'linear-gradient(135deg,#059669,#0284c7)' }}>Register Free →</Link>
+          <Link href="/products" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">Ürünler</Link>
+          <Link href="/login" className="text-sm px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:border-emerald-500 transition-colors">Giriş Yap</Link>
+          <Link href="/register" className="text-sm px-4 py-2 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-all">Ücretsiz Başla →</Link>
         </div>
       </nav>
 
-      {/* Main Container */}
-      <section className="px-6 pt-24 pb-16 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center min-h-[80vh]">
-        {/* Left Side: Info */}
-        <div className="space-y-6">
+      <section className="px-6 pt-16 pb-20 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+        {/* Left: Info */}
+        <div className="space-y-6 pt-8">
           <div className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            📊 Request a Custom Demo
+            Demo Talebi
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
-            See SustainHub <br/>
-            <span style={{ background: 'linear-gradient(135deg,#34d399,#60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              in Action
+            SustainHub'ı<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
+              Canlı Görün
             </span>
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed">
-            Schedule a personalized walkthrough with our ESG engineers. Learn how to automate TSRS reporting, build a compliant GAR dashboard, and conduct satellite-verified climate risk assessments.
+            ESG mühendislerimizle bire bir demo planlayın. TSRS raporlamasını nasıl otomatikleştireceğinizi, GAR dashboard kurulumunu ve uydu destekli iklim riski analizini görün.
           </p>
-          <div className="space-y-2 text-xs text-slate-500">
-            <p>✓ 1-on-1 walkthrough of the calculation engine</p>
-            <p>✓ Custom integration readiness scoping (SAP, Logo, Netsis)</p>
-            <p>✓ Sample TSRS reports and audit trails</p>
+          <div className="space-y-3 text-sm">
+            {[
+              'Hesaplama motoru bire bir walkthrough',
+              'Özelleştirilmiş entegrasyon hazırlık taraması (SAP, Logo, Netsis)',
+              'Örnek TSRS raporları ve denetim izleri',
+              'KOBİ ESG Kredi Skoru canlı demo',
+              'Bank GAR Suite canlı hesaplama',
+            ].map(item => (
+              <div key={item} className="flex items-start gap-2 text-slate-300">
+                <span className="text-emerald-400 mt-0.5 shrink-0">✓</span>
+                {item}
+              </div>
+            ))}
+          </div>
+          <div className="pt-4 space-y-3">
+            <div className="rounded-xl p-4 bg-slate-800/60 border border-slate-700 text-sm">
+              <div className="font-bold text-white mb-1">Yanıt Süresi</div>
+              <div className="text-slate-400">En geç 1 iş günü içinde ekibimiz sizinle iletişime geçer.</div>
+            </div>
+            <div className="rounded-xl p-4 bg-slate-800/60 border border-slate-700 text-sm">
+              <div className="font-bold text-white mb-1">Pilot Müşteri Programı</div>
+              <div className="text-slate-400">İlk 10 pilot için %40 indirim + ücretsiz onboarding desteği.</div>
+            </div>
           </div>
         </div>
 
-        {/* Right Side: Request Demo Form */}
-        <div className="rounded-2xl p-6 border" style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.05)' }}>
+        {/* Right: Form */}
+        <div className="rounded-2xl p-7 border border-slate-700 bg-slate-800/40 mt-4">
           {!submitted ? (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Work Email</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="john@company.com"
-                  value={formData.email}
-                  onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Company Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Acme Corp"
-                  value={formData.company}
-                  onChange={e => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm"
-                />
+              <h2 className="text-xl font-black text-white mb-6">Demo Talep Formu</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Ad Soyad *</label>
+                  <input type="text" required placeholder="Ahmet Yılmaz" value={formData.name} onChange={set('name')}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">İş E-postası *</label>
+                  <input type="email" required placeholder="ahmet@sirket.com.tr" value={formData.email} onChange={set('email')}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm transition-colors" />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Employees</label>
-                  <select
-                    value={formData.employees}
-                    onChange={e => setFormData({ ...formData, employees: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-emerald-500 text-sm"
-                  >
-                    <option value="1-50">1-50</option>
-                    <option value="51-250">51-250</option>
-                    <option value="251-1000">251-1,000</option>
-                    <option value="1000+">1,000+</option>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Şirket Adı *</label>
+                  <input type="text" required placeholder="Örnek A.Ş." value={formData.company} onChange={set('company')}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Telefon</label>
+                  <input type="tel" placeholder="+90 5XX XXX XX XX" value={formData.phone} onChange={set('phone')}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm transition-colors" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Çalışan Sayısı</label>
+                  <select value={formData.employees} onChange={set('employees')}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-emerald-500 text-sm">
+                    <option value="1-50">1–50</option>
+                    <option value="51-250">51–250</option>
+                    <option value="251-1000">251–1.000</option>
+                    <option value="1000+">1.000+</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Sector</label>
-                  <select
-                    value={formData.sector}
-                    onChange={e => setFormData({ ...formData, sector: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none focus:border-emerald-500 text-sm"
-                  >
-                    <option value="manufacturing">Manufacturing</option>
-                    <option value="banking">Banking / Finance</option>
-                    <option value="retail">Retail</option>
-                    <option value="energy">Energy</option>
-                    <option value="other">Other</option>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Sektör</label>
+                  <select value={formData.sector} onChange={set('sector')}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-emerald-500 text-sm">
+                    {SECTORS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </div>
               </div>
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-xl font-black text-white text-sm transition-all hover:scale-105"
-                style={{ background: 'linear-gradient(135deg,#059669,#0284c7)' }}
-              >
-                Request Custom Demo →
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Mesaj / İhtiyaç (İsteğe bağlı)</label>
+                <textarea rows={3} placeholder="Örneğin: TSRS ilk raporumuzu hazırlamak istiyoruz, bankamız için GAR hesabı..." value={formData.message} onChange={set('message')}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white placeholder-slate-500 outline-none focus:border-emerald-500 text-sm transition-colors resize-none" />
+              </div>
+              {error && <p className="text-red-400 text-xs">{error}</p>}
+              <button type="submit" disabled={loading}
+                className="w-full py-4 rounded-xl font-black text-white text-sm transition-all hover:scale-[1.02] bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 shadow-lg shadow-emerald-500/20">
+                {loading ? 'Gönderiliyor…' : 'Demo Talep Et →'}
               </button>
+              <p className="text-xs text-slate-500 text-center">
+                Formu göndererek{' '}
+                <Link href="/legal/privacy" className="text-emerald-400 hover:underline">Gizlilik Politikamızı</Link>
+                {' '}kabul etmiş olursunuz.
+              </p>
             </form>
           ) : (
-            <div className="text-center py-12 space-y-4">
-              <div className="text-5xl">🗓️</div>
-              <h3 className="text-xl font-bold text-white">Demo Request Received!</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Thank you, <strong>{formData.name}</strong>. We have saved your request for <strong>{formData.company}</strong>. Our solutions engineering team will reach out to <strong>{formData.email}</strong> to schedule your demo.
+            <div className="text-center py-12 space-y-5">
+              <div className="text-6xl">🎉</div>
+              <h3 className="text-2xl font-black text-white">Demo Talebiniz Alındı!</h3>
+              <div className="text-xs font-mono bg-slate-900 text-emerald-400 px-3 py-1.5 rounded-lg inline-block">
+                Ref: {ref}
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-sm mx-auto">
+                Teşekkürler <strong className="text-white">{formData.name}</strong>. Ekibimiz
+                {' '}<strong className="text-white">{formData.email}</strong> adresinize en geç 1 iş günü içinde ulaşacak.
               </p>
-              <div className="pt-4">
-                <Link
-                  href="/register"
-                  className="inline-block px-6 py-3 rounded-xl font-bold text-white text-sm transition-all hover:scale-105"
-                  style={{ background: 'linear-gradient(135deg,#059669,#0284c7)' }}
-                >
-                  Create Instant Free Account instead →
+              <div className="flex flex-col gap-3 mt-6">
+                <Link href="/register"
+                  className="w-full block text-center py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-all">
+                  Hemen Ücretsiz Hesap Oluştur →
+                </Link>
+                <Link href="/dashboard"
+                  className="w-full block text-center py-3 rounded-xl font-bold text-slate-300 border border-slate-700 hover:border-slate-500 transition-all">
+                  Platforma Gir
                 </Link>
               </div>
             </div>
@@ -148,8 +197,8 @@ export default function RequestDemoPage() {
         </div>
       </section>
 
-      <footer className="text-center py-6 text-xs text-slate-700 border-t border-white/5">
-        SustainHub.online · Connective Hub Digital Technologies Ltd.
+      <footer className="text-center py-6 text-xs text-slate-600 border-t border-white/5">
+        SustainHub.online · Connective Hub Digital Technologies Ltd. · Istanbul Teknokent & London
       </footer>
     </div>
   )

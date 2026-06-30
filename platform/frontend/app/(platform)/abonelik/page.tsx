@@ -15,30 +15,30 @@ type Plan = {
   badge: string | null
 }
 
-type CurrencyKey = 'USD' | 'EUR' | 'GBP' | 'TRY'
+type CurrencyKey = 'TRY' | 'EUR' | 'USD'
 
-const CURRENCIES: Record<CurrencyKey, { symbol: string; flag: string; label: string; rate: number }> = {
-  USD: { symbol: '$',  flag: '🇺🇸', label: 'USD',  rate: 1 },
-  EUR: { symbol: '€',  flag: '🇪🇺', label: 'EUR',  rate: 0.92 },
-  GBP: { symbol: '£',  flag: '🇬🇧', label: 'GBP',  rate: 0.79 },
-  TRY: { symbol: '₺',  flag: '🇹🇷', label: 'TRY',  rate: 38.5 },
+// Base: TRY. Rates: how many TRY = 1 of that currency
+const CURRENCIES: Record<CurrencyKey, { symbol: string; flag: string; label: string; tryRate: number }> = {
+  TRY: { symbol: '₺',  flag: '🇹🇷', label: 'TRY', tryRate: 1 },
+  EUR: { symbol: '€',  flag: '🇪🇺', label: 'EUR', tryRate: 43 },
+  USD: { symbol: '$',  flag: '🇺🇸', label: 'USD', tryRate: 39 },
 }
 
 function detectCurrency(): CurrencyKey {
-  if (typeof navigator === 'undefined') return 'USD'
-  const lang = navigator.language || 'en-US'
+  if (typeof navigator === 'undefined') return 'TRY'
+  const lang = navigator.language || 'tr-TR'
   if (lang.startsWith('tr')) return 'TRY'
-  if (lang === 'en-GB') return 'GBP'
   const euLangs = ['de', 'fr', 'es', 'it', 'nl', 'pt', 'fi', 'sv', 'da', 'no', 'pl']
   if (euLangs.some(l => lang.startsWith(l))) return 'EUR'
   return 'USD'
 }
 
-function fmtPrice(usdPrice: number, currency: CurrencyKey): string {
-  const { symbol, rate } = CURRENCIES[currency]
-  const converted = usdPrice * rate
+// tryPrice: annual price in TRY
+function fmtPrice(tryPrice: number, currency: CurrencyKey): string {
+  const { symbol, tryRate } = CURRENCIES[currency]
+  const converted = currency === 'TRY' ? tryPrice : tryPrice / tryRate
   if (currency === 'TRY') return `${symbol}${Math.round(converted).toLocaleString('tr-TR')}`
-  return `${symbol}${Math.round(converted)}`
+  return `${symbol}${Math.round(converted).toLocaleString('en-GB')}`
 }
 
 const BADGE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -61,8 +61,8 @@ function PlanCard({
   onSelect: (planId: string) => void
   loading: boolean
 }) {
-  const usdPrice = billing === 'yearly' ? plan.price_yearly : plan.price_monthly
-  const usdPerMonth = billing === 'yearly' && plan.price_yearly > 0
+  const tryPrice = billing === 'yearly' ? plan.price_yearly : plan.price_monthly
+  const tryPerMonth = billing === 'yearly' && plan.price_yearly > 0
     ? plan.price_yearly / 12
     : null
   const badge = plan.badge ? BADGE_COLORS[plan.badge] : null
@@ -88,20 +88,20 @@ function PlanCard({
       <div className="mb-4">
         <h3 className="text-lg font-black" style={{ color: 'var(--green-900)' }}>{plan.name_tr}</h3>
         <div className="mt-2 flex items-baseline gap-1">
-          {usdPrice === 0 ? (
+          {tryPrice === 0 ? (
             <span className="text-3xl font-black" style={{ color: 'var(--green-800)' }}>Ücretsiz</span>
           ) : (
             <>
               <span className="text-3xl font-black" style={{ color: 'var(--green-800)' }}>
-                {fmtPrice(billing === 'yearly' && usdPerMonth ? usdPerMonth : usdPrice, currency)}
+                {fmtPrice(billing === 'yearly' && tryPerMonth ? tryPerMonth : tryPrice, currency)}
               </span>
               <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>/ay</span>
             </>
           )}
         </div>
-        {billing === 'yearly' && usdPrice > 0 && (
+        {billing === 'yearly' && tryPrice > 0 && (
           <p className="text-xs mt-1" style={{ color: 'var(--green-600)' }}>
-            Yıllık {fmtPrice(usdPrice, currency)} — 2 ay ücretsiz
+            Yıllık {fmtPrice(tryPrice, currency)} — 2 ay ücretsiz
           </p>
         )}
       </div>
@@ -126,7 +126,7 @@ function PlanCard({
           disabled={loading}
           className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50"
           style={{ background: plan.badge === 'Popüler' ? 'var(--green-700)' : '#1565C0' }}>
-          {loading ? 'Yönlendiriliyor…' : usdPrice === 0 ? 'Başla' : `${plan.name_tr}'e Geç`}
+          {loading ? 'Yönlendiriliyor…' : tryPrice === 0 ? 'Başla' : `${plan.name_tr}'e Geç`}
         </button>
       )}
     </div>
@@ -137,7 +137,7 @@ export default function AbonelikPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [currentPlan, setCurrentPlan] = useState<string>('free')
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('yearly')
-  const [currency, setCurrency] = useState<CurrencyKey>('USD')
+  const [currency, setCurrency] = useState<CurrencyKey>('TRY')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
 
@@ -240,9 +240,9 @@ export default function AbonelikPage() {
           </div>
         </div>
 
-        {currency === 'TRY' && (
+        {currency !== 'TRY' && (
           <p className="text-xs mt-3" style={{ color: 'var(--muted-foreground)' }}>
-            ₺ fiyatlar tahmini dönüşümdür. Ödeme USD olarak alınır.
+            {CURRENCIES[currency].symbol} fiyatlar yaklaşık dönüşümdür. Faturalama ₺ (TRY) üzerinden yapılır.
           </p>
         )}
       </div>

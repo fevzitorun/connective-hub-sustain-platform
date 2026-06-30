@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { section: 'General', items: [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+    { href: '/executive', label: 'YK / CFO Özet', icon: '🏛️', badge: 'NEW' },
   ]},
   { section: 'Reporting', items: [
     { href: '/veri-girisi', label: 'Data Entry', icon: '📥' },
@@ -63,6 +64,7 @@ const navItems = [
   ]},
   { section: 'Account', items: [
     { href: '/abonelik', label: 'Subscription', icon: '💳', badge: 'NEW' },
+    { href: '/pre-launch', label: 'Pre-Launch QA', icon: '🚀', badge: 'ADMIN' },
   ]},
 ]
 
