@@ -6,6 +6,14 @@ import Link from 'next/link'
 export default function HubPage() {
   const policyAlerts = [
     {
+      id: "p0",
+      date: "2 Temmuz 2026",
+      title: "COP31 Türkiye Ev Sahipliği — TSRS Uyum Penceresi Açıldı",
+      summary: "Türkiye'nin COP31'e ev sahipliği yapması, BDDK ve KGK'nın zorunlu TSRS raporlamasını hızlandırmasını beraberinde getiriyor. 34 banka ve 200+ büyük şirket için kritik hazırlık dönemi başladı.",
+      impact: "Critical",
+      tag: "COP31 🇹🇷"
+    },
+    {
       id: "p1",
       date: "Bugün",
       title: "AB Parlamentosu CBAM'da Çelik Sınırlarını Güncelledi",
@@ -84,16 +92,33 @@ export default function HubPage() {
             Policy Alerts
           </h2>
           <div className="space-y-4">
-            {policyAlerts.map(alert => (
-              <div key={alert.id} className="bg-white border-l-4 border-red-500 rounded-r-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-50 px-2 py-1 rounded">{alert.tag}</span>
-                  <span className="text-xs font-semibold text-slate-400">{alert.date}</span>
+            {policyAlerts.map(alert => {
+              const isCop31 = alert.id === 'p0'
+              return (
+                <div key={alert.id}
+                  className="bg-white rounded-r-xl p-5 shadow-sm hover:shadow-md transition-shadow border-l-4"
+                  style={{ borderLeftColor: isCop31 ? '#d97706' : '#ef4444' }}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded"
+                      style={{ color: isCop31 ? '#92400e' : '#ef4444', background: isCop31 ? '#fef3c7' : '#fef2f2' }}>
+                      {alert.tag}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-400">{alert.date}</span>
+                  </div>
+                  <h3 className="font-bold text-slate-800 mb-2 leading-tight">{alert.title}</h3>
+                  <p className="text-sm text-slate-600">{alert.summary}</p>
+                  {isCop31 && (
+                    <div className="mt-3 flex gap-2">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">BDDK</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">TSRS</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">PCAF</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">GAR</span>
+                    </div>
+                  )}
                 </div>
-                <h3 className="font-bold text-slate-800 mb-2 leading-tight">{alert.title}</h3>
-                <p className="text-sm text-slate-600">{alert.summary}</p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -157,6 +182,12 @@ export default function HubPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
+            {
+              category: 'COP31 Türkiye', categoryColor: '#b45309', categoryBg: '#fef3c7',
+              date: '2026-07', tag: '🇹🇷 COP31 Özel',
+              title: 'COP31 & TSRS: Türk Şirketleri İçin Yol Haritası',
+              body: 'Türkiye\'nin COP31 ev sahipliği, BDDK/KGK TSRS zorunluluklarını hızlandırıyor. 34 banka ve 200+ büyük şirket için uyum takvimi, PCAF finanse edilen emisyonlar ve GAR yükümlülükleri.',
+            },
             {
               category: 'Düzenleme', categoryColor: '#7c3aed', categoryBg: '#ede9fe',
               date: '2025-06', tag: 'CSRD',
