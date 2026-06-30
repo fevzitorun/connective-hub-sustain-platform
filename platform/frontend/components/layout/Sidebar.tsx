@@ -21,6 +21,7 @@ const navItems = [
   ]},
   { section: 'Climate & ESG', items: [
     { href: '/health-check', label: 'ESG Health Check', icon: '🩺', badge: 'NEW' },
+    { href: '/csrd', label: 'CSRD Çift Önemlilik', icon: '🇪🇺', badge: 'ESRS' },
     { href: '/tcfd', label: 'TCFD Scenarios', icon: '🌡️', badge: 'NEW' },
     { href: '/sroi', label: 'SROI Calculator', icon: '💹' },
     { href: '/tedarikciler', label: 'Supplier ESG Audit', icon: '🔗' },
