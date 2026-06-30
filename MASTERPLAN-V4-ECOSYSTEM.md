@@ -804,6 +804,37 @@ PHASE 1 — BEACHHEAD (Now → Q4 2026) — €1.5M Seed
    Earth Intelligence → Sprint 21 hızlandırıldı: Copernicus + AFAD +
                          NASA açık veri ile Komunidad bağımsız fiziksel risk modülü
 
+✅ DONE — Sprint 21 (Jun 2026) — Earth Intelligence Dashboard
+   satellite_service.py:    5 risk boyutu motoru (Deprem/Sel/Kuraklık/Aşırı Sıcak/Yangın)
+                             IPCC AR6 WG2 projeksiyonları (2030/2050 × RCP 4.5/8.5)
+                             Türkiye 20 şehir + KKTC 3 şehir + UK 4 şehir
+                             Su stresi + ısı stresi motorları
+                             Flood/fire çarpan projeksiyonları
+   satellite.py:            /satellite/demo (public, auth gerektirmez)
+                             /satellite/cities endpoint eklendi
+   uydu/page.tsx:           Earth Intelligence Dashboard — tam yeniden yazıldı:
+                             Şehir seçici (TR/KKTC/UK optgroup), RadarChart (5 boyut)
+                             IPCC projeksiyon kartları + LineChart (RCP 4.5/8.5 toggle)
+                             NASA metrik paneli, OpenStreetMap harita
+                             "TCFD'ye Aktar →" URL köprüsü, Sustain Verified™ rozeti
+
+✅ DONE — Sprint 22 (Jun 2026) — ESG Health Check + Earth→TCFD Bridge
+   health-check/page.tsx:   3-adım sihirbaz (sektör/enerji/sonuç)
+                             Skor halkası + grade + percentile + hızlı kazanımlar
+                             CTA: AI Rapor + TCFD bağlantısı
+   tcfd/page.tsx:            useSearchParams köprüsü: ?physical_risk=N&city=X
+                             Yeşil bildirim kutusu, physical_risk_base hesaba dahil
+   Sidebar:                  ESG Health Check (🩺 NEW), Satellite Verify → Earth Intelligence
+   api.ts:                   healthCheck.estimate genişletildi, tcfd.scenarios physical_risk_base
+
+✅ DONE — Sprint 23 (Jun 2026) — Compliance Tracker Tri-Jurisdictional Rebuild
+   compliance/page.tsx:     7 düzenleme (TSRS + BDDK GAR + FCA SDR + CBAM + EUDR + CSRD + KKTC MB)
+                             Jurisdiction filtresi: 🇹🇷 BDDK / 🇬🇧 FCA / 🇪🇺 AB / 🇨🇾 KKTC
+                             Aciliyet sıralaması (critical → high → medium → low)
+                             Kalan gün sayacı, görev listesi (done/pending)
+                             "Turkish Bank Modu" rozeti, Audit-Ready Data Room CTA
+                             Güncel 2026/2027 deadline'ları (2025 tarihleri güncellendi)
+
 TARGET END PHASE 1 — GÜNCELLEME (Q3 2026):
    30 paid customer · ₺6M ARR Turkey · sustainhub.online live
    Üniversite pilot: Atlas, İTÜ, Sabancı (3 kampüs)
