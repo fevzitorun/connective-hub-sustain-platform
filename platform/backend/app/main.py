@@ -131,6 +131,11 @@ from .routes import gri, tnfd
 app.include_router(gri.router)
 app.include_router(tnfd.router)
 
+# Sprint 35 — SBTi + Scope 3
+from .routes import sbti, scope3
+app.include_router(sbti.router)
+app.include_router(scope3.router)
+
 
 @app.on_event("startup")
 async def startup():

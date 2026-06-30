@@ -27,6 +27,8 @@ const navItems = [
     { href: '/tedarikciler', label: 'Supplier ESG Audit', icon: '🔗' },
     { href: '/benchmark', label: 'Benchmark', icon: '📈' },
     { href: '/hedefler', label: 'Targets (SBTi)', icon: '🎯' },
+    { href: '/sbti', label: 'SBTi Hedef Hesap', icon: '🎯', badge: 'NEW' },
+    { href: '/scope3', label: 'Kapsam 3 Değer Zinciri', icon: '🔗', badge: 'NEW' },
     { href: '/uydu', label: 'Earth Intelligence', icon: '🛰️', badge: 'NEW' },
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦', badge: 'PCAF' },
     { href: '/gar/kobi-dashboard', label: 'KOBİ Portföy', icon: '🏪' },

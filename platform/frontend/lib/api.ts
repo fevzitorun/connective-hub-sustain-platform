@@ -383,6 +383,24 @@ export const api = {
       }>('/supplier-audit/score', { method: 'POST', body: JSON.stringify(data) }),
   },
 
+  sbti: {
+    demo: () => request<unknown>('/api/sbti/demo'),
+    assess: (data: {
+      company_name: string; sector: string; base_year: number
+      total_emissions_tco2e: number; current_annual_reduction_pct: number
+      commitment_stage: string; has_flag: boolean
+    }) => request<unknown>('/api/sbti/assess', { method: 'POST', body: JSON.stringify(data) }),
+    sectors: () => request<{ sectors: unknown[]; flag_sectors: string[] }>('/api/sbti/sectors'),
+    stages: () => request<{ stages: unknown[] }>('/api/sbti/commitment-stages'),
+  },
+
+  scope3: {
+    demo: () => request<unknown>('/api/scope3/demo'),
+    calculate: (data: { category_inputs: Record<number, number>; total_scope1_2: number }) =>
+      request<unknown>('/api/scope3/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    categories: () => request<{ categories: unknown[] }>('/api/scope3/categories'),
+  },
+
   gri: {
     demo: () => request<unknown>('/api/gri/demo'),
     assess: (data: { completed_ids: string[]; maturity_score: number }) =>
