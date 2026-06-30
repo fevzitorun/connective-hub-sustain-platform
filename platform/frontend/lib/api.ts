@@ -245,7 +245,8 @@ export const api = {
     estimate: (data: { sector: string; employee_count: number; electricity_kwh?: number; natural_gas_m3?: number }) =>
       request<{
         score: number; grade: string; grade_color: string; grade_bg: string
-        percentile: number; total_tco2e: number; sector_label: string
+        percentile: number; total_tco2e: number; intensity_per_employee: number
+        sector_avg_intensity: number; sector_label: string
         vs_sector: string; quick_wins: string[]; cta: string
       }>('/health-check/estimate', { method: 'POST', body: JSON.stringify(data) }),
   },
@@ -280,7 +281,7 @@ export const api = {
   },
 
   tcfd: {
-    scenarios: (data: { sector: string; annual_revenue_eur: number; total_co2e: number; goods_exported_tons?: number; eu_ets_price?: number }) =>
+    scenarios: (data: { sector: string; annual_revenue_eur: number; total_co2e: number; goods_exported_tons?: number; eu_ets_price?: number; physical_risk_base?: number }) =>
       request<unknown>('/tcfd/scenarios', { method: 'POST', body: JSON.stringify(data) }),
     demo: () => request<unknown>('/tcfd/demo', { method: 'POST' }),
   },

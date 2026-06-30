@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 
@@ -47,6 +48,7 @@ function RiskBar({ value, color }: { value: number; color: string }) {
 }
 
 export default function TCFDPage() {
+  const searchParams = useSearchParams()
   const [sector, setSector] = useState('çelik')
   const [revenue, setRevenue] = useState('')
   const [co2e, setCo2e] = useState('')
@@ -55,6 +57,16 @@ export default function TCFDPage() {
   const [loading, setLoading] = useState(false)
   const [demoLoading, setDemoLoading] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
+  const [earthCity, setEarthCity] = useState<string | null>(null)
+  const [earthRisk, setEarthRisk] = useState<number | null>(null)
+
+  // Earth Intelligence → TCFD köprüsü: URL param okuma
+  useEffect(() => {
+    const physRisk = searchParams.get('physical_risk')
+    const city = searchParams.get('city')
+    if (physRisk) setEarthRisk(parseFloat(physRisk))
+    if (city) setEarthCity(city)
+  }, [searchParams])
 
   async function handleCalculate() {
     if (!revenue || !co2e) { toast.error('Ciro ve emisyon değerlerini girin'); return }
@@ -64,6 +76,7 @@ export default function TCFDPage() {
         sector, annual_revenue_eur: parseFloat(revenue),
         total_co2e: parseFloat(co2e),
         goods_exported_tons: exported ? parseFloat(exported) : 0,
+        physical_risk_base: earthRisk ?? undefined,
       })
       setResult(res as TCFDResult)
       setSelected('paris_2c')
@@ -102,6 +115,24 @@ export default function TCFDPage() {
           {demoLoading ? 'Yükleniyor…' : '🎯 Çelik Sektörü Demo'}
         </button>
       </div>
+
+      {/* Earth Intelligence bağlantı bildirimi */}
+      {earthRisk !== null && (
+        <div className="rounded-xl px-5 py-3 flex items-center gap-3 text-sm"
+          style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
+          <span className="text-lg">🛰️</span>
+          <div>
+            <span className="font-bold" style={{ color: '#065f46' }}>Earth Intelligence bağlandı — </span>
+            <span style={{ color: '#047857' }}>
+              {earthCity && <><strong>{earthCity.charAt(0).toUpperCase() + earthCity.slice(1)}</strong> tesisi · </>}
+              Fiziksel risk skoru <strong>{earthRisk}/100</strong> olarak aktarıldı.
+              TCFD hesaplamasında kullanılacak.
+            </span>
+          </div>
+          <button onClick={() => { setEarthRisk(null); setEarthCity(null) }}
+            className="ml-auto text-xs text-emerald-600 hover:text-emerald-800">✕</button>
+        </div>
+      )}
 
       {/* Input */}
       <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>

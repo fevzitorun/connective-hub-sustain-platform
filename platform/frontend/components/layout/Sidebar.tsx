@@ -20,12 +20,13 @@ const navItems = [
     { href: '/eudr', label: 'EUDR Supply', icon: '🌳' },
   ]},
   { section: 'Climate & ESG', items: [
+    { href: '/health-check', label: 'ESG Health Check', icon: '🩺', badge: 'NEW' },
     { href: '/tcfd', label: 'TCFD Scenarios', icon: '🌡️', badge: 'NEW' },
-    { href: '/sroi', label: 'SROI Calculator', icon: '💹', badge: 'NEW' },
-    { href: '/tedarikciler', label: 'Supplier ESG Audit', icon: '🔗', badge: 'NEW' },
+    { href: '/sroi', label: 'SROI Calculator', icon: '💹' },
+    { href: '/tedarikciler', label: 'Supplier ESG Audit', icon: '🔗' },
     { href: '/benchmark', label: 'Benchmark', icon: '📈' },
     { href: '/hedefler', label: 'Targets (SBTi)', icon: '🎯' },
-    { href: '/uydu', label: 'Satellite Verify', icon: '🛰️' },
+    { href: '/uydu', label: 'Earth Intelligence', icon: '🛰️', badge: 'NEW' },
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦' },
   ]},
   { section: 'Intelligence', items: [
