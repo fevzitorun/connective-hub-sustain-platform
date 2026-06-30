@@ -152,6 +152,10 @@ app.include_router(report_builder.router)
 from .routes import sasb_sdg
 app.include_router(sasb_sdg.router)
 
+# Sprint 41 — Water Footprint + ESRS E2-E5
+from .routes import water_esrs
+app.include_router(water_esrs.router)
+
 
 @app.on_event("startup")
 async def startup():

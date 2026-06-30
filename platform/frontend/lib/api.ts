@@ -401,6 +401,17 @@ export const api = {
     categories: () => request<{ categories: unknown[] }>('/api/scope3/categories'),
   },
 
+  waterEsrs: {
+    demo: () => request<unknown>('/api/water-esrs/demo'),
+    assess: (data: {
+      company_name: string; sector: string
+      water_withdrawal_m3: number; water_consumed_m3: number
+      operates_in_high_stress?: boolean; completed_disclosures?: string[]
+      waste_generated_tonnes?: number; recycled_pct?: number
+    }) => request<unknown>('/api/water-esrs/assess', { method: 'POST', body: JSON.stringify(data) }),
+    standards: () => request<unknown>('/api/water-esrs/standards'),
+  },
+
   sasbSdg: {
     demo: () => request<unknown>('/api/sasb-sdg/demo'),
     assess: (data: { company_name: string; sector_id: string; metric_values?: Record<string, number>; relevant_sdgs?: number[] | null }) =>
