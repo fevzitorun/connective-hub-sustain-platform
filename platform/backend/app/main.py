@@ -117,6 +117,10 @@ app.include_router(gar_bank.router)
 from .routes import copilot
 app.include_router(copilot.router)
 
+# Sprint 32 — Sustain Autopilot
+from .routes import autopilot
+app.include_router(autopilot.router)
+
 
 @app.on_event("startup")
 async def startup():

@@ -44,6 +44,7 @@ const navItems = [
     { href: '/esg', label: 'Public ESG Page', icon: '🌟' },
   ]},
   { section: 'Support', items: [
+    { href: '/autopilot', label: 'Sustain Autopilot', icon: '🤖', badge: 'NEW' },
     { href: '/entegrasyon', label: 'Integrations', icon: '🔌' },
     { href: '/destekler', label: 'Subsidies', icon: '💰' },
   ]},

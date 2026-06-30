@@ -383,6 +383,36 @@ export const api = {
       }>('/supplier-audit/score', { method: 'POST', body: JSON.stringify(data) }),
   },
 
+  autopilot: {
+    demo: () => request<{
+      rules: Array<{
+        id: string; name: string; rule_type: string
+        standard: string; standard_label: string; standard_color: string; standard_icon: string
+        frequency: string; frequency_label: string
+        is_active: boolean; notify_email: boolean; run_count: number
+        last_run_at: string | null; next_run_at: string | null; created_at: string
+      }>
+      runs: Array<{
+        id: string; rule_id: string; status: string; triggered_by: string
+        output_summary: string | null; error_message?: string
+        started_at: string | null; finished_at: string | null
+      }>
+      stats: { total_rules: number; active_rules: number; total_runs: number; success_rate: number; reports_generated: number }
+      standards: Record<string, { label: string; color: string; icon: string }>
+      frequency_labels: Record<string, string>
+    }>('/api/autopilot/demo'),
+    listRules: () => request<{ rules: unknown[] }>('/api/autopilot/rules'),
+    createRule: (data: { name: string; rule_type: string; standard: string; frequency: string; notify_email: boolean; day_of_month?: number; notify_days_before?: number }) =>
+      request<{ status: string; rule: unknown }>('/api/autopilot/rules', { method: 'POST', body: JSON.stringify(data) }),
+    toggleRule: (ruleId: string) =>
+      request<{ rule_id: string; is_active: boolean }>(`/api/autopilot/rules/${ruleId}/toggle`, { method: 'PATCH' }),
+    deleteRule: (ruleId: string) =>
+      request<{ status: string }>(`/api/autopilot/rules/${ruleId}`, { method: 'DELETE' }),
+    manualRun: (ruleId: string) =>
+      request<{ status: string; rule_id: string; message: string }>(`/api/autopilot/rules/${ruleId}/run`, { method: 'POST' }),
+    listRuns: (limit = 20) => request<{ runs: unknown[] }>(`/api/autopilot/runs?limit=${limit}`),
+  },
+
   stats: {
     global: () => request<{
       platform: string
