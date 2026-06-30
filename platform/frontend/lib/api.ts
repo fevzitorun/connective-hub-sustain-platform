@@ -401,6 +401,19 @@ export const api = {
     categories: () => request<{ categories: unknown[] }>('/api/scope3/categories'),
   },
 
+  issb: {
+    demo: () => request<unknown>('/api/issb/demo'),
+    assess: (data: {
+      company_name: string; sector: string
+      scope1_tco2e: number; scope2_tco2e: number; scope3_tco2e: number
+      pillar_scores?: Record<string, number> | null
+      scenarios_analysed?: string[] | null
+      has_sbti_target?: boolean; internal_carbon_price?: number | null; exec_pay_linked?: boolean
+    }) => request<unknown>('/api/issb/assess', { method: 'POST', body: JSON.stringify(data) }),
+    standards: () => request<unknown>('/api/issb/standards'),
+    tcfdCrosswalk: () => request<unknown[]>('/api/issb/tcfd-crosswalk'),
+  },
+
   gri: {
     demo: () => request<unknown>('/api/gri/demo'),
     assess: (data: { completed_ids: string[]; maturity_score: number }) =>

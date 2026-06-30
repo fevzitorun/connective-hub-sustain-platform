@@ -136,6 +136,10 @@ from .routes import sbti, scope3
 app.include_router(sbti.router)
 app.include_router(scope3.router)
 
+# Sprint 37 — ISSB IFRS S1 + S2
+from .routes import issb
+app.include_router(issb.router)
+
 
 @app.on_event("startup")
 async def startup():
