@@ -126,6 +126,11 @@ from .routes import cdp, eu_taxonomy
 app.include_router(cdp.router)
 app.include_router(eu_taxonomy.router)
 
+# Sprint 34 — GRI 2021 + TNFD
+from .routes import gri, tnfd
+app.include_router(gri.router)
+app.include_router(tnfd.router)
+
 
 @app.on_event("startup")
 async def startup():

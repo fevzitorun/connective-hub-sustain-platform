@@ -383,6 +383,22 @@ export const api = {
       }>('/supplier-audit/score', { method: 'POST', body: JSON.stringify(data) }),
   },
 
+  gri: {
+    demo: () => request<unknown>('/api/gri/demo'),
+    assess: (data: { completed_ids: string[]; maturity_score: number }) =>
+      request<unknown>('/api/gri/assess', { method: 'POST', body: JSON.stringify(data) }),
+    standards: () => request<{ standards: unknown[] }>('/api/gri/standards'),
+  },
+
+  tnfd: {
+    demo: () => request<unknown>('/api/tnfd/demo'),
+    assess: (data: { sector: string; completed_disclosures: string[]; leap_progress?: Record<string, number> }) =>
+      request<unknown>('/api/tnfd/assess', { method: 'POST', body: JSON.stringify(data) }),
+    leapPhases: () => request<{ phases: unknown[] }>('/api/tnfd/leap-phases'),
+    disclosures: () => request<{ disclosures: unknown[] }>('/api/tnfd/disclosures'),
+    sectors: () => request<{ sectors: string[]; risk_categories: unknown[] }>('/api/tnfd/sectors'),
+  },
+
   cdp: {
     demo: () => request<unknown>('/api/cdp/demo'),
     assess: (data: {

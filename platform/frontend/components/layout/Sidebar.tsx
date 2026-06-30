@@ -35,6 +35,8 @@ const navItems = [
     { href: '/uk-sdr', label: 'FCA SDR + SFDR', icon: '🇬🇧', badge: 'UK' },
     { href: '/cdp', label: 'CDP Questionnaire', icon: '🌍', badge: 'CDP' },
     { href: '/eu-taxonomy', label: 'EU Taxonomy', icon: '🇪🇺', badge: 'NEW' },
+    { href: '/gri', label: 'GRI 2021 Tracker', icon: '📖', badge: 'GRI' },
+    { href: '/tnfd', label: 'TNFD Doğa Riski', icon: '🌿', badge: 'NEW' },
   ]},
   { section: 'Intelligence', items: [
     { href: '/hub', label: 'Intelligence Hub', icon: '🌍', badge: 'NEW' },
