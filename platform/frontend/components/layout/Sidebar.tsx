@@ -33,6 +33,7 @@ const navItems = [
     { href: '/tsrs', label: 'TSRS 1+2 (KGK)', icon: '🇹🇷', badge: 'NEW' },
     { href: '/sasb-sdg', label: 'SASB + SDG', icon: '📊', badge: 'NEW' },
     { href: '/water-esrs', label: 'Water + ESRS E2-E5', icon: '💧', badge: 'NEW' },
+    { href: '/esg-benchmark', label: 'ESG Benchmark', icon: '📈', badge: 'NEW' },
     { href: '/uydu', label: 'Earth Intelligence', icon: '🛰️', badge: 'NEW' },
     { href: '/gar', label: 'Bank GAR Portal', icon: '🏦', badge: 'PCAF' },
     { href: '/gar/kobi-dashboard', label: 'KOBİ Portföy', icon: '🏪' },

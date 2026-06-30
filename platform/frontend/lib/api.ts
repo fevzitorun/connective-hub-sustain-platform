@@ -401,6 +401,14 @@ export const api = {
     categories: () => request<{ categories: unknown[] }>('/api/scope3/categories'),
   },
 
+  esgBenchmark: {
+    demo: () => request<unknown>('/api/esg-benchmark/demo'),
+    assess: (data: { company_name: string; sector: string; company_scores: Record<string, number> }) =>
+      request<unknown>('/api/esg-benchmark/assess', { method: 'POST', body: JSON.stringify(data) }),
+    dimensions: () => request<unknown[]>('/api/esg-benchmark/dimensions'),
+    sectors: () => request<string[]>('/api/esg-benchmark/sectors'),
+  },
+
   waterEsrs: {
     demo: () => request<unknown>('/api/water-esrs/demo'),
     assess: (data: {

@@ -156,6 +156,10 @@ app.include_router(sasb_sdg.router)
 from .routes import water_esrs
 app.include_router(water_esrs.router)
 
+# Sprint 42 — ESG Benchmark (3-series radar)
+from .routes import esg_benchmark
+app.include_router(esg_benchmark.router)
+
 
 @app.on_event("startup")
 async def startup():
