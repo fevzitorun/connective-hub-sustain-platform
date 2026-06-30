@@ -120,6 +120,10 @@ export const api = {
       request<unknown>(`/satellite/risk?lat=${lat}&lng=${lng}&city=${city}&year=${year}`),
     getByCompany: (companyId: string) =>
       request<unknown>(`/satellite/risk/${companyId}`),
+    demo: (city = 'istanbul') =>
+      request<unknown>(`/satellite/demo?city=${encodeURIComponent(city)}`),
+    cities: () =>
+      request<{ cities: string[] }>('/satellite/cities'),
   },
 
   materiality: {
