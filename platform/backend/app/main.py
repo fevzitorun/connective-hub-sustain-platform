@@ -9,7 +9,7 @@ from .routes import drafts, bulk_upload, validation, users
 from .routes import benchmarks, audit, cbam, eudr, iso14064, verification
 from .routes import payments
 from .routes import satellite, materiality, credit_score, scores, suppliers, integration
-from .routes import sector, uk_sdr
+from .routes import sector, uk_sdr, pcf
 from .middleware.rate_limit import RateLimitMiddleware
 
 app = FastAPI(
@@ -55,6 +55,7 @@ app.include_router(iso14064.router)
 app.include_router(sector.router)
 app.include_router(verification.router)
 app.include_router(uk_sdr.router)
+app.include_router(pcf.router)
 
 # Sprint 4 routes
 app.include_router(payments.router)

@@ -60,6 +60,17 @@ export const api = {
       request<{ base_year: number; base_year_total: number; latest_year: number; latest_total: number; total_reduction_pct: number; trend: any[] }>(`/iso14064/trend/${companyId}?years=${years}`),
   },
 
+  pcf: {
+    calculate: (data: {
+      product_name?: string; functional_unit?: string; functional_unit_quantity?: number
+      system_boundary?: string; sector?: string; annual_production_units?: number
+      cbam_product_category?: string; stages?: Record<string, Record<string, number>>
+    }) => request<{ status: string; result: any }>('/pcf/calculate', { method: 'POST', body: JSON.stringify(data) }),
+    demo: (productKey: string) => request<{ status: string; product_key: string; result: any }>(`/pcf/demo/${productKey}`),
+    emissionFactors: () => request<{ emission_factors: Record<string, number>; sources: string[] }>('/pcf/emission-factors'),
+    benchmarks: () => request<{ benchmarks: Record<string, any> }>('/pcf/benchmarks'),
+  },
+
   ukSdr: {
     assess: (data: {
       company_name?: string; maturity_score: number
