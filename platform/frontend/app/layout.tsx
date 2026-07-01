@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const BASE_URL = 'https://sustainhub.online'
 
@@ -73,15 +74,18 @@ export const metadata: Metadata = {
   category: 'technology',
 }
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? ''
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="tr">
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
       </head>
       <body>
         {children}
         <Toaster richColors position="top-right" />
+        {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
       </body>
     </html>
   )
