@@ -82,13 +82,31 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname()
   const [companyType, setCompanyType] = useState<string>('')
+  const [companyName, setCompanyName] = useState<string>('')
+  const [userName, setUserName] = useState<string>('')
+  const [userTitle, setUserTitle] = useState<string>('')
 
   useEffect(() => {
     setCompanyType(localStorage.getItem('company_type') ?? '')
+    setCompanyName(localStorage.getItem('company_name') ?? '')
+    setUserName(localStorage.getItem('user_name') ?? '')
+    setUserTitle(localStorage.getItem('user_title') ?? '')
   }, [])
 
   const isBank = companyType === 'bank'
   const activeNav = isBank ? [...BANK_NAV, ...navItems] : navItems
+
+  const displayCompany = companyName || (isBank ? 'Bank Demo' : 'Your Company')
+  const workspaceLabel = isBank ? 'Bank GAR Workspace'
+    : companyType === 'corporate' ? 'Corporate Workspace'
+    : companyType === 'sme' ? 'SME Workspace'
+    : companyType === 'university' ? 'University Workspace'
+    : 'SustainHub Platform'
+  const companyInitials = displayCompany.split(' ').slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('')
+
+  const displayUser = userName || 'SustainHub Team'
+  const displayRole = userTitle || 'Sustainability Platform'
+  const userInitials = displayUser.split(' ').slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('')
 
   return (
     <aside
@@ -110,14 +128,12 @@ export function Sidebar() {
 
       {/* Company switcher */}
       <div className="mx-3 mt-3 rounded-lg px-3 py-2.5 flex items-center gap-2 cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
-        <div
-          className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold bg-emerald-500 text-white"
-        >
-          {isBank ? '🏦' : 'AK'}
+        <div className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold bg-emerald-500 text-white">
+          {isBank ? '🏦' : (companyInitials || '🌿')}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-semibold truncate">{isBank ? 'Bank Demo Account' : 'Akbank T.A.Ş.'}</div>
-          <div className="text-xs text-emerald-400">{isBank ? 'Bank GAR Workspace' : 'Corporate Plan'}</div>
+          <div className="text-xs font-semibold truncate">{displayCompany}</div>
+          <div className="text-xs text-emerald-400">{workspaceLabel}</div>
         </div>
         <span className="text-xs opacity-40">⌄</span>
       </div>
@@ -166,14 +182,12 @@ export function Sidebar() {
 
       {/* User footer */}
       <div className="px-3 py-3 border-t border-white/10 flex items-center gap-2">
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-slate-800 border border-slate-700"
-        >
-          KY
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-slate-800 border border-slate-700">
+          {userInitials || '🌿'}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-semibold text-slate-200">Kemal Yılmaz</div>
-          <div className="text-xs truncate text-emerald-400/80">Sustainability Dir.</div>
+          <div className="text-xs font-semibold text-slate-200">{displayUser}</div>
+          <div className="text-xs truncate text-emerald-400/80">{displayRole}</div>
         </div>
       </div>
     </aside>

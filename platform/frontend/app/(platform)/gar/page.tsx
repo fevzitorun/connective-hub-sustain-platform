@@ -10,18 +10,18 @@ const JURISDICTION_CONFIG = {
   bddk: {
     label: 'Türkiye (BDDK)',
     flag: '🇹🇷',
-    standard: 'BDDK Sürdürülebilir Bankacılık · TSRS',
+    standard: 'BDDK Sustainable Banking · TSRS',
     currency: '₺',
     currencyCode: 'TRY',
-    reportTitle: 'Yeşil Varlık Oranı (GAR) Raporu',
-    reportSubtitle: 'BDDK Sürdürülebilir Bankacılık Uyum Raporu · TSRS/TFRS S2 Uyumlu',
-    debtLabel: 'Toplam Finansal Borç',
-    greenLabel: 'Yeşil Finansman Payı',
-    ratioLabel: 'GAR (Green Asset Ratio)',
+    reportTitle: 'Green Asset Ratio (GAR) Report — Yeşil Varlık Oranı',
+    reportSubtitle: 'BDDK Sustainable Banking Compliance · TSRS / IFRS S2 Aligned',
+    debtLabel: 'Total Financial Debt / Toplam Finansal Borç',
+    greenLabel: 'Green Finance Share / Yeşil Finansman Payı',
+    ratioLabel: 'GAR (Green Asset Ratio / Yeşil Varlık Oranı)',
     badgeColor: '#dc2626',
     badgeBg: '#fee2e2',
-    framework: 'AB Taksonomisi + BDDK Sürdürülebilirlik Rehberi 2023',
-    auditNote: 'BDDK denetimine tabi. 34 banka zorunlu raporlama kapsamında.',
+    framework: 'EU Taxonomy + BDDK Sustainability Guidelines 2023 (AB Taksonomisi + BDDK Sürdürülebilirlik Rehberi)',
+    auditNote: 'Subject to BDDK supervision · 34 Turkish banks — mandatory reporting (BDDK denetimine tabi)',
   },
   fca: {
     label: 'UK (FCA)',
@@ -37,23 +37,23 @@ const JURISDICTION_CONFIG = {
     badgeColor: '#1d4ed8',
     badgeBg: '#dbeafe',
     framework: 'UK Green Taxonomy · FCA SDR 2024 · TCFD / ISSB IFRS S2',
-    auditNote: 'Subject to FCA supervisory review. TCFD mandatory for premium-listed companies.',
+    auditNote: 'Subject to FCA supervisory review · TCFD mandatory for premium-listed companies',
   },
   trnc: {
-    label: 'KKTC (Merkez Bankası)',
+    label: 'TRNC (Central Bank)',
     flag: '🇨🇾',
-    standard: 'KKTC Merkez Bankası · AB Uyum Yol Haritası',
+    standard: 'TRNC Central Bank · EU Alignment Roadmap',
     currency: '€',
     currencyCode: 'EUR',
-    reportTitle: 'Yeşil Varlık Oranı (GAR) Raporu — KKTC',
-    reportSubtitle: 'KKTC Merkez Bankası · AB Taxonomy Uyum Yol Haritası · TSRS Konsolide',
-    debtLabel: 'Toplam Finansal Borç',
-    greenLabel: 'Yeşil Finansman Payı',
+    reportTitle: 'Green Asset Ratio (GAR) Report — TRNC / KKTC',
+    reportSubtitle: 'TRNC Central Bank · EU Taxonomy Alignment · TSRS Consolidated',
+    debtLabel: 'Total Financial Debt / Toplam Finansal Borç',
+    greenLabel: 'Green Finance Share / Yeşil Finansman Payı',
     ratioLabel: 'GAR (Green Asset Ratio)',
     badgeColor: '#7c3aed',
     badgeBg: '#ede9fe',
-    framework: 'AB Taksonomisi (2023) · KKTC Bankacılık Yasası Ek Protokol',
-    auditNote: 'KKTC Merkez Bankası denetimine tabi. TSRS ana raporlamasına konsolide edilir.',
+    framework: 'EU Taxonomy (2023) · TRNC Banking Law Protocol (AB Taksonomisi · KKTC Bankacılık Yasası)',
+    auditNote: 'Subject to TRNC Central Bank supervision · consolidated into TSRS main reporting',
   },
 }
 
@@ -124,9 +124,9 @@ const PCAF_DATA: Record<Jurisdiction, {
 }
 
 const TAXONOMY_COLORS = {
-  green: { bg: '#065f46', text: '#34d399', border: '#10b981', label: 'Yeşil (Taxonomy)' },
-  transition: { bg: '#78350f', text: '#fbbf24', border: '#f59e0b', label: 'Geçiş Finansmanı' },
-  brown: { bg: '#7f1d1d', text: '#f87171', border: '#ef4444', label: 'Uyumsuz (Brown)' },
+  green: { bg: '#065f46', text: '#34d399', border: '#10b981', label: 'Green (Taxonomy Aligned)' },
+  transition: { bg: '#78350f', text: '#fbbf24', border: '#f59e0b', label: 'Transition Finance' },
+  brown: { bg: '#7f1d1d', text: '#f87171', border: '#ef4444', label: 'Non-Aligned (Brown)' },
 }
 
 const ESG_GRADE_COLOR: Record<string, string> = {
@@ -167,9 +167,9 @@ export default function GARPage() {
   const totalPortfolio = greenTotal + transitionTotal + brownTotal
 
   const taxonomyPieData = [
-    { name: 'Yeşil', value: greenTotal, color: '#10b981' },
-    { name: 'Geçiş', value: transitionTotal, color: '#f59e0b' },
-    { name: 'Uyumsuz', value: brownTotal, color: '#ef4444' },
+    { name: 'Green', value: greenTotal, color: '#10b981' },
+    { name: 'Transition', value: transitionTotal, color: '#f59e0b' },
+    { name: 'Non-Aligned', value: brownTotal, color: '#ef4444' },
   ]
 
   const stressData = {
@@ -201,7 +201,7 @@ export default function GARPage() {
 
         {/* Multi-Jurisdiction Switcher */}
         <div className="flex-shrink-0">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Yargı Bölgesi / Jurisdiction</div>
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Jurisdiction / Yargı Bölgesi</div>
           <div className="flex rounded-xl overflow-hidden border border-slate-700">
             {(Object.keys(JURISDICTION_CONFIG) as Jurisdiction[]).map(jk => {
               const j = JURISDICTION_CONFIG[jk]
@@ -238,27 +238,27 @@ export default function GARPage() {
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-center">
           <p className="text-slate-400 text-xs mb-1">{cfg.debtLabel}</p>
           <p className="text-2xl font-bold text-white">{fmt(toplamBorc * 1_000_000, cfg.currency)}</p>
-          <p className="text-xs text-slate-500 mt-1">Toplam portföy</p>
+          <p className="text-xs text-slate-500 mt-1">Total portfolio / Toplam portföy</p>
         </div>
         <div className="bg-slate-900 border border-emerald-800/40 rounded-xl p-5 flex flex-col justify-center">
           <p className="text-emerald-400/80 text-xs mb-1">{cfg.greenLabel}</p>
           <p className="text-2xl font-bold text-emerald-400">{fmt(toplamYesil * 1_000_000, cfg.currency)}</p>
-          <p className="text-4xl font-black text-emerald-300 mt-1">%{garOrani}</p>
-          <p className="text-xs text-emerald-600">GAR Oranı</p>
+          <p className="text-4xl font-black text-emerald-300 mt-1">{garOrani}%</p>
+          <p className="text-xs text-emerald-600">GAR Ratio / GAR Oranı</p>
         </div>
         <div className="bg-slate-900 border border-blue-800/40 rounded-xl p-5 flex flex-col justify-center">
-          <p className="text-blue-400/80 text-xs mb-1">Finanse Edilen Emisyon (Kapsam 3 Kat.15)</p>
+          <p className="text-blue-400/80 text-xs mb-1">Financed Emissions (Scope 3 Cat.15)</p>
           <p className="text-2xl font-bold text-blue-300">{fmtTco2e(pcafData.total_tco2e)}</p>
-          <p className="text-xs text-slate-500 mt-1">PCAF Standardı v2 · Veri Kalitesi: {pcafData.data_quality}/5</p>
+          <p className="text-xs text-slate-500 mt-1">PCAF Standard v2 · Data Quality: {pcafData.data_quality}/5</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
       <div className="flex gap-2 border-b border-slate-800">
         {[
-          { key: 'overview', label: '📊 Portföy Genel Bakış' },
-          { key: 'pcaf', label: '🔬 PCAF Borçlu Analizi' },
-          { key: 'stress', label: '🌡️ İklim Stres Testi' },
+          { key: 'overview', label: '📊 Portfolio Overview' },
+          { key: 'pcaf', label: '🔬 PCAF Borrower Analysis' },
+          { key: 'stress', label: '🌡️ Climate Stress Test' },
         ].map(tab => (
           <button
             key={tab.key}
@@ -280,7 +280,7 @@ export default function GARPage() {
           {/* Bar chart */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl h-[380px]">
             <h3 className="text-lg font-semibold text-white mb-4">
-              Borçlu Bazında Yeşil / Klasik Finansman
+              Green vs. Conventional Financing by Borrower
               <span className="ml-3 text-xs font-normal px-2 py-1 rounded" style={{ background: cfg.badgeBg, color: cfg.badgeColor }}>
                 {cfg.flag} {cfg.label}
               </span>
@@ -296,8 +296,8 @@ export default function GARPage() {
                   formatter={(value) => [fmt(value as number, cfg.currency), undefined]}
                 />
                 <Legend />
-                <Bar name="Klasik Finansman" dataKey="klasik" stackId="a" fill="#475569" radius={[0, 0, 4, 4]} />
-                <Bar name="Yeşil (Taxonomy Aligned)" dataKey="yesil" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar name="Conventional Finance" dataKey="klasik" stackId="a" fill="#475569" radius={[0, 0, 4, 4]} />
+                <Bar name="Green (Taxonomy Aligned)" dataKey="yesil" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -305,7 +305,7 @@ export default function GARPage() {
           {/* Taxonomy pie + breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 h-[300px]">
-              <h3 className="text-sm font-semibold text-white mb-4">AB Taksonomi Sınıflandırması</h3>
+              <h3 className="text-sm font-semibold text-white mb-4">EU Taxonomy Classification</h3>
               <ResponsiveContainer width="100%" height="85%">
                 <PieChart>
                   <Pie data={taxonomyPieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={(props: { name?: string; percent?: number }) => `${props.name ?? ''} ${((props.percent ?? 0) * 100).toFixed(0)}%`}>
@@ -319,11 +319,11 @@ export default function GARPage() {
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
-              <h3 className="text-sm font-semibold text-white mb-2">Taksonomi Özeti</h3>
+              <h3 className="text-sm font-semibold text-white mb-2">Taxonomy Summary</h3>
               {[
-                { key: 'green', label: 'Yeşil (EU Taxonomy Aligned)', val: greenTotal, color: '#10b981' },
-                { key: 'transition', label: 'Geçiş Finansmanı', val: transitionTotal, color: '#f59e0b' },
-                { key: 'brown', label: 'Uyumsuz (Non-Aligned)', val: brownTotal, color: '#ef4444' },
+                { key: 'green', label: 'Green — EU Taxonomy Aligned', val: greenTotal, color: '#10b981' },
+                { key: 'transition', label: 'Transition Finance', val: transitionTotal, color: '#f59e0b' },
+                { key: 'brown', label: 'Non-Aligned (Brown)', val: brownTotal, color: '#ef4444' },
               ].map(item => (
                 <div key={item.key}>
                   <div className="flex justify-between text-xs mb-1">
@@ -338,7 +338,7 @@ export default function GARPage() {
               ))}
 
               <div className="pt-3 border-t border-slate-700 text-xs text-slate-500">
-                <span className="font-bold text-slate-300">Yasal Çerçeve: </span>
+                <span className="font-bold text-slate-300">Legal Framework: </span>
                 {cfg.framework}
               </div>
             </div>
@@ -352,11 +352,11 @@ export default function GARPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-white">Borçlu ESG & PCAF Analizi</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Kapsam 3 Kategori 15 — Finanse Edilen Emisyonlar · PCAF Standardı v2 (2022)</p>
+                <h3 className="text-base font-bold text-white">Borrower ESG & PCAF Analysis</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Scope 3 Category 15 — Financed Emissions · PCAF Standard v2 (2022)</p>
               </div>
               <div className="text-right">
-                <div className="text-xs text-slate-500">Toplam Finanse Edilen Emisyon</div>
+                <div className="text-xs text-slate-500">Total Financed Emissions</div>
                 <div className="text-xl font-black text-blue-300">{fmtTco2e(pcafData.total_tco2e)}</div>
               </div>
             </div>
@@ -364,12 +364,12 @@ export default function GARPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-xs text-slate-500 border-b border-slate-800">
-                  <th className="px-4 py-3 text-left">Borçlu</th>
+                  <th className="px-4 py-3 text-left">Borrower</th>
                   <th className="px-4 py-3 text-left">NACE</th>
-                  <th className="px-4 py-3 text-left">Taksonomi</th>
-                  <th className="px-4 py-3 text-right">Kredi ({cfg.currency}M)</th>
-                  <th className="px-4 py-3 text-right">Finanse Edilen Emisyon</th>
-                  <th className="px-4 py-3 text-center">ESG Notu</th>
+                  <th className="px-4 py-3 text-left">Taxonomy</th>
+                  <th className="px-4 py-3 text-right">Outstanding ({cfg.currency}M)</th>
+                  <th className="px-4 py-3 text-right">Financed Emissions</th>
+                  <th className="px-4 py-3 text-center">ESG Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -384,7 +384,7 @@ export default function GARPage() {
                       <td className="px-4 py-3">
                         <span className="text-xs font-bold px-2 py-1 rounded-full border"
                           style={{ background: tc.bg + '80', color: tc.text, borderColor: tc.border }}>
-                          {b.taxonomy === 'green' ? '🟢 Yeşil' : b.taxonomy === 'transition' ? '🟡 Geçiş' : '🔴 Uyumsuz'}
+                          {b.taxonomy === 'green' ? '🟢 Green' : b.taxonomy === 'transition' ? '🟡 Transition' : '🔴 Non-Aligned'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right text-slate-300 font-mono">{b.outstanding_m.toFixed(1)}</td>
@@ -402,7 +402,7 @@ export default function GARPage() {
               </tbody>
               <tfoot>
                 <tr className="bg-slate-800/50">
-                  <td colSpan={3} className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Portföy Toplamı</td>
+                  <td colSpan={3} className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Portfolio Total</td>
                   <td className="px-4 py-3 text-right font-black text-white">{totalPortfolio.toFixed(1)}</td>
                   <td className="px-4 py-3 text-right font-black text-blue-300">{fmtTco2e(pcafData.total_tco2e)}</td>
                   <td className="px-4 py-3 text-center text-xs text-slate-500">DQ: {pcafData.data_quality}/5</td>
@@ -413,20 +413,20 @@ export default function GARPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-slate-900 border border-emerald-800/30 rounded-xl p-4">
-              <div className="text-xs text-emerald-400 mb-1">Metodoloji</div>
-              <div className="text-sm font-bold text-white">Atıf Faktörü</div>
-              <div className="text-xs text-slate-400 mt-2">= Verilen Kredi / EVIC</div>
+              <div className="text-xs text-emerald-400 mb-1">Methodology</div>
+              <div className="text-sm font-bold text-white">Attribution Factor</div>
+              <div className="text-xs text-slate-400 mt-2">= Outstanding Loan / EVIC</div>
               <div className="text-xs text-slate-500 mt-1">(EVIC: Enterprise Value Incl. Cash)</div>
             </div>
             <div className="bg-slate-900 border border-blue-800/30 rounded-xl p-4">
-              <div className="text-xs text-blue-400 mb-1">Veri Kalitesi</div>
+              <div className="text-xs text-blue-400 mb-1">Data Quality / Veri Kalitesi</div>
               <div className="text-2xl font-black text-white">{pcafData.data_quality}<span className="text-sm font-normal text-slate-500">/5</span></div>
-              <div className="text-xs text-slate-500 mt-1">1=Şirket Raporu, 5=Proxy Tahmin</div>
+              <div className="text-xs text-slate-500 mt-1">1=Company Report · 5=Proxy Estimate</div>
             </div>
             <div className="bg-slate-900 border border-amber-800/30 rounded-xl p-4">
-              <div className="text-xs text-amber-400 mb-1">Bağlantı</div>
-              <div className="text-sm font-bold text-white">TCFD Stratejik Planlama</div>
-              <div className="text-xs text-slate-400 mt-1">Bu veriler doğrudan TCFD/ISSB S2 bildirimlerine aktarılır</div>
+              <div className="text-xs text-amber-400 mb-1">Integration</div>
+              <div className="text-sm font-bold text-white">TCFD Strategic Planning</div>
+              <div className="text-xs text-slate-400 mt-1">This data feeds directly into TCFD / ISSB S2 disclosures</div>
             </div>
           </div>
         </div>
@@ -438,9 +438,9 @@ export default function GARPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { key: 'iea_nz', config: stressData.iea_nz, accent: '#10b981', badge: 'IEA Net Zero 2050', icon: '🌿',
-                desc: '2050\'ye kadar net sıfır hedefi. Karbon yoğun varlıklar %35 değer kaybeder.' },
-              { key: 'ngfs_delayed', config: stressData.ngfs_delayed, accent: '#f59e0b', badge: 'NGFS Gecikmiş Geçiş', icon: '⚡',
-                desc: 'Politika gecikmesi sonrası ani geçiş. Karbon yoğun varlıklar %55 değer kaybeder.' },
+                desc: 'Net zero by 2050 pathway. Carbon-intensive assets lose 35% of value. (Net sıfır hedefi — karbon yoğun varlıklar %35 değer kaybeder.)' },
+              { key: 'ngfs_delayed', config: stressData.ngfs_delayed, accent: '#f59e0b', badge: 'NGFS Delayed Transition', icon: '⚡',
+                desc: 'Policy delay triggers abrupt transition shock. Carbon-intensive assets lose 55%. (Politika gecikmesi — karbon yoğun varlıklar %55 değer kaybeder.)' },
             ].map(scenario => (
               <div key={scenario.key} className="bg-slate-900 border border-slate-700 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-5">
@@ -456,9 +456,9 @@ export default function GARPage() {
 
                 <div className="space-y-3">
                   {[
-                    { label: 'Değer Kaybı Riski (Brown Varlık)', val: scenario.config.atRisk, color: '#ef4444' },
-                    { label: 'Geçiş Maliyeti (Transition Varlık)', val: scenario.config.transitionCost, color: '#f59e0b' },
-                    { label: 'Toplam Portföy Etkisi', val: scenario.config.totalImpact, color: '#64748b' },
+                    { label: 'Value-at-Risk — Brown Assets', val: scenario.config.atRisk, color: '#ef4444' },
+                    { label: 'Transition Cost — Transition Assets', val: scenario.config.transitionCost, color: '#f59e0b' },
+                    { label: 'Total Portfolio Impact', val: scenario.config.totalImpact, color: '#64748b' },
                   ].map(row => (
                     <div key={row.label} className="flex justify-between items-center py-2 border-b border-slate-800">
                       <span className="text-xs text-slate-400">{row.label}</span>
@@ -469,9 +469,9 @@ export default function GARPage() {
                   ))}
                   <div className="pt-2 text-right">
                     <span className="text-xs text-slate-500">
-                      Portföy Riski:{' '}
+                      Portfolio Risk:{' '}
                       <span className="font-bold" style={{ color: scenario.accent }}>
-                        %{(scenario.config.totalImpact / totalPortfolio * 100).toFixed(1)}
+                        {(scenario.config.totalImpact / totalPortfolio * 100).toFixed(1)}%
                       </span>
                     </span>
                   </div>
@@ -481,10 +481,10 @@ export default function GARPage() {
           </div>
 
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
-            <h3 className="text-sm font-bold text-white mb-4">Stres Testi Yasal Dayanağı</h3>
+            <h3 className="text-sm font-bold text-white mb-4">Stress Test — Regulatory Basis</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               {[
-                { title: 'BDDK', color: '#dc2626', items: ['BDDK Sürd. Bankacılık Rehberi 2023', 'İklim Riski Stres Testi Klavuzu', 'TSRS/IFRS S2 Senaryolar'] },
+                { title: 'BDDK', color: '#dc2626', items: ['BDDK Sustainable Banking Guidelines 2023', 'Climate Risk Stress Test Manual', 'TSRS / IFRS S2 Scenarios'] },
                 { title: 'FCA / UK', color: '#1d4ed8', items: ['FCA SS3/19 Climate Risk Guidelines', 'Bank of England CBES 2022', 'UK SRS / TCFD Mandatory'] },
                 { title: 'ECB / NGFS', color: '#7c3aed', items: ['ECB Climate Stress Test 2022', 'NGFS Phase IV Scenarios', 'EBA Taxonomy KPI Guidance'] },
               ].map(col => (
@@ -501,7 +501,7 @@ export default function GARPage() {
       {/* Footer */}
       <div className="rounded-xl border border-slate-700 bg-slate-900 px-6 py-4 flex flex-col md:flex-row md:items-center gap-3 justify-between">
         <div className="text-sm text-slate-400">
-          <span className="font-bold text-white">Yasal Çerçeve: </span>
+          <span className="font-bold text-white">Legal Framework: </span>
           {cfg.framework}
         </div>
         <div className="flex items-center gap-3">
