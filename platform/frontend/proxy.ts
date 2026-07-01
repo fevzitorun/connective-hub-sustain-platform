@@ -23,7 +23,7 @@ const PLATFORM_PATHS = [
   '/report-builder', '/entegrasyon', '/destekler', '/iso14064',
   '/pcf', '/tnfd', '/sroi', '/kobi-credit-score', '/esg',
   '/university', '/academy', '/simulator', '/tcsi', '/sasb-sdg',
-  '/uydu', '/denetim', '/pazaryeri', '/pre-launch',
+  '/uydu', '/risk-assets', '/denetim', '/pazaryeri', '/pre-launch',
 ]
 
 function detectLocale(request: NextRequest): Locale {
