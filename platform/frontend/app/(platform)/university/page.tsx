@@ -12,10 +12,10 @@ export default function UniversityDashboard() {
         <div>
           <h1 className="text-3xl font-black text-slate-800 mb-2 flex items-center gap-3">
             <GraduationCap className="text-blue-600" size={32} />
-            Atlas Üniversitesi Kampüsü
+            University Sustainability Hub
           </h1>
           <p className="text-slate-500">
-            SustainHub Dijital İşletim Sistemi. Global THE Impact ve UI GreenMetric sıralama tahmincisi.
+            Campus ESG management platform. THE Impact Rankings & UI GreenMetric ranking estimator.
           </p>
         </div>
         <div className="flex gap-2">

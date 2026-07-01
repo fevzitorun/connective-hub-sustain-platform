@@ -152,11 +152,22 @@ export default function AutopilotPage() {
 
   if (loading) return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-      <div className="text-emerald-400 animate-pulse text-lg">Autopilot yükleniyor…</div>
+      <div className="text-emerald-400 animate-pulse text-lg">Loading Autopilot…</div>
     </div>
   )
 
-  const d = data!
+  if (!data) return (
+    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-4">
+      <div className="text-5xl">🤖</div>
+      <p className="text-slate-400">Autopilot service unavailable. Make sure the backend API is running.</p>
+      <button onClick={() => { setLoading(true); api.autopilot.demo().then(d => { setData(d); setLoading(false) }).catch(() => setLoading(false)) }}
+        className="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-sm hover:bg-emerald-600 transition-all">
+        Retry →
+      </button>
+    </div>
+  )
+
+  const d = data
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">

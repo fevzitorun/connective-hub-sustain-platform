@@ -101,49 +101,52 @@ const BOARDROOM_METRICS = [
   {
     label: 'Sustain-Score',
     value: 'A+',
-    sub: '94 / 100 puan',
+    sub: '94 / 100 points',
     icon: '🏆',
     color: '#166534',
     bg: '#dcfce7',
-    desc: "Sektörünüzde üst %5'te yer alıyorsunuz. Yatırım notu: AAA.",
+    desc: "Top 5% in your sector. Investment grade: AAA. Eligible for green bond issuance.",
   },
   {
-    label: 'CBAM Vergi Tasarrufu',
+    label: 'CBAM Tax Saving',
     value: '€2.4M',
-    sub: '2026 tahmini yıllık',
+    sub: '2026 estimated annual',
     icon: '🇪🇺',
     color: '#1e3a8a',
     bg: '#dbeafe',
-    desc: 'AB karbon sınır mekanizmasına hazır olduğunuz için rakiplerinize kıyasla bu vergiyi ödemiyorsunuz.',
+    desc: 'EU Carbon Border Adjustment ready — you avoid this liability while competitors pay. Verified by satellite data.',
   },
   {
-    label: 'Yeşil Yatırım ROI',
-    value: '3.2 yıl',
-    sub: 'Geri ödeme süresi',
+    label: 'Green Investment ROI',
+    value: '3.2 yrs',
+    sub: 'Payback period',
     icon: '⚡',
     color: '#854d0e',
     bg: '#fef9c3',
-    desc: 'Güneş paneli + EV filo geçişi toplam ₺28M yatırımın 3.2 yılda geri dönüşü. NPV: +₺64M.',
+    desc: 'Solar + EV fleet transition: ₺28M total investment repaid in 3.2 years. NPV: +₺64M.',
   },
   {
-    label: 'Net Sıfır Yolu',
+    label: 'Net Zero Pathway',
     value: '2047',
-    sub: 'Mevcut gidişat',
+    sub: 'Current trajectory',
     icon: '🌍',
     color: '#5b21b6',
     bg: '#ede9fe',
-    desc: 'Şu anki hızla 2047\'de net sıfıra ulaşırsınız. MACC planını uygulamazsanız hedef 2058\'e kayar.',
+    desc: 'At current pace you reach net zero in 2047. Without the MACC plan the target slips to 2058.',
   },
 ]
 
 export default function DashboardPage() {
   const [boardroomMode, setBoardroomMode] = useState(false)
+  const [companyName, setCompanyName] = useState('')
+  useEffect(() => { setCompanyName(localStorage.getItem('company_name') ?? '') }, [])
+  const displayCompany = companyName || 'Your Company'
 
   return (
     <>
       <Header
-        title={boardroomMode ? '👔 Yönetim Kurulu Modu' : '📊 Dashboard'}
-        subtitle="Akbank T.A.Ş. · 2024 Raporlama Dönemi"
+        title={boardroomMode ? '👔 Board / Boardroom Mode' : '📊 Dashboard'}
+        subtitle={`${displayCompany} · 2025 Reporting Period`}
       />
 
       {/* Mode toggle */}
@@ -170,7 +173,7 @@ export default function DashboardPage() {
               Yönetim Kurulu İçin Hazırlandı · Gizli · {new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
             <h1 className="text-3xl font-black mt-2" style={{ color: '#0F172A' }}>
-              Akbank T.A.Ş. — ESG Yönetim Özeti
+              {displayCompany} — ESG Executive Summary
             </h1>
             <p className="text-sm mt-1" style={{ color: '#64748b' }}>
               Kaynak: SustainHub Intelligence Platform · Gerçek zamanlı veri
@@ -203,22 +206,22 @@ export default function DashboardPage() {
               YK Tavsiyesi
             </div>
             <p className="text-lg font-semibold leading-relaxed">
-              Akbank, sürdürülebilirlik performansında sektör liderliğini sürdürmektedir.
-              2026 yılında MACC planının uygulamaya alınması, hem <strong className="text-emerald-400">CBAM yükümlülüğünü sıfıra indirecek</strong>,
-              hem de yeşil tahvil ihracı için gerekli A+ ESG notunu koruyacaktır.
+              {displayCompany} maintains sector leadership in sustainability performance.
+              Implementing the MACC plan in 2026 will both <strong className="text-emerald-400">reduce CBAM liability to zero</strong> and
+              preserve the A+ ESG rating required for green bond issuance.
             </p>
             <div className="mt-6 flex gap-4 flex-wrap">
               <span className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#166534', color: '#fff' }}>
-                ✓ TSRS 1 & 2 Uyumlu
+                ✓ TSRS 1 & 2 Compliant
               </span>
               <span className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#1e3a8a', color: '#fff' }}>
-                ✓ CBAM Hazır
+                ✓ CBAM Ready
               </span>
               <span className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#5b21b6', color: '#fff' }}>
-                ✓ SBTi 1.5°C Yolunda
+                ✓ SBTi 1.5°C Pathway
               </span>
               <span className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#854d0e', color: '#fff' }}>
-                ✓ Uydu Doğrulamalı
+                ✓ Satellite Verified
               </span>
             </div>
           </div>
