@@ -12,6 +12,7 @@ const PLATFORM_DISALLOW = [
   '/pcf', '/tnfd', '/sroi', '/kobi-credit-score', '/esg',
   '/university', '/academy', '/simulator', '/tcsi', '/sasb-sdg',
   '/uydu', '/risk-assets', '/denetim', '/pazaryeri', '/pre-launch',
+  '/agency', '/denetci',
   '/api/', '/_next/',
 ]
 

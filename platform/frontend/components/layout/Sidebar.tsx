@@ -74,6 +74,10 @@ const navItems = [
     { href: '/entegrasyon', label: 'Integrations', icon: '🔌' },
     { href: '/destekler', label: 'Subsidies', icon: '💰' },
   ]},
+  { section: 'Agency & Audit', items: [
+    { href: '/agency', label: 'Agency Portal', icon: '🏢', badge: 'NEW' },
+    { href: '/denetci', label: 'KGK Denetçi', icon: '⚖️', badge: 'TSRS' },
+  ]},
   { section: 'Account', items: [
     { href: '/abonelik', label: 'Subscription', icon: '💳', badge: 'NEW' },
     { href: '/pre-launch', label: 'Pre-Launch QA', icon: '🚀', badge: 'ADMIN' },
