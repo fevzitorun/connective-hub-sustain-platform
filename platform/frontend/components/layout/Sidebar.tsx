@@ -1,7 +1,18 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+
+const BANK_NAV = [
+  { section: '🏦 Bank Workspace', items: [
+    { href: '/bank', label: 'Intelligence Suite', icon: '🏦', badge: 'GAR' },
+    { href: '/gar', label: 'GAR Calculator', icon: '🌿' },
+    { href: '/gar/kobi-dashboard', label: 'SME Portfolio', icon: '🏪' },
+    { href: '/eu-taxonomy', label: 'EU Taxonomy Art.8', icon: '🇪🇺' },
+    { href: '/executive', label: 'Board Summary', icon: '🏛️' },
+  ]},
+]
 
 // ENGLISH FIRST FOR DEMO
 const navItems = [
@@ -70,6 +81,14 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [companyType, setCompanyType] = useState<string>('')
+
+  useEffect(() => {
+    setCompanyType(localStorage.getItem('company_type') ?? '')
+  }, [])
+
+  const isBank = companyType === 'bank'
+  const activeNav = isBank ? [...BANK_NAV, ...navItems] : navItems
 
   return (
     <aside
@@ -94,21 +113,24 @@ export function Sidebar() {
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold bg-emerald-500 text-white"
         >
-          AK
+          {isBank ? '🏦' : 'AK'}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-semibold truncate">Akbank T.A.Ş.</div>
-          <div className="text-xs text-emerald-400">Bank GAR Plan</div>
+          <div className="text-xs font-semibold truncate">{isBank ? 'Bank Demo Account' : 'Akbank T.A.Ş.'}</div>
+          <div className="text-xs text-emerald-400">{isBank ? 'Bank GAR Workspace' : 'Corporate Plan'}</div>
         </div>
         <span className="text-xs opacity-40">⌄</span>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 py-2 overflow-y-auto">
-        {navItems.map(({ section, items }) => (
+        {activeNav.map(({ section, items }) => (
           <div key={section}>
             <div
-              className="px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-widest text-emerald-400/80"
+              className={cn(
+                'px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-widest',
+                section.startsWith('🏦') ? 'text-yellow-400/90' : 'text-emerald-400/80'
+              )}
             >
               {section}
             </div>
