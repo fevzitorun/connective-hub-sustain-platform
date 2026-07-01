@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
@@ -47,7 +47,7 @@ function RiskBar({ value, color }: { value: number; color: string }) {
   )
 }
 
-export default function TCFDPage() {
+function TCFDInner() {
   const searchParams = useSearchParams()
   const [sector, setSector] = useState('çelik')
   const [revenue, setRevenue] = useState('')
@@ -444,5 +444,13 @@ export default function TCFDPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function TCFDPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading TCFD module…</div>}>
+      <TCFDInner />
+    </Suspense>
   )
 }
