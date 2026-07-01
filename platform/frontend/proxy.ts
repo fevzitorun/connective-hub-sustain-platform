@@ -3,7 +3,28 @@ import { NextRequest, NextResponse } from 'next/server'
 const LOCALES = ['en', 'tr'] as const
 type Locale = typeof LOCALES[number]
 
-const PUBLIC_PATHS = ['/login', '/register', '/legal', '/p/']
+// Public marketing pages — no auth required
+const PUBLIC_PATHS = [
+  '/login', '/register', '/forgot-password',
+  '/legal', '/p/',
+  '/products', '/pricing', '/request-demo', '/contact',
+  '/investors', '/about', '/blog',
+  '/sitemap', '/robots',
+]
+
+// Platform routes — always require auth
+const PLATFORM_PATHS = [
+  '/dashboard', '/gar', '/bank', '/executive', '/onboarding',
+  '/veri-girisi', '/raporlar', '/abonelik', '/admin',
+  '/health-check', '/tcfd', '/tsrs', '/issb', '/gri', '/cdp',
+  '/csrd', '/eu-taxonomy', '/uk-sdr', '/cbam', '/eudr',
+  '/scenarios', '/hub', '/hedefler', '/sbti', '/scope3',
+  '/benchmark', '/esg-benchmark', '/tedarikciler', '/autopilot',
+  '/report-builder', '/entegrasyon', '/destekler', '/iso14064',
+  '/pcf', '/tnfd', '/sroi', '/kobi-credit-score', '/esg',
+  '/university', '/academy', '/simulator', '/tcsi', '/sasb-sdg',
+  '/uydu', '/denetim', '/pazaryeri', '/pre-launch',
+]
 
 function detectLocale(request: NextRequest): Locale {
   const acceptLanguage = request.headers.get('accept-language') ?? ''
@@ -22,13 +43,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Auth check
+  // Auth check — only protect platform routes
   const token = request.cookies.get('sustain_token')?.value
-  const isPublic = PUBLIC_PATHS.some(p => pathname.startsWith(p))
+  const isPlatform = PLATFORM_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))
+  const isPublic = PUBLIC_PATHS.some(p => pathname.startsWith(p)) || pathname === '/'
 
-  if (!token && !isPublic) {
+  if (isPlatform && !token) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
+    loginUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
