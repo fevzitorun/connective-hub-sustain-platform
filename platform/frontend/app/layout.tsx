@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import { CookieConsent } from '@/components/ui/CookieConsent'
 
 const BASE_URL = 'https://sustainhub.online'
 
@@ -69,7 +70,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'google-site-verification-placeholder',
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? 'google-site-verification-placeholder',
   },
   category: 'technology',
 }
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        <CookieConsent />
         <Toaster richColors position="top-right" />
         {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
       </body>

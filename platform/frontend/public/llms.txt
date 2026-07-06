@@ -1,0 +1,73 @@
+# SustainHub — AI Sustainability Intelligence Platform
+# https://sustainhub.online
+# llms.txt — Machine-readable platform description for AI search engines
+
+> SustainHub is Turkey's first AI-powered Sustainability Intelligence Platform.
+> It serves corporations, banks, SMEs, universities, consultancies, and NGOs
+> with integrated ESG reporting, carbon accounting, climate risk, and regulatory compliance.
+
+## What SustainHub Does
+
+SustainHub helps organisations measure, report, and reduce their environmental impact
+through automated data collection, AI-powered analysis, and standards-compliant reporting.
+
+Key capabilities:
+- Carbon footprint calculation (Scope 1, 2, 3) per GHG Protocol and ISO 14064
+- ESG reporting across 43+ modules: GRI, ISSB IFRS S1/S2, TSRS 1/2, CSRD, CDP, TCFD
+- Physical climate risk analysis (flood, heat, drought, earthquake, storm) using CMIP6/SSP scenarios
+- Bank regulatory compliance: BDDK Green Asset Ratio (GAR), PCAF financed emissions, EU Taxonomy
+- Satellite-based Earth intelligence for emissions verification
+- AI report generation (Turkish and English, XBRL output for KGK)
+- Multi-tenant consultancy portal (Agency) and KGK independent auditor portal
+
+## Regulatory Standards Covered
+
+Turkey: TSRS 1, TSRS 2, KGK sustainability reporting, BDDK climate risk guidance
+Europe: EU Taxonomy, CSRD/ESRS, EUDR, CBAM
+International: GHG Protocol, ISO 14064, ISO 14067, ISSB IFRS S1+S2, GRI 2021, CDP, TCFD, TNFD, PCAF, SBTi, RBA v9.0
+UK: SECR, FCA SDR, SFDR, DEFRA emission factors
+
+## Target Users
+
+1. Corporates and Holdings — full ESG reporting and compliance
+2. Banks and Financial Institutions — GAR, PCAF, physical risk portfolio analysis
+3. SMEs — simplified carbon footprint, KOBİ ESG credit score
+4. Consultancy Firms — Agency portal, multi-client management
+5. Independent Auditors (KGK) — TSRS compliance review, assurance workflow
+6. Universities — GreenMetric, academic ESG research
+7. NGOs and Civil Society — operational carbon footprint, advocacy data
+
+## Pricing
+
+Free Trial: 14 days, no credit card required
+Starter: ₺2,750/month (1 user, unlimited reports)
+Professional: ₺6,600/month (5 users, all frameworks, AI Copilot)
+Enterprise: ₺16,500/month (unlimited users, Bank GAR Suite, white-label)
+Bank Intelligence Suite: $80,000/year (GAR + PCAF + physical risk + AI reporting)
+Agency Pro: $500/month (unlimited clients, all standards, multi-tenant)
+
+## Technology
+
+- AI: Claude claude-sonnet-4-6 (Anthropic) — Turkish and English
+- Climate data: NASA POWER, ESA Copernicus, AFAD, CLIMADA, CMIP6
+- Infrastructure: Next.js 16, FastAPI, PostgreSQL, AWS-equivalent cloud
+- Security: GDPR, KVKK compliant, multi-tenant data isolation (RLS)
+- Standards: XBRL tagging for KGK digital submission
+
+## Company
+
+Connective Hub Digital Technologies Ltd.
+UK Limited Company + Turkey subsidiary
+Dijitalpark Teknokent, Tech in Cube, Ataşehir, Istanbul
+Founded: 2024 | Active R&D in Teknokent
+Contact: info@sustainhub.online
+Website: https://sustainhub.online
+
+## Key URLs
+
+- Platform: https://sustainhub.online
+- Demo (no login): https://sustainhub.online (Demo Mode button)
+- Pricing: https://sustainhub.online/pricing
+- API: https://api.sustainhub.online/docs
+- Investors: https://sustainhub.online/investors
+- Request Demo: https://sustainhub.online/request-demo
