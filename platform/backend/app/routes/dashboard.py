@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from ..database import get_db
-from .auth import get_current_user
+from ..services.rbac import get_active_company_id
 from ..models.emission import EmissionRecord
 from ..models.report import Report
 from ..models.user import User
@@ -16,11 +16,10 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 @router.get("/summary")
 async def get_dashboard_summary(
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Şirkete ait güncel KPI özeti."""
-    company_id = current_user.company_id
 
     # Son emisyon kaydı
     emission_q = await db.execute(

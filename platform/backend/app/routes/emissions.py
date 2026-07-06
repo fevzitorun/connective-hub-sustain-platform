@@ -6,6 +6,7 @@ from typing import Optional
 from ..database import get_db
 from ..models import EmissionRecord, User
 from ..services.calculation_engine import EmissionInput, calculate_emissions, SECTOR_BENCHMARKS
+from ..services.rbac import get_active_company_id
 from .auth import get_current_user
 
 router = APIRouter(prefix="/emissions", tags=["emissions"])
@@ -81,8 +82,8 @@ def _build_emission_input(company_id: str, body: EmissionDataIn) -> EmissionInpu
 
 
 @router.post("/calculate")
-async def calculate(body: EmissionDataIn, current_user: User = Depends(get_current_user)):
-    inp = _build_emission_input(current_user.company_id or "", body)
+async def calculate(body: EmissionDataIn, company_id: str = Depends(get_active_company_id)):
+    inp = _build_emission_input(company_id, body)
     result = calculate_emissions(inp)
     return {
         "scope1": result.scope1_co2e,
@@ -99,19 +100,17 @@ async def calculate(body: EmissionDataIn, current_user: User = Depends(get_curre
 @router.post("", status_code=201)
 async def save_emission(
     body: EmissionDataIn,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    if not current_user.company_id:
-        raise HTTPException(400, "Şirket bilgisi bulunamadı")
-
-    inp = _build_emission_input(current_user.company_id, body)
+    inp = _build_emission_input(company_id, body)
     result = calculate_emissions(inp)
 
     # Upsert: update if record already exists for this company/year
     existing_result = await db.execute(
         select(EmissionRecord).where(
-            EmissionRecord.company_id == current_user.company_id,
+            EmissionRecord.company_id == company_id,
             EmissionRecord.year == body.year,
         )
     )
@@ -155,13 +154,13 @@ async def save_emission(
             entity_type="emission",
             entity_id=record.id,
             entity_desc=f"Emisyon verisi güncellendi ({body.year})",
-            company_id=current_user.company_id,
+            company_id=company_id,
             table_name="emission_records",
             old_value=json.dumps(old_data, default=str),
             new_value=json.dumps(fields, default=str),
         )
     else:
-        record = EmissionRecord(company_id=current_user.company_id, year=body.year, **fields)
+        record = EmissionRecord(company_id=company_id, year=body.year, **fields)
         db.add(record)
         await db.flush()
         import json
@@ -175,7 +174,7 @@ async def save_emission(
             entity_type="emission",
             entity_id=record.id,
             entity_desc=f"Yeni emisyon verisi eklendi ({body.year})",
-            company_id=current_user.company_id,
+            company_id=company_id,
             table_name="emission_records",
             old_value=None,
             new_value=json.dumps(fields, default=str),
@@ -195,7 +194,7 @@ async def save_emission(
 @router.get("/{emission_id}/history")
 async def get_emission_history(
     emission_id: str,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     from ..models.audit import AuditLog
@@ -205,7 +204,7 @@ async def get_emission_history(
         .where(
             AuditLog.entity_id == emission_id,
             AuditLog.entity_type == "emission",
-            AuditLog.company_id == current_user.company_id
+            AuditLog.company_id == company_id
         )
         .order_by(desc(AuditLog.timestamp))
     )
@@ -225,12 +224,12 @@ async def get_emission_history(
 
 @router.get("")
 async def list_emissions(
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
         select(EmissionRecord)
-        .where(EmissionRecord.company_id == current_user.company_id)
+        .where(EmissionRecord.company_id == company_id)
         .order_by(EmissionRecord.year.desc())
     )
     records = result.scalars().all()
@@ -254,15 +253,12 @@ class Scope3DataIn(BaseModel):
 @router.post("/scope3", status_code=201)
 async def save_scope3(
     body: Scope3DataIn,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db)
 ):
-    if not current_user.company_id:
-        raise HTTPException(400, "Şirket bilgisi bulunamadı")
-        
     result = await db.execute(
         select(EmissionRecord).where(
-            EmissionRecord.company_id == current_user.company_id,
+            EmissionRecord.company_id == company_id,
             EmissionRecord.year == body.year
         )
     )
@@ -273,7 +269,7 @@ async def save_scope3(
     
     if not record:
         record = EmissionRecord(
-            company_id=current_user.company_id,
+            company_id=company_id,
             year=body.year,
             scope3_breakdown=body.breakdown,
             scope3_co2e=total_scope3,

@@ -248,13 +248,13 @@ export default function AbonelikPage() {
       </div>
 
       {fetching ? (
-        <div className="grid grid-cols-3 gap-5">
-          {[1, 2, 3].map(i => (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
+          {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="rounded-2xl border p-6 h-96 animate-pulse bg-gray-50" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           {plans.map(plan => (
             <PlanCard
               key={plan.id}
@@ -291,24 +291,24 @@ export default function AbonelikPage() {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
               <th className="text-left py-3 px-6 font-semibold" style={{ color: 'var(--muted-foreground)' }}>Özellik</th>
-              {['Ücretsiz', 'Profesyonel', 'Kurumsal'].map(n => (
+              {['Ücretsiz', 'Başlangıç', 'Profesyonel', 'KSRU Ortağı', 'Kurumsal'].map(n => (
                 <th key={n} className="text-center py-3 px-4 font-bold" style={{ color: 'var(--green-900)' }}>{n}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {[
-              ['Kullanıcı sayısı', '1', '10', 'Sınırsız'],
-              ['Rapor/ay', '3', 'Sınırsız', 'Sınırsız'],
-              ['TSRS 1 & 2', '✓', '✓', '✓'],
-              ['CBAM & EUDR', '—', '✓', '✓'],
-              ['CSRD & GRI', '—', '✓', '✓'],
-              ['PDF & Word Export', '—', '✓', '✓'],
-              ['Benchmark & EEA', '—', '✓', '✓'],
-              ['White-Label', '—', '—', '✓'],
-              ['Uydu / NASA verisi', '—', '—', '✓'],
-              ['API Limit (req/dk)', '50', '200', '1000'],
-              ['SLA Desteği', '—', '—', '✓'],
+              ['Kullanıcı sayısı', '1', '1', '5', '10', 'Sınırsız'],
+              ['Rapor/ay', '3', 'Sınırsız', 'Sınırsız', 'Sınırsız', 'Sınırsız'],
+              ['TSRS 1 & 2', '✓', '✓', '✓', '✓', '✓'],
+              ['CBAM & EUDR', '—', '—', '✓', '✓', '✓'],
+              ['CSRD & GRI', '—', '—', '✓', '✓', '✓'],
+              ['PDF & Word Export', '—', '✓', '✓', '✓', '✓'],
+              ['Benchmark & EEA', '—', '—', '✓', '✓', '✓'],
+              ['White-Label', '—', '—', '—', '✓', '✓'],
+              ['Uydu / NASA verisi', '—', '—', '—', '✓', '✓'],
+              ['API Limit (req/dk)', '50', '100', '200', '500', '1000'],
+              ['SLA Desteği', '—', '—', '—', '✓', '✓'],
             ].map(([feature, ...vals]) => (
               <tr key={feature as string} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td className="py-3 px-6" style={{ color: 'var(--foreground)' }}>{feature}</td>

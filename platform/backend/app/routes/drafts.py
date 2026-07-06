@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from ..database import get_db
 from ..models import User
 from ..models.report import ReportDraft
+from ..services.rbac import get_active_company_id
 from .auth import get_current_user
 
 router = APIRouter(prefix="/drafts", tags=["drafts"])
@@ -23,6 +24,7 @@ class SaveDraftRequest(BaseModel):
 @router.post("/save")
 async def save_draft(
     body: SaveDraftRequest,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -30,7 +32,7 @@ async def save_draft(
     result = await db.execute(
         select(ReportDraft).where(
             ReportDraft.user_id == current_user.id,
-            ReportDraft.company_id == current_user.company_id,
+            ReportDraft.company_id == company_id,
         ).order_by(ReportDraft.updated_at.desc())
     )
     draft = result.scalars().first()
@@ -48,7 +50,7 @@ async def save_draft(
     else:
         draft = ReportDraft(
             user_id=current_user.id,
-            company_id=current_user.company_id,
+            company_id=company_id,
             emission_data_id=body.emission_data_id,
             report_id=body.report_id,
             content=body.content,
@@ -63,6 +65,7 @@ async def save_draft(
 
 @router.get("/latest")
 async def get_latest_draft(
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -70,7 +73,7 @@ async def get_latest_draft(
     result = await db.execute(
         select(ReportDraft).where(
             ReportDraft.user_id == current_user.id,
-            ReportDraft.company_id == current_user.company_id,
+            ReportDraft.company_id == company_id,
         ).order_by(ReportDraft.updated_at.desc())
     )
     draft = result.scalars().first()
@@ -89,6 +92,7 @@ async def get_latest_draft(
 @router.delete("/{draft_id}")
 async def delete_draft(
     draft_id: str,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -96,6 +100,7 @@ async def delete_draft(
         select(ReportDraft).where(
             ReportDraft.id == draft_id,
             ReportDraft.user_id == current_user.id,
+            ReportDraft.company_id == company_id,
         )
     )
     draft = result.scalar_one_or_none()

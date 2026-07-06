@@ -1,6 +1,8 @@
 """Role-Based Access Control helpers."""
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Header, Depends
+from typing import Optional
 from ..models.user import User
+from ..routes.auth import get_current_user
 
 ROLE_HIERARCHY = {
     "admin": 100,
@@ -67,3 +69,47 @@ def require_role(minimum_role: str):
 def can(user: User, permission: str) -> bool:
     role = user.role or "viewer"
     return permission in ROLE_PERMISSIONS.get(role, set())
+
+
+def verify_tenant(company_id: str, current_user: User) -> bool:
+    """
+    Verifies if the current user has access to the specified company_id.
+    Standard users are restricted to their company_id.
+    Consultants/Advisors can access client company IDs listed in managed_company_ids.
+    """
+    if not company_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Şirket ID belirtilmelidir.")
+
+    # 1. Regular company user access
+    if current_user.company_id == company_id:
+        return True
+
+    # 2. Consultant/Advisor access (managed client list)
+    if current_user.managed_company_ids:
+        managed_ids = [cid.strip() for cid in current_user.managed_company_ids.split(",") if cid.strip()]
+        if company_id in managed_ids:
+            return True
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Bu şirket verilerine erişim yetkiniz bulunmamaktadır (KVKK Veri İzolasyon İhlali)."
+    )
+
+
+async def get_active_company_id(
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-ID"),
+    current_user: User = Depends(get_current_user)
+) -> str:
+    """
+    FastAPI dependency to resolve the active company context.
+    If X-Tenant-ID header is provided, it checks access permissions first (KVKK RLS).
+    """
+    target_id = x_tenant_id or current_user.company_id
+    if not target_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Şirket bağlamı (company context) bulunamadı."
+        )
+    verify_tenant(target_id, current_user)
+    return target_id
+

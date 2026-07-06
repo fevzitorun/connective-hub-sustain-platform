@@ -97,6 +97,27 @@ PLANS = {
         "stripe_price_yearly": "price_enterprise_yearly",
         "badge": "En İyi Değer",
     },
+    "ksru": {
+        "id": "ksru",
+        "name": "KSRU Partner",
+        "name_tr": "KSRU İş Ortağı",
+        "price_monthly": 10000,
+        "price_yearly": 120000,
+        "currency": "TRY",
+        "features": [
+            "10 aktif danışan şirket portföyü",
+            "Tüm framework'ler (TSRS, ISSB, GRI, CSRD, CDP)",
+            "AI Copilot & Magic Import",
+            "Fiziksel iklim riski & Uydu analizi",
+            "Word / PDF / PPTX / XBRL çıktıları",
+            "İş ortaklığı portalı & Özel destek",
+            "Çoklu tenant (RLS) altyapısı",
+        ],
+        "limits": {"users": 10, "reports_per_month": -1, "api_req_per_min": 500},
+        "stripe_price_monthly": "price_ksru_monthly",
+        "stripe_price_yearly": "price_ksru_yearly",
+        "badge": "İş Ortağı",
+    },
 }
 
 

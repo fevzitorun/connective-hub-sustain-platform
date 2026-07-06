@@ -6,8 +6,9 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from ..database import get_db
 from ..models import User, Company
-from ..services.rbac import require_role, ROLE_HIERARCHY
+from ..services.rbac import require_role, ROLE_HIERARCHY, get_active_company_id
 from ..services.auth import hash_password, create_access_token
+from ..services.subscription_service import check_limits
 from .auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -28,6 +29,7 @@ class UpdateRoleRequest(BaseModel):
 
 @router.get("")
 async def list_users(
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -35,7 +37,7 @@ async def list_users(
     _ = require_role("editor")(current_user)
 
     result = await db.execute(
-        select(User).where(User.company_id == current_user.company_id)
+        select(User).where(User.company_id == company_id)
     )
     users = result.scalars().all()
     return [
@@ -54,11 +56,14 @@ async def list_users(
 @router.post("/invite", status_code=201)
 async def invite_user(
     body: InviteRequest,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Şirkete yeni kullanıcı davet et (admin only)."""
     _ = require_role("admin")(current_user)
+
+    await check_limits(db, company_id, "create_user")
 
     if body.role not in VALID_ROLES:
         raise HTTPException(400, f"Geçersiz rol. Geçerli roller: {', '.join(VALID_ROLES)}")
@@ -72,7 +77,7 @@ async def invite_user(
         name=body.name,
         hashed_password=hash_password(body.temp_password),
         role=body.role,
-        company_id=current_user.company_id,
+        company_id=company_id,
     )
     db.add(new_user)
     await db.commit()
@@ -91,6 +96,7 @@ async def invite_user(
 async def update_role(
     user_id: str,
     body: UpdateRoleRequest,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -103,7 +109,7 @@ async def update_role(
     result = await db.execute(
         select(User).where(
             User.id == user_id,
-            User.company_id == current_user.company_id,
+            User.company_id == company_id,
         )
     )
     user = result.scalar_one_or_none()
@@ -120,6 +126,7 @@ async def update_role(
 @router.delete("/{user_id}")
 async def deactivate_user(
     user_id: str,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -129,7 +136,7 @@ async def deactivate_user(
     result = await db.execute(
         select(User).where(
             User.id == user_id,
-            User.company_id == current_user.company_id,
+            User.company_id == company_id,
         )
     )
     user = result.scalar_one_or_none()

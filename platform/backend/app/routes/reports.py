@@ -13,12 +13,13 @@ from ..models import Report, EmissionRecord, Company, User
 from ..models.report import ShareLink
 from ..services.ai_report_writer import generate_tsrs_report
 from ..services.calculation_engine import SECTOR_BENCHMARKS, calculate_tsrs_compliance
-from ..services.rbac import require_permission, can
+from ..services.rbac import require_permission, can, get_active_company_id
 from ..services.auth import hash_password, verify_password
 from ..services.pdf_generator import generate_pdf, get_content_type, get_file_extension
 from ..services.docx_generator import generate_docx
 from ..services.email_service import send_report_ready, send_report_submitted_for_approval
 from ..services.target_engine import calculate_sbti_targets
+from ..services.subscription_service import check_limits
 from .auth import get_current_user
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -137,17 +138,23 @@ async def _run_report_generation(
 async def generate(
     body: GenerateReportRequest,
     background_tasks: BackgroundTasks,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     _ = require_permission("reports:create")(current_user)
 
-    em_result = await db.execute(select(EmissionRecord).where(EmissionRecord.id == body.emission_id))
+    await check_limits(db, company_id, "create_report")
+
+    em_result = await db.execute(select(EmissionRecord).where(
+        EmissionRecord.id == body.emission_id,
+        EmissionRecord.company_id == company_id
+    ))
     emission = em_result.scalar_one_or_none()
     if not emission:
         raise HTTPException(404, "Emisyon verisi bulunamadı")
 
-    co_result = await db.execute(select(Company).where(Company.id == current_user.company_id))
+    co_result = await db.execute(select(Company).where(Company.id == company_id))
     company = co_result.scalar_one_or_none()
     if not company:
         raise HTTPException(404, "Şirket bulunamadı")
@@ -156,7 +163,7 @@ async def generate(
     existing_result = await db.execute(
         select(Report)
         .where(
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
             Report.emission_data_id == body.emission_id,
             Report.version_of == None,  # noqa: E711 — kök raporlar
         )
@@ -171,7 +178,7 @@ async def generate(
         version_of = latest.id
 
     report = Report(
-        company_id=current_user.company_id,
+        company_id=company_id,
         emission_data_id=body.emission_id,
         standard=body.standard,
         language=body.language,
@@ -188,7 +195,7 @@ async def generate(
         _run_report_generation,
         report.id,
         body.emission_id,
-        current_user.company_id,
+        company_id,
         body.assurance_firm or "PwC",
     )
 
@@ -226,7 +233,7 @@ async def get_status(
 @router.get("/{report_id}/versions")
 async def get_versions(
     report_id: str,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """EMİR 1: Bir raporun tüm versiyonlarını listele."""
@@ -243,7 +250,7 @@ async def get_versions(
         select(Report)
         .where(
             (Report.id == root_id) | (Report.version_of == root_id),
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
         .order_by(Report.version_number.asc())
     )
@@ -265,14 +272,14 @@ async def get_versions(
 @router.post("/{report_id}/submit")
 async def submit_for_approval(
     report_id: str,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """EMİR 3: Raporu onaya gönder."""
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -291,6 +298,7 @@ async def submit_for_approval(
 async def approve_or_reject(
     report_id: str,
     body: ApproveRequest,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -300,7 +308,7 @@ async def approve_or_reject(
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -326,6 +334,7 @@ async def approve_or_reject(
 @router.post("/{report_id}/publish")
 async def publish_report(
     report_id: str,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -335,7 +344,7 @@ async def publish_report(
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -354,6 +363,7 @@ async def publish_report(
 async def create_share_link(
     report_id: str,
     body: ShareRequest,
+    company_id: str = Depends(get_active_company_id),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -363,7 +373,7 @@ async def create_share_link(
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -438,14 +448,14 @@ async def view_shared_report(
 @router.get("/{report_id}/export")
 async def export_report(
     report_id: str,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Raporu PDF (veya TXT) olarak indir."""
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -456,7 +466,7 @@ async def export_report(
     if not report.content_text:
         raise HTTPException(400, "Rapor içeriği henüz mevcut değil")
 
-    company = await db.get(Company, current_user.company_id)
+    company = await db.get(Company, company_id)
     company_name = company.name if company else "Şirket"
 
     file_bytes = generate_pdf(
@@ -480,14 +490,14 @@ async def export_report(
 @router.get("/{report_id}/export/docx")
 async def export_report_docx(
     report_id: str,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Raporu Word (.docx) olarak indir."""
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -498,7 +508,7 @@ async def export_report_docx(
     if not report.content_text:
         raise HTTPException(400, "Rapor içeriği henüz mevcut değil")
 
-    company = await db.get(Company, current_user.company_id)
+    company = await db.get(Company, company_id)
     company_name = company.name if company else "Şirket"
 
     file_bytes = generate_docx(
@@ -521,14 +531,14 @@ async def export_report_docx(
 @router.get("/{report_id}/targets")
 async def get_report_targets(
     report_id: str,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """SBTi hedef yolu, mevcut trend ve 2030/2050 boşluk analizi."""
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -548,7 +558,7 @@ async def get_report_targets(
         base_scope3 = float(emission.scope3_total or 0)
         base_year = emission.reporting_year or 2022
 
-    company = await db.get(Company, current_user.company_id)
+    company = await db.get(Company, company_id)
     if company and company.sector:
         sector = company.sector.lower()
 
@@ -590,14 +600,14 @@ async def get_report_targets(
 @router.post("/{report_id}/targets")
 async def generate_report_targets(
     report_id: str,
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """SBTi hedeflerini hesaplar ve Rapor metnine Bilimsel Temelli Hedefler bölümü olarak ekler."""
     result = await db.execute(
         select(Report).where(
             Report.id == report_id,
-            Report.company_id == current_user.company_id,
+            Report.company_id == company_id,
         )
     )
     report = result.scalar_one_or_none()
@@ -616,7 +626,7 @@ async def generate_report_targets(
         base_scope3 = float(emission.scope3_total or 0)
         base_year = emission.reporting_year or 2022
 
-    company = await db.get(Company, current_user.company_id)
+    company = await db.get(Company, company_id)
     if company and company.sector:
         sector = company.sector.lower()
 
@@ -656,12 +666,12 @@ async def generate_report_targets(
 
 @router.get("")
 async def list_reports(
-    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(get_active_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
         select(Report)
-        .where(Report.company_id == current_user.company_id)
+        .where(Report.company_id == company_id)
         .order_by(Report.created_at.desc())
     )
     reports = result.scalars().all()
