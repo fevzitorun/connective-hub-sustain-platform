@@ -1,5 +1,5 @@
 """
-Claude claude-sonnet-4-6 ile TSRS 1 & 2 uyumlu Türkçe rapor üretimi.
+Claude claude-sonnet-5 ile TSRS 1 & 2 uyumlu Türkçe rapor üretimi.
 Prompt caching aktif — sistem promptu cache'te tutulur (maliyet optimizasyonu).
 16 gerçek Türk TSRS raporundan öğrenilen format.
 """
@@ -162,8 +162,11 @@ Eksik alanlar: {', '.join(missing_items or []) or 'Yok'}
 Şimdi tam raporu yaz. Tüm bölümleri ekle.
 Son bölüm olarak TSRS İçerik Endeksi tablosunu oluştur."""
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
+    # Streaming: uzun (~15k token) raporlarda tek-parça HTTP okuması read-timeout'a
+    # takılıp tüm isteği baştan denemesini (retry → ~2x süre) önler ve raporun
+    # tamamının üretilmesini garanti eder.
+    with client.messages.stream(
+        model="claude-sonnet-5",
         max_tokens=16000,
         system=[
             {
@@ -173,14 +176,20 @@ Son bölüm olarak TSRS İçerik Endeksi tablosunu oluştur."""
             }
         ],
         messages=[{"role": "user", "content": user_prompt}],
+    ) as stream:
+        # get_final_message() akışı sonuna kadar tüketir; metni final mesajın
+        # content bloklarından toplamak text_stream'e göre daha güvenilir.
+        final = stream.get_final_message()
+
+    text = "".join(
+        block.text for block in final.content if getattr(block, "type", None) == "text"
     )
 
-    text = response.content[0].text
     usage = {
-        "input_tokens": response.usage.input_tokens,
-        "output_tokens": response.usage.output_tokens,
-        "cache_read_input_tokens": getattr(response.usage, "cache_read_input_tokens", 0),
-        "cache_creation_input_tokens": getattr(response.usage, "cache_creation_input_tokens", 0),
+        "input_tokens": final.usage.input_tokens,
+        "output_tokens": final.usage.output_tokens,
+        "cache_read_input_tokens": getattr(final.usage, "cache_read_input_tokens", 0),
+        "cache_creation_input_tokens": getattr(final.usage, "cache_creation_input_tokens", 0),
     }
 
     return text, usage

@@ -1,6 +1,6 @@
 """
 Sustain Copilot — AI Assistant with Platform Context
-Sprint 25 · Powered by Claude claude-sonnet-4-6
+Sprint 25 · Powered by Claude claude-sonnet-5
 """
 import os
 from fastapi import APIRouter, HTTPException
@@ -107,7 +107,7 @@ async def copilot_chat(payload: ChatRequest):
     messages = [{"role": m.role, "content": m.content} for m in payload.messages]
 
     response = client.messages.create(
-        model="claude-sonnet-4-6",
+        model="claude-sonnet-5",
         max_tokens=1024,
         system=system,
         messages=messages,

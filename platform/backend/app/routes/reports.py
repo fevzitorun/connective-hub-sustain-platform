@@ -119,7 +119,7 @@ async def _run_report_generation(
             if report:
                 report.content_text = text
                 report.status = "completed"
-                report.ai_model = "claude-sonnet-4-6"
+                report.ai_model = "claude-sonnet-5"
                 report.prompt_tokens = usage.get("input_tokens", 0)
                 report.completion_tokens = usage.get("output_tokens", 0)
                 report.compliance_score = compliance["total_score"]
