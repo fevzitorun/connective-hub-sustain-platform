@@ -1,6 +1,6 @@
 """Role-Based Access Control helpers."""
 from fastapi import HTTPException, status, Header, Depends
-from typing import Optional
+from typing import Any, Optional
 from ..models.user import User
 from ..routes.auth import get_current_user
 
@@ -39,7 +39,7 @@ ROLE_PERMISSIONS = {
 
 def require_permission(permission: str):
     """FastAPI dependency factory — raises 403 if user lacks the permission."""
-    def _check(current_user: User) -> User:
+    def _check(current_user: User = Depends(get_current_user)) -> Any:
         role = current_user.role or "viewer"
         allowed = ROLE_PERMISSIONS.get(role, set())
         if permission not in allowed:
@@ -55,7 +55,7 @@ def require_role(minimum_role: str):
     """FastAPI dependency factory — raises 403 if user's role is below minimum."""
     min_level = ROLE_HIERARCHY.get(minimum_role, 0)
 
-    def _check(current_user: User) -> User:
+    def _check(current_user: User = Depends(get_current_user)) -> Any:
         user_level = ROLE_HIERARCHY.get(current_user.role or "viewer", 0)
         if user_level < min_level:
             raise HTTPException(
