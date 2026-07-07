@@ -8,8 +8,10 @@ export function Footer() {
         {/* Brand & Badges */}
         <div className="flex flex-col items-center md:items-start gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-emerald-500 flex items-center justify-center text-sm">🌿</div>
-            <span className="text-slate-200 font-bold tracking-wide">SustainHub.online</span>
+            <div className="w-8 h-8 rounded overflow-hidden flex items-center justify-center bg-emerald-500/20">
+              <img src="/logo.png" alt="SustainHub" className="w-7 h-7 object-contain" />
+            </div>
+            <span className="text-slate-200 font-bold tracking-wide">SustainHub</span>
           </div>
           <div className="flex gap-3">
             <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">

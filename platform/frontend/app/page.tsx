@@ -644,7 +644,8 @@ export default function HomePage() {
                 TSRS · ISSB · CSRD · UK SRS · GRI · CBAM · EUDR · CDP
               </p>
               <p className="text-xs text-slate-600">
-                Istanbul Teknokent · London Hub<br />
+                Barbaros Mah. Şebboy Sok. No:4 Dijitalpark Teknokent<br />
+                Kat:1 D:8 Ataşehir / İstanbul · London<br />
                 Connective Hub Digital Technologies Ltd.<br />
                 © 2026 SustainHub. All rights reserved.
               </p>
