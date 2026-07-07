@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.uk_sdr_engine import full_assessment, PAI_INDICATORS, UK_TAXONOMY_OBJECTIVES, DEMO_RESULT
 
 router = APIRouter(prefix="/api/uk-sdr", tags=["FCA SDR + EU SFDR"])

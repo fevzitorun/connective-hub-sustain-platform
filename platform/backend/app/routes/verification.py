@@ -7,7 +7,7 @@ from datetime import datetime
 
 from ..database import get_db
 from ..models import User, Verification, EmissionRecord
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.rbac import require_role
 
 router = APIRouter(prefix="/api/verification", tags=["ISO 14064-3 Verification"])

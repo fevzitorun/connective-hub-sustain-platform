@@ -6,8 +6,6 @@ import os
 import json
 import httpx
 import logging
-from .calculation_engine import calculate_total_emissions
-from .alert_engine import check_anomalies
 from .supplier_intelligence import get_high_risk_suppliers
 
 logger = logging.getLogger(__name__)

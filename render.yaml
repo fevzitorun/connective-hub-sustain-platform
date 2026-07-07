@@ -1,0 +1,51 @@
+# SustainHub — Render Blueprint
+# Kullanım: Render Dashboard → New → Blueprint → bu repo'yu bağla
+# Otomatik olarak backend + PostgreSQL + Redis oluşturur
+
+services:
+  # ── Backend API ───────────────────────────────────────────────────────
+  - type: web
+    name: sustainhub-api
+    runtime: docker
+    dockerfilePath: ./platform/backend/Dockerfile
+    dockerContext: ./platform/backend
+    region: frankfurt  # AB verisi için GDPR uyumlu lokasyon
+    plan: starter      # $7/ay — starter'dan başla, ihtiyaç oldukça yükselt
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sustainhub-db
+          property: connectionString
+        # postgresql:// → postgresql+asyncpg:// dönüşümü
+        # backend (app/config.py) tarafından otomatik yapılır
+      - key: REDIS_URL
+        fromService:
+          name: sustainhub-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Manuel girilecek
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: "8000"
+      - key: WEB_CONCURRENCY
+        value: "2"
+
+  # ── Redis ─────────────────────────────────────────────────────────────
+  - type: redis
+    name: sustainhub-redis
+    plan: starter  # 25MB — rate limiting ve cache için yeterli
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # Sadece internal erişim
+
+# ── PostgreSQL ────────────────────────────────────────────────────────
+databases:
+  - name: sustainhub-db
+    plan: starter  # 1GB — MVP için yeterli
+    region: frankfurt
+    postgresMajorVersion: "16"
+    ipAllowList: []  # Sadece internal erişim

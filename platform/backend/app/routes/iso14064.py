@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from ..database import get_db
 from ..models import User, EmissionRecord
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.calculation_engine import calculate_iso14064, EmissionInput
 
 router = APIRouter(prefix="/api/iso14064", tags=["ISO 14064"])

@@ -2,13 +2,13 @@ from sqlalchemy import Column, String, Integer, Float, Boolean, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
-from .base import Base
+from ..database import Base
 
 class Verification(Base):
     __tablename__ = "verifications"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    emission_id = Column(String, ForeignKey("emissions.id"), nullable=False)
+    emission_id = Column(String, ForeignKey("emission_data.id"), nullable=False)
     auditor_id = Column(String, ForeignKey("users.id"), nullable=False)
     
     status = Column(String, default="pending") # pending, in_progress, verified, rejected

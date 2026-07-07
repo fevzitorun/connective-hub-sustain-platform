@@ -1,10 +1,13 @@
-from sqlalchemy import Integer, Numeric, String, ForeignKey, DateTime, UniqueConstraint
+from sqlalchemy import Integer, Numeric, String, ForeignKey, DateTime, UniqueConstraint, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy.dialects.postgresql import JSONB
 from ..database import Base
+
+# PostgreSQL'de JSONB (indekslenebilir), SQLite/diğerlerinde generic JSON
+JSON_TYPE = JSONB().with_variant(JSON(), "sqlite")
 
 class EmissionRecord(Base):
     __tablename__ = "emission_data"
@@ -39,10 +42,10 @@ class EmissionRecord(Base):
     waste_tons: Mapped[float | None] = mapped_column(Numeric(15, 3))
     water_m3: Mapped[float | None] = mapped_column(Numeric(15, 2))
     scope3_co2e: Mapped[float | None] = mapped_column(Numeric(15, 3))
-    scope3_breakdown: Mapped[dict | None] = mapped_column(JSONB)
+    scope3_breakdown: Mapped[dict | None] = mapped_column(JSON_TYPE)
     
     # Sektörel Aktivite Metrikleri
-    activity_metric: Mapped[dict | None] = mapped_column(JSONB)
+    activity_metric: Mapped[dict | None] = mapped_column(JSON_TYPE)
 
     # Bankacılık
     loan_portfolio_tl: Mapped[float | None] = mapped_column(Numeric(20, 2))

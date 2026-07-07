@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from typing import Dict, Optional
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.iso14067_engine import (
     PCFInput, calculate_pcf, calculate_pcf_from_demo,
     SECTOR_BENCHMARKS, LIFECYCLE_STAGES, DEMO_PRODUCTS, EF,

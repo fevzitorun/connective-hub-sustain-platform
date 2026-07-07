@@ -11,7 +11,8 @@ from datetime import datetime
 try:
     from weasyprint import HTML, CSS  # type: ignore
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError):
+    # OSError: native kütüphaneler (Pango/Cairo/GLib) eksikse import anında fırlatır.
     WEASYPRINT_AVAILABLE = False
 
 

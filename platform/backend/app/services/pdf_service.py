@@ -8,7 +8,9 @@ import re
 try:
     from weasyprint import HTML, CSS
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError):
+    # OSError: WeasyPrint yüklenir ama native kütüphaneler (Pango/Cairo/GLib)
+    # eksik olduğunda import anında OSError fırlatır. PDF üretimi devre dışı kalır.
     WEASYPRINT_AVAILABLE = False
 
 _REPORT_CSS = """

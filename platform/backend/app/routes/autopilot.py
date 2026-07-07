@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from ..database import get_db
 from ..models import User
 from ..models.autopilot import AutopilotRule, AutopilotRun
-from ..services.auth import get_current_user
+from .auth import get_current_user
 from ..services.autopilot_engine import (
     execute_autopilot_run, get_due_rules, next_run_from,
     DEMO_RULES, DEMO_RUNS, STANDARD_CONFIG, FREQUENCY_LABELS,
