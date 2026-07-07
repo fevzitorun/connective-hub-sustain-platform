@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 
 interface HeaderProps {
   title: string
@@ -8,7 +9,19 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle }: HeaderProps) {
-  const [lang, setLang] = useState('en') // Default to EN for demo
+  const pathname = usePathname()
+  const [lang, setLang] = useState('en')
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('sustain_lang')
+    if (savedLang) {
+      setLang(savedLang)
+    } else if (pathname.startsWith('/tr')) {
+      setLang('tr')
+    }
+  }, [pathname])
+
+  const isTr = pathname.startsWith('/tr')
 
   return (
     <header
@@ -28,13 +41,14 @@ export function Header({ title, subtitle }: HeaderProps) {
         <select 
           value={lang} 
           onChange={(e) => {
-            setLang(e.target.value)
-            localStorage.setItem('sustain_lang', e.target.value)
-            // Soft-refresh or redirect for demo purposes could be added here
-            if(e.target.value === 'tr') {
-               window.location.href = '/tr' + window.location.pathname;
+            const nextLang = e.target.value
+            setLang(nextLang)
+            localStorage.setItem('sustain_lang', nextLang)
+            
+            if (nextLang === 'tr') {
+              window.location.href = '/tr/dashboard'
             } else {
-               window.location.href = window.location.pathname.replace('/tr', '');
+              window.location.href = '/dashboard'
             }
           }}
           className="text-xs border border-slate-200 rounded-md px-2 py-1.5 outline-none bg-slate-50 text-slate-700 cursor-pointer focus:border-emerald-400"
@@ -46,26 +60,26 @@ export function Header({ title, subtitle }: HeaderProps) {
       </div>
 
       <Link
-        href="/veri-girisi"
+        href={isTr ? "/tr/dashboard" : "/veri-girisi"}
         className="px-3 py-1.5 rounded-md text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
       >
-        + Add Data
+        {isTr ? "📊 Panel" : "+ Add Data"}
       </Link>
       <Link
         href="/cbam"
         className="px-3 py-1.5 rounded-md text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors"
       >
-        🌍 CBAM Export
+        {isTr ? "🌍 SKDM Dışa Aktar" : "🌍 CBAM Export"}
       </Link>
       <Link
         href="/ai-rapor"
         className="px-3 py-1.5 rounded-md text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-sm"
       >
-        🤖 AI Generate
+        {isTr ? "🤖 Yapay Zeka" : "🤖 AI Generate"}
       </Link>
       <div className="w-px h-6 bg-slate-200" />
       <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-        CSRD 2024 · Active
+        {isTr ? "TSRS 2026 · Aktif" : "CSRD 2024 · Active"}
       </span>
     </header>
   )

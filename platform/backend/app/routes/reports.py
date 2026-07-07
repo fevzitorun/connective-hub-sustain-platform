@@ -20,6 +20,7 @@ from ..services.docx_generator import generate_docx
 from ..services.email_service import send_report_ready, send_report_submitted_for_approval
 from ..services.target_engine import calculate_sbti_targets
 from ..services.subscription_service import check_limits
+from ..services.ixbrl_validator import validate_ixbrl_report
 from .auth import get_current_user
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -689,6 +690,45 @@ async def list_reports(
             "submitted_at": r.submitted_at.isoformat() if r.submitted_at else None,
             "approved_at": r.approved_at.isoformat() if r.approved_at else None,
             "created_at": r.created_at.isoformat(),
+            "emission_id": r.emission_data_id,
         }
         for r in reports
     ]
+
+
+@router.post("/{report_id}/validate-ixbrl")
+async def validate_report_ixbrl(
+    report_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """iXBRL ve KGK Ulusal Taksonomi doğrulaması yapar."""
+    report = await db.get(Report, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Rapor bulunamadı")
+
+    company = await db.get(Company, report.company_id)
+    emission = None
+    if report.emission_data_id:
+        emission = await db.get(EmissionRecord, report.emission_data_id)
+
+    # Convert SQL models to dict representations
+    report_dict = {
+        "company_name": company.name if company else None,
+        "assurance_firm": report.assurance_firm,
+        "approved_at": report.approved_at,
+        "approved_by_name": current_user.name if report.approved_by else None,
+    }
+    
+    emission_dict = None
+    if emission:
+        emission_dict = {
+            "scope1_co2e": float(emission.scope1_co2e) if emission.scope1_co2e is not None else 0.0,
+            "scope2_location_co2e": float(emission.scope2_location_co2e) if emission.scope2_location_co2e is not None else 0.0,
+            "electricity_kwh": float(emission.electricity_kwh) if emission.electricity_kwh is not None else 0.0,
+            "water_consumption_m3": float(emission.water_m3) if emission.water_m3 is not None else 0.0,
+            "year": emission.year,
+        }
+
+    validation_result = validate_ixbrl_report(report_dict, emission_dict)
+    return validation_result

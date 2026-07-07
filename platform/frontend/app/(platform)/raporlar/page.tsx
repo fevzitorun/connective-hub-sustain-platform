@@ -17,6 +17,11 @@ export default function RaporlarPage() {
   const [loading, setLoading] = useState(true)
   const [historyModalOpen, setHistoryModalOpen] = useState(false)
   const [historyLogs, setHistoryLogs] = useState<any[]>([])
+  
+  // iXBRL validation modal states
+  const [valModalOpen, setValModalOpen] = useState(false)
+  const [valResult, setValResult] = useState<any>(null)
+  const [valLoading, setValLoading] = useState(false)
 
   useEffect(() => {
     api.reports.list()
@@ -63,6 +68,23 @@ export default function RaporlarPage() {
       setHistoryModalOpen(true)
     } catch (error) {
       console.error("Failed to load history", error)
+    }
+  }
+
+  const handleValidateiXBRL = async (e: React.MouseEvent, reportId: string) => {
+    e.stopPropagation()
+    setValLoading(true)
+    setValResult(null)
+    setValModalOpen(true)
+    try {
+      const res = await api.reports.validateiXBRL(reportId)
+      setValResult(res)
+    } catch (err) {
+      console.error(err)
+      alert("iXBRL doğrulama hatası!")
+      setValModalOpen(false)
+    } finally {
+      setValLoading(false)
     }
   }
 
@@ -148,6 +170,12 @@ export default function RaporlarPage() {
                     <History size={18} />
                   </button>
                   <button 
+                    onClick={(e) => handleValidateiXBRL(e, r.id)}
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all"
+                    title="iXBRL & KGK Doğrulaması">
+                    🔍 iXBRL Doğrula
+                  </button>
+                  <button 
                     onClick={(e) => handleDownloadPDF(e, r.id)}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold text-white shadow transition-transform hover:scale-105"
                     style={{ background: '#0F172A' }}>
@@ -210,6 +238,143 @@ export default function RaporlarPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* iXBRL & KGK Validation Modal */}
+      {valModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+            
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-900 text-white">
+              <div>
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  🔍 iXBRL & KGK Ulusal Taksonomi Uyum Doğrulaması
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5">XHTML + inline XBRL Uyum Raporu · v1.1</p>
+              </div>
+              <button onClick={() => setValModalOpen(false)} className="p-2 hover:bg-white/10 rounded-full text-slate-300 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto bg-slate-50 flex-1 space-y-5">
+              {valLoading ? (
+                <div className="py-12 text-center space-y-3 bg-white border border-slate-200 rounded-xl">
+                  <div className="w-8 h-8 border-4 border-slate-300 border-t-slate-800 rounded-full animate-spin mx-auto" />
+                  <p className="text-sm font-semibold text-slate-600">iXBRL şemaları ve etiketler çözümleniyor…</p>
+                </div>
+              ) : valResult && (
+                <>
+                  {/* Status Banner */}
+                  <div className={`p-4 rounded-xl border flex items-center gap-3 ${
+                    valResult.valid 
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <span className="text-2xl">{valResult.valid ? '✅' : '❌'}</span>
+                    <div>
+                      <div className="font-bold text-sm">
+                        {valResult.valid ? 'KGK Ulusal Taksonomisiyle Tam Uyumlu' : 'KGK Şema Uyum Hatası'}
+                      </div>
+                      <div className="text-xs mt-0.5 opacity-90">
+                        {valResult.valid 
+                          ? 'Tüm zorunlu sürdürülebilirlik etiketleri şemaya uygun formatta tespit edilmiştir.' 
+                          : 'Rapor içerisinde zorunlu olan bazı XBRL etiketleri eksik veya geçersiz.'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Digital Signature Panel */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Kurumsal Elektronik İmza (e-Seal) Durumu</h4>
+                    {valResult.digital_signature.signed ? (
+                      <div className="flex gap-4 items-start bg-emerald-50/50 p-3 rounded-lg border border-emerald-100 text-slate-700 text-xs">
+                        <span className="text-lg">🔏</span>
+                        <div className="space-y-1">
+                          <div className="font-bold text-emerald-800">Dijital İmza / Mühür Doğrulandı</div>
+                          <div>İmzalayan: <strong>{valResult.digital_signature.signer_name}</strong> ({valResult.digital_signature.signer_title})</div>
+                          <div>Zaman Damgası: {new Date(valResult.digital_signature.signed_at).toLocaleString('tr-TR')}</div>
+                          <div>Sağlayıcı: <span className="font-mono text-[10px] bg-white border px-1 rounded">{valResult.digital_signature.certificate_authority}</span></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex gap-4 items-start bg-amber-50 p-3 rounded-lg border border-amber-100 text-slate-700 text-xs">
+                        <span className="text-lg">⚠️</span>
+                        <div className="space-y-1">
+                          <div className="font-bold text-amber-800">İmza Eksik</div>
+                          <p className="text-[11px] text-amber-700">Rapor henüz onaylanmamış. Resmi KGK portalına gönderim öncesi e-imza / e-mühür atılması zorunludur.</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Warnings or Errors lists */}
+                  {valResult.errors.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                      <h4 className="text-xs font-bold uppercase text-red-700 mb-2">Şema Hataları ({valResult.errors.length})</h4>
+                      <ul className="list-disc pl-5 text-xs text-red-600 space-y-1">
+                        {valResult.errors.map((err: string, i: number) => (
+                          <li key={i}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {valResult.warnings.length > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                      <h4 className="text-xs font-bold uppercase text-amber-700 mb-2">Uyarılar ({valResult.warnings.length})</h4>
+                      <ul className="list-disc pl-5 text-xs text-amber-600 space-y-1">
+                        {valResult.warnings.map((wrn: string, i: number) => (
+                          <li key={i}>{wrn}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Detected Tags list */}
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                      <h4 className="text-xs font-bold uppercase text-slate-500">Tespit Edilen iXBRL Etiketleri ({valResult.tags_found.length})</h4>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-700">KGK Ulusal Taksonomisi v2025</span>
+                    </div>
+                    <table className="w-full text-xs text-left text-slate-500">
+                      <thead className="text-[10px] bg-slate-50 uppercase text-slate-600">
+                        <tr>
+                          <th className="py-2 px-3">Etiket (Tag)</th>
+                          <th className="py-2 px-3">Tanım</th>
+                          <th className="py-2 px-3">Değer (Value)</th>
+                          <th className="py-2 px-3">Format</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {valResult.tags_found.map((t: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-slate-50/50">
+                            <td className="py-2.5 px-3 font-mono font-bold text-slate-700">{t.tag}</td>
+                            <td className="py-2.5 px-3">{t.description}</td>
+                            <td className="py-2.5 px-3 font-semibold text-slate-800">{t.value}</td>
+                            <td className="py-2.5 px-3 font-mono text-[10px]">{t.format}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+              <div className="text-[11px] text-slate-400">
+                Sistem, XHTML çıktılarına inline XBRL formatını otomatik enjekte eder.
+              </div>
+              <button 
+                onClick={() => setValModalOpen(false)}
+                className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow">
+                Kapat
+              </button>
+            </div>
+
           </div>
         </div>
       )}

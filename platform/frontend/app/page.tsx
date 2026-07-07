@@ -248,41 +248,56 @@ export default function HomePage() {
       </nav>
 
       {/* HERO */}
-      <section className="relative pt-24 pb-20 px-6 overflow-hidden">
+      <section className="relative pt-20 pb-20 px-6 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/8 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/6 rounded-full blur-3xl" />
         </div>
-        <div className="max-w-5xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 mb-7">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Sprint 50 · Pre-Launch · July 2026
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center relative">
+          <div className="md:col-span-7 text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 mb-7">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Sprint 50 · Pre-Launch · July 2026
+            </div>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-[1.05] text-slate-900 mb-7">
+              The Intelligence Layer<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">
+                for Sustainable Finance.
+              </span>
+            </h1>
+            <p className="text-lg text-slate-500 leading-relaxed mb-10">
+              43 modules. AI + satellite data. TSRS · ISSB · GRI · CBAM · EUDR · CDP.
+              From Turkey's BIST-100 to London's green finance desks — one platform.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/request-demo"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white font-black text-base hover:bg-slate-800 transition-all shadow-xl">
+                Book a Demo <ArrowRight size={20} />
+              </Link>
+              <Link href="/register"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-emerald-500 text-white font-black text-base hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20">
+                Start Free →
+              </Link>
+              <button onClick={() => setVideoOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border-2 border-slate-200 text-slate-700 font-bold text-sm hover:border-slate-300 transition-all">
+                <Play size={14} fill="currentColor" /> Watch 90-second demo
+              </button>
+            </div>
+            <p className="text-xs text-slate-400 mt-4">No credit card · 14-day free trial · Cancel anytime</p>
           </div>
-          <h1 className="text-6xl md:text-7xl font-black tracking-tight leading-[1.05] text-slate-900 mb-7">
-            The Intelligence Layer<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">
-              for Sustainable Finance.
-            </span>
-          </h1>
-          <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed mb-10">
-            43 modules. AI + satellite data. TSRS · ISSB · GRI · CBAM · EUDR · CDP.
-            From Turkey's BIST-100 to London's green finance desks — one platform.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/request-demo"
-              className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white font-black text-lg hover:bg-slate-800 transition-all shadow-xl">
-              Book a Demo <ArrowRight size={20} />
-            </Link>
-            <Link href="/register"
-              className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-emerald-500 text-white font-black text-lg hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20">
-              Start Free →
-            </Link>
-            <button onClick={() => setVideoOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border-2 border-slate-200 text-slate-700 font-bold text-base hover:border-slate-300 transition-all">
-              <Play size={16} fill="currentColor" /> Watch 90-second demo
-            </button>
+          <div className="md:col-span-5 relative">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-100 bg-white p-2">
+              <img 
+                src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=600" 
+                alt="Sustain Environmental Conservation" 
+                className="rounded-2xl w-full h-[350px] object-cover"
+              />
+              <div className="absolute bottom-6 left-6 right-6 bg-slate-900/90 backdrop-blur-md rounded-2xl p-4 text-white border border-white/10">
+                <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider mb-1">Earth Intelligence</div>
+                <div className="text-sm font-bold">Copernicus Sentinel-2 Live NDVI Vegetation Analysis</div>
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-slate-400 mt-4">No credit card · 14-day free trial · Cancel anytime</p>
         </div>
       </section>
 
@@ -352,45 +367,54 @@ export default function HomePage() {
             {[
               {
                 icon: '🏭', title: 'Industrial Edge', color: '#10b981',
+                image: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=400',
                 desc: 'Automate CBAM declarations, track Scope 1-2-3 via Magic Import, and optimise decarbonisation ROI with AI-powered MACC curves.',
                 features: ['TSRS 1+2 reporting', 'Scope 3 deep-dive', 'CBAM & EUDR filing', 'Supplier ESG audit'],
                 cta: '/tsrs',
               },
               {
                 icon: '🏛️', title: 'Green Finance', color: '#3b82f6',
+                image: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=400',
                 desc: "Automate BDDK Green Asset Ratio, calculate PCAF financed emissions, and run SME ESG credit scoring from AAA to D.",
                 features: ['GAR calculation (BDDK/EBA)', 'PCAF financed emissions', 'KOBİ credit score AAA→D', 'Climate stress testing'],
                 cta: '/gar',
               },
               {
                 icon: '🚛', title: 'Supply Nexus', color: '#f59e0b',
+                image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=400',
                 desc: 'Orchestrate your vendor ecosystem. Full EUDR compliance with map-based traceability, RBA v9.0 audit, and automated red flags.',
                 features: ['EUDR due diligence', 'RBA v9.0 supplier audit', 'Risk heat map', 'Knock-out veto engine'],
                 cta: '/eudr',
               },
               {
                 icon: '🎓', title: 'Academic Core', color: '#a855f7',
+                image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=400',
                 desc: 'UI GreenMetric automation for campuses. Real-time simulators and satellite-verified sustainability metrics for research institutions.',
                 features: ['GreenMetric automation', 'Research data portal', 'Student ESG simulator', 'Satellite verification'],
                 cta: '/university',
               },
             ].map(w => (
-              <div key={w.title} className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:border-white/20 transition-all flex flex-col">
-                <div className="text-4xl mb-4">{w.icon}</div>
-                <h3 className="font-black text-xl mb-2" style={{ color: w.color }}>{w.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed mb-5 flex-1">{w.desc}</p>
-                <ul className="space-y-1.5 mb-6">
-                  {w.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-slate-300">
-                      <span style={{ color: w.color }}>✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href={w.cta}
-                  className="text-xs font-bold transition-colors flex items-center gap-1"
-                  style={{ color: w.color }}>
-                  Explore {w.title} <ArrowRight size={12} />
-                </Link>
+              <div key={w.title} className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:border-white/20 transition-all flex flex-col">
+                <img src={w.image} alt={w.title} className="h-36 w-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-2xl">{w.icon}</span>
+                    <h3 className="font-black text-lg" style={{ color: w.color }}>{w.title}</h3>
+                  </div>
+                  <p className="text-slate-400 text-xs leading-relaxed mb-5 flex-1">{w.desc}</p>
+                  <ul className="space-y-1.5 mb-6">
+                    {w.features.map(f => (
+                      <li key={f} className="flex items-center gap-2 text-xs text-slate-300">
+                        <span style={{ color: w.color }}>✓</span> {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href={w.cta}
+                    className="text-xs font-bold transition-colors flex items-center gap-1 mt-auto"
+                    style={{ color: w.color }}>
+                    Explore {w.title} <ArrowRight size={12} />
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

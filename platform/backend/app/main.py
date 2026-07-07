@@ -168,6 +168,14 @@ app.include_router(kobi_credit_score.router)
 from .routes import demo_request
 app.include_router(demo_request.router)
 
+# Phase 2 — UK NHS Net Zero
+from .routes import nhs
+app.include_router(nhs.router)
+
+# Phase 2 — Q2 2027 Grid+
+from .routes import grid
+app.include_router(grid.router)
+
 
 @app.on_event("startup")
 async def startup():

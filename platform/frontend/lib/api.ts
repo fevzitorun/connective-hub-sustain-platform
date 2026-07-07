@@ -95,6 +95,8 @@ export const api = {
     status: (reportId: string) => request<Report>(`/reports/${reportId}/status`),
     exportUrl: (reportId: string) => `${API_URL}/reports/${reportId}/export`,
     exportDocxUrl: (reportId: string) => `${API_URL}/reports/${reportId}/export/docx`,
+    validateiXBRL: (id: string) =>
+      request<unknown>(`/reports/${id}/validate-ixbrl`, { method: 'POST' }),
   },
 
   dashboard: {
@@ -163,6 +165,40 @@ export const api = {
       request<unknown>(`/satellite/demo?city=${encodeURIComponent(city)}`),
     cities: () =>
       request<{ cities: string[] }>('/satellite/cities'),
+    analyzeCoordinates: (lat: number, lng: number, facilityName?: string) =>
+      request<unknown>('/satellite/analyze-coordinates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat, lng, facility_name: facilityName })
+      }),
+  },
+
+  nhs: {
+    assess: (companyId: string, year = 2024) =>
+      request<unknown>('/nhs/assess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_id: companyId, year })
+      }),
+    generateCRP: (companyId: string, selectedActions: string[] = [], year = 2024) =>
+      request<{ html: string }>('/nhs/generate-crp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_id: companyId, selected_actions: selectedActions, year })
+      }),
+  },
+
+  grid: {
+    getLiveMeter: (companyId: string) =>
+      request<unknown>(`/grid/live-meter?company_id=${companyId}`),
+    getEfficiency: (companyId: string) =>
+      request<{ analysis: any }>(`/grid/efficiency?company_id=${companyId}`),
+    syncToEmissions: (companyId: string, cumulativeKwh: number, year = 2024) =>
+      request<unknown>('/grid/sync-to-emissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_id: companyId, cumulative_kwh: cumulativeKwh, year })
+      }),
   },
 
   materiality: {

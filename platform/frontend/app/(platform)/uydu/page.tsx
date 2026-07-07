@@ -24,6 +24,15 @@ type EarthData = {
   temperature_c: number; precipitation_mm: number; solar_radiation_kwh_m2: number
   ndvi_proxy: number; physical_risk_score: number
   data_source: string; projections: Projection[]
+  // Sentinel-2 telemetry
+  sentinel_tile_id: string
+  cloud_cover_pct: number
+  acquisition_date: string
+  band_red: number
+  band_nir: number
+  band_green: number
+  deforestation_status: string
+  facility_name?: string
 }
 
 // ─── City list ───────────────────────────────────────────────────────────────
@@ -84,7 +93,11 @@ function riskColor(score: number) {
 
 export default function EarthPage() {
   const router = useRouter()
+  const [mode, setMode] = useState<'city' | 'coordinates'>('city')
   const [city, setCity] = useState('istanbul')
+  const [latInput, setLatInput] = useState('37.00')
+  const [lngInput, setLngInput] = useState('35.32')
+  const [facilityName, setFacilityName] = useState('')
   const [data, setData] = useState<EarthData | null>(null)
   const [loading, setLoading] = useState(false)
   const [scenario, setScenario] = useState<'RCP 4.5' | 'RCP 8.5'>('RCP 4.5')
@@ -92,7 +105,19 @@ export default function EarthPage() {
   async function analyse() {
     setLoading(true)
     try {
-      const res = await api.satellite.demo(city)
+      let res;
+      if (mode === 'city') {
+        res = await api.satellite.demo(city)
+      } else {
+        const lat = parseFloat(latInput)
+        const lng = parseFloat(lngInput)
+        if (isNaN(lat) || isNaN(lng)) {
+          alert('Lütfen geçerli enlem ve boylam girin.')
+          setLoading(false)
+          return
+        }
+        res = await api.satellite.analyzeCoordinates(lat, lng, facilityName || undefined)
+      }
       setData(res as EarthData)
     } catch {
       // silently ignore — demo doesn't need toast
@@ -153,23 +178,70 @@ export default function EarthPage() {
         )}
       </div>
 
-      {/* City Selector + Analyse Button */}
+      {/* Mode Selector Tabs */}
+      <div className="flex border-b border-slate-200">
+        <button
+          onClick={() => { setMode('city'); setData(null); }}
+          className={`px-6 py-2.5 text-sm font-bold border-b-2 transition-all ${
+            mode === 'city' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          🏙️ Şehir Analizi
+        </button>
+        <button
+          onClick={() => { setMode('coordinates'); setData(null); }}
+          className={`px-6 py-2.5 text-sm font-bold border-b-2 transition-all ${
+            mode === 'coordinates' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          🛰️ Canlı Koordinat Analizi
+        </button>
+      </div>
+
+      {/* Input Panel based on Mode */}
       <div className="flex flex-wrap items-end gap-3 p-5 rounded-2xl border border-slate-200 bg-white">
-        <div className="flex-1 min-w-[200px]">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-            Tesis / Şehir Seçin
-          </label>
-          <select value={city} onChange={e => setCity(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white">
-            {['Türkiye', 'KKTC', 'UK'].map(group => (
-              <optgroup key={group} label={group}>
-                {CITIES.filter(c => c.group === group).map(c => (
-                  <option key={c.value} value={c.value}>{c.flag} {c.label}</option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
+        {mode === 'city' ? (
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              Tesis / Şehir Seçin
+            </label>
+            <select value={city} onChange={e => setCity(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white">
+              {['Türkiye', 'KKTC', 'UK'].map(group => (
+                <optgroup key={group} label={group}>
+                  {CITIES.filter(c => c.group === group).map(c => (
+                    <option key={c.value} value={c.value}>{c.flag} {c.label}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                Tesis / Fabrika Adı
+              </label>
+              <input type="text" placeholder="Örn: Tuzla Tesisleri" value={facilityName} onChange={e => setFacilityName(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white outline-none focus:border-sky-500" />
+            </div>
+            <div className="w-[120px]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                Enlem (Lat)
+              </label>
+              <input type="number" step="0.001" placeholder="37.00" value={latInput} onChange={e => setLatInput(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white outline-none focus:border-sky-500" />
+            </div>
+            <div className="w-[120px]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                Boylam (Lng)
+              </label>
+              <input type="number" step="0.001" placeholder="35.32" value={lngInput} onChange={e => setLngInput(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white outline-none focus:border-sky-500" />
+            </div>
+          </>
+        )}
+
         <button onClick={analyse} disabled={loading}
           className="px-6 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 flex items-center gap-2"
           style={{ background: '#0284c7' }}>
@@ -206,7 +278,7 @@ export default function EarthPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold text-slate-700 text-sm">TCFD Fiziksel Risk Skoru</h2>
                 <span className="text-xs font-mono text-slate-400">
-                  {selectedCity?.flag} {data.lat.toFixed(2)}°N, {Math.abs(data.lng).toFixed(2)}°{data.lng >= 0 ? 'E' : 'W'}
+                  {selectedCity?.flag || '🛰️'} {data.lat.toFixed(2)}°N, {Math.abs(data.lng).toFixed(2)}°{data.lng >= 0 ? 'E' : 'W'}
                 </span>
               </div>
 
@@ -303,7 +375,7 @@ export default function EarthPage() {
             <div className="lg:col-span-2 rounded-2xl border border-slate-200 overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                 <span className="text-sm font-bold text-slate-700">
-                  {selectedCity?.flag} {selectedCity?.label} — Tesis Konumu
+                  {mode === 'city' ? `${selectedCity?.flag} ${selectedCity?.label}` : (data.facility_name || 'Özel Tesis')} — Tesis Konumu
                 </span>
                 <span className="text-xs text-slate-400 font-mono">OpenStreetMap</span>
               </div>
@@ -312,6 +384,109 @@ export default function EarthPage() {
                 style={{ width: '100%', height: 300, border: 'none' }}
                 title="Tesis Konumu"
               />
+            </div>
+          </div>
+
+          {/* Sentinel-2 Telemetry & EUDR Widget */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+              <h2 className="font-bold text-slate-700 text-sm flex items-center gap-1.5">
+                🛰️ Sentinel-2 Telemetri Verileri
+              </h2>
+              <div className="space-y-3 pt-2">
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <div className="flex justify-between items-center text-xs mb-1.5">
+                    <span className="font-semibold text-slate-600">Bitki Sağlığı (NDVI)</span>
+                    <span className="font-bold text-sky-600">{data.ndvi_proxy.toFixed(2)}</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-500 transition-all duration-1000" 
+                      style={{ width: `${data.ndvi_proxy * 100}%` }} />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                    <span>Çıplak/Kritik</span>
+                    <span>Sağlıklı Vejetasyon</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                    <div className="text-slate-400 text-[10px] uppercase font-bold">Sentinel Tile</div>
+                    <div className="font-bold text-slate-700 mt-0.5">{data.sentinel_tile_id}</div>
+                  </div>
+                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                    <div className="text-slate-400 text-[10px] uppercase font-bold">Bulutluluk</div>
+                    <div className="font-bold text-slate-700 mt-0.5">%{data.cloud_cover_pct}</div>
+                  </div>
+                </div>
+
+                <div className="text-xs space-y-2 pt-1">
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-500">Son Güncelleme</span>
+                    <span className="font-bold text-slate-700">{data.acquisition_date}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-500">Veri Doğrulaması</span>
+                    <span className="font-bold text-emerald-600">Sentinel-2 L2A (Canlı)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between">
+              <div>
+                <h2 className="font-bold text-slate-700 text-sm">🌾 Sentinel-2 Spektral Bant Telemetrisi & EUDR Durumu</h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Tesis etrafındaki 10m çözünürlüklü piksel yansıma değerleri (Reflectance)
+                </p>
+
+                {/* Spectral bands table */}
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-xs text-left text-slate-500">
+                    <thead className="text-[10px] uppercase bg-slate-50 text-slate-600">
+                      <tr>
+                        <th className="py-2 px-3">Bant Kodu</th>
+                        <th className="py-2 px-3">Bant Tanımı</th>
+                        <th className="py-2 px-3">Yansıma Oranı (Reflectance)</th>
+                        <th className="py-2 px-3">Kullanım Amacı</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr>
+                        <td className="py-2.5 px-3 font-mono font-bold text-slate-700">B4 (Red)</td>
+                        <td className="py-2.5 px-3">Kırmızı Işık (665 nm)</td>
+                        <td className="py-2.5 px-3 font-mono">{data.band_red.toFixed(3)}</td>
+                        <td className="py-2.5 px-3">Klorofil Soğurma Analizi</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 px-3 font-mono font-bold text-slate-700">B8 (NIR)</td>
+                        <td className="py-2.5 px-3">Yakın Kızılötesi (842 nm)</td>
+                        <td className="py-2.5 px-3 font-mono">{data.band_nir.toFixed(3)}</td>
+                        <td className="py-2.5 px-3">Hücresel Yapı / Yaprak Yoğunluğu</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 px-3 font-mono font-bold text-slate-700">B3 (Green)</td>
+                        <td className="py-2.5 px-3">Yeşil Işık (560 nm)</td>
+                        <td className="py-2.5 px-3 font-mono">{data.band_green.toFixed(3)}</td>
+                        <td className="py-2.5 px-3">Bitki Pigment Değerlendirmesi</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* EUDR check banner */}
+              <div className={`mt-4 p-4 rounded-xl border flex items-center gap-3 ${
+                data.deforestation_status.includes('Kritik') 
+                  ? 'bg-red-50 border-red-200 text-red-800' 
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              }`}>
+                <span className="text-xl">{data.deforestation_status.includes('Kritik') ? '⚠️' : '🌳'}</span>
+                <div>
+                  <div className="font-bold text-xs uppercase tracking-wider">AB Ormansızlaşma Yönetmeliği (EUDR) Uyum Durumu</div>
+                  <div className="text-xs mt-0.5 font-semibold">{data.deforestation_status}</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -409,7 +584,7 @@ export default function EarthPage() {
             <div className="flex-1">
               <h3 className="font-black text-lg" style={{ color: '#065f46' }}>Sustain Verified™ Rozeti</h3>
               <p className="text-sm mt-1" style={{ color: '#047857' }}>
-                Bu analiz, <strong>{selectedCity?.label}</strong> tesisinin iklim fiziksel risk profilini
+                Bu analiz, <strong>{mode === 'city' ? selectedCity?.label : (data.facility_name || 'Özel')}</strong> tesisinin iklim fiziksel risk profilini
                 NASA EARTHDATA, AFAD ve IPCC AR6 verileriyle doğrulamaktadır.
                 Yatırımcı sunumlarında ve TCFD açıklamalarında kullanılabilir.
               </p>

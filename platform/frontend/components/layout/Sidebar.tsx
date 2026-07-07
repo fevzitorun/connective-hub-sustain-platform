@@ -54,6 +54,8 @@ const navItems = [
     { href: '/iso14064', label: 'Karbon Ayak İzi', icon: '🌿', badge: 'ISO' },
     { href: '/pcf', label: 'Ürün PCF (ISO 14067)', icon: '📦', badge: 'NEW' },
     { href: '/uk-sdr', label: 'FCA SDR + SFDR', icon: '🇬🇧', badge: 'UK' },
+    { href: '/nhs-ppn', label: 'NHS Net Zero (PPN 06/21)', icon: '🏥', badge: 'UK' },
+    { href: '/grid-plus', label: 'Sustain Grid+', icon: '⚡', badge: 'NEW' },
     { href: '/cdp', label: 'CDP Questionnaire', icon: '🌍', badge: 'CDP' },
     { href: '/eu-taxonomy', label: 'EU Taxonomy', icon: '🇪🇺', badge: 'NEW' },
     { href: '/gri', label: 'GRI 2021 Tracker', icon: '📖', badge: 'GRI' },
@@ -82,7 +84,76 @@ const navItems = [
     { href: '/abonelik', label: 'Subscription', icon: '💳', badge: 'NEW' },
     { href: '/pre-launch', label: 'Pre-Launch QA', icon: '🚀', badge: 'ADMIN' },
   ]},
-]
+// TRANSLATION HELPER FOR SIDEBAR
+function getTranslatedLabel(label: string, pathname: string): string {
+  if (!pathname.startsWith('/tr')) return label;
+
+  const translations: Record<string, string> = {
+    '🏦 Bank Workspace': '🏦 Banka Çalışma Alanı',
+    'General': 'Genel',
+    'Reporting': 'Raporlama',
+    'Compliance': 'Uyumluluk',
+    'Climate & ESG': 'İklim & ESG',
+    'Intelligence': 'Akıllı Analizler',
+    'Support': 'Destek',
+    'Agency & Audit': 'Acente & Denetim',
+    'Account': 'Hesap',
+    'Dashboard': 'Kontrol Paneli',
+    'YK / CFO Özet': 'YK / CFO Özeti',
+    'Data Entry': 'Veri Girişi',
+    'AI Report Writer': 'Yapay Zeka Rapor Yazarı',
+    'My Reports': 'Raporlarım',
+    'Audit Trail': 'Denetim İzleri',
+    'Global Tracker': 'Global Takipçi',
+    'CBAM Declaration': 'SKDM Beyanı',
+    'EUDR Supply': 'AB Ormansızlaşma Uyumu',
+    'ESG Health Check': 'ESG Durum Analizi',
+    'CSRD Çift Önemlilik': 'CSRD Çift Önemlilik',
+    'TCFD Scenarios': 'TCFD Senaryoları',
+    'SROI Calculator': 'SROI Hesaplayıcı',
+    'Supplier ESG Audit': 'Tedarikçi ESG Denetimi',
+    'Benchmark': 'Kıyaslama (Benchmark)',
+    'Targets (SBTi)': 'SBTi Hedefleri',
+    'SBTi Target Calculator': 'SBTi Hedef Hesaplayıcı',
+    'Scope 3 Value Chain': 'Kapsam 3 Değer Zinciri',
+    'ISSB IFRS S1+S2': 'ISSB IFRS S1+S2',
+    'TSRS 1+2 (KGK)': 'TSRS 1+2 (KGK)',
+    'SASB + SDG': 'SASB + Sürdürülebilir Kalkınma Amaçları',
+    'Water + ESRS E2-E5': 'Su + ESRS E2-E5',
+    'ESG Benchmark': 'ESG Kıyaslama',
+    'Earth Intelligence': 'Dünya ve Uydu Analizi',
+    'Physical Asset Risk': 'Fiziksel Tesis Riski',
+    'Bank GAR Portal': 'Banka GAR Portali',
+    'KOBİ Portföy': 'KOBİ Portföyü',
+    'KOBİ ESG Credit Score': 'KOBİ ESG Kredi Skoru',
+    'Karbon Ayak İzi': 'Karbon Ayak İzi (ISO 14064)',
+    'Ürün PCF (ISO 14067)': 'Ürün Karbon Ayak İzi (PCF)',
+    'FCA SDR + SFDR': 'FCA SDR + SFDR',
+    'NHS Net Zero (PPN 06/21)': 'NHS Net Zero (PPN 06/21)',
+    'Sustain Grid+': 'Sustain Grid+',
+    'CDP Questionnaire': 'CDP Anketi',
+    'EU Taxonomy': 'AB Taksonomisi',
+    'GRI 2021 Tracker': 'GRI 2021 Takipçi',
+    'TNFD Doğa Riski': 'TNFD Doğa Riski',
+    'Intelligence Hub': 'Bilgi Merkezi',
+    'Turkey ESG Index': 'Türkiye ESG Endeksi',
+    'TCFD War-Room': 'TCFD Savaş Odası',
+    'ROI Simulator': 'ROI Simülatörü',
+    'University Portal': 'Üniversite Portali',
+    'Academy': 'Sürdürülebilirlik Akademisi',
+    'Public ESG Page': 'Kamuya Açık ESG Sayfası',
+    'Report Builder': 'Rapor Sihirbazı',
+    'Sustain Autopilot': 'Sustain Otopilot',
+    'Integrations': 'Entegrasyonlar',
+    'Subsidies': 'Devlet Destekleri',
+    'Agency Portal': 'Acente Portali',
+    'KGK Denetçi': 'KGK Denetçi Portali',
+    'Subscription': 'Abonelik',
+    'Pre-Launch QA': 'Yayın Öncesi QA',
+  };
+
+  return translations[label] || label;
+}
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -102,15 +173,15 @@ export function Sidebar() {
   const activeNav = isBank ? [...BANK_NAV, ...navItems] : navItems
 
   const displayCompany = companyName || (isBank ? 'Bank Demo' : 'Your Company')
-  const workspaceLabel = isBank ? 'Bank GAR Workspace'
-    : companyType === 'corporate' ? 'Corporate Workspace'
-    : companyType === 'sme' ? 'SME Workspace'
-    : companyType === 'university' ? 'University Workspace'
-    : 'SustainHub Platform'
+  const workspaceLabel = isBank ? (pathname.startsWith('/tr') ? 'Banka GAR Çalışma Alanı' : 'Bank GAR Workspace')
+    : companyType === 'corporate' ? (pathname.startsWith('/tr') ? 'Kurumsal Çalışma Alanı' : 'Corporate Workspace')
+    : companyType === 'sme' ? (pathname.startsWith('/tr') ? 'KOBİ Çalışma Alanı' : 'SME Workspace')
+    : companyType === 'university' ? (pathname.startsWith('/tr') ? 'Üniversite Çalışma Alanı' : 'University Workspace')
+    : (pathname.startsWith('/tr') ? 'SustainHub Platformu' : 'SustainHub Platform')
   const companyInitials = displayCompany.split(' ').slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('')
 
   const displayUser = userName || 'SustainHub Team'
-  const displayRole = userTitle || 'Sustainability Platform'
+  const displayRole = userTitle || (pathname.startsWith('/tr') ? 'Sürdürülebilirlik Platformu' : 'Sustainability Platform')
   const userInitials = displayUser.split(' ').slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('')
 
   return (
@@ -153,7 +224,7 @@ export function Sidebar() {
                 section.startsWith('🏦') ? 'text-yellow-400/90' : 'text-emerald-400/80'
               )}
             >
-              {section}
+              {getTranslatedLabel(section, pathname)}
             </div>
             {items.map(({ href, label, icon, badge }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
@@ -169,7 +240,7 @@ export function Sidebar() {
                   )}
                 >
                   <span className="text-base w-5 text-center">{icon}</span>
-                  <span className="flex-1">{label}</span>
+                  <span className="flex-1">{getTranslatedLabel(label, pathname)}</span>
                   {badge && (
                     <span
                       className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"

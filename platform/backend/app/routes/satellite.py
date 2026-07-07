@@ -1,12 +1,20 @@
 """Earth Intelligence API — NASA Power + AFAD + IPCC AR6."""
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
+from typing import Optional
 from ..database import get_db
 from ..models import Company, User
 from ..services.satellite_service import get_satellite_risk, _CITY_COORDS
 from .auth import get_current_user
 
 router = APIRouter(prefix="/satellite", tags=["satellite"])
+
+
+class CoordinateAnalysisIn(BaseModel):
+    lat: float
+    lng: float
+    facility_name: Optional[str] = None
 
 
 def _serialize(risk) -> dict:
@@ -31,6 +39,13 @@ def _serialize(risk) -> dict:
         "precipitation_mm": risk.precipitation_mm,
         "solar_radiation_kwh_m2": risk.solar_radiation_kwh_m2,
         "ndvi_proxy": risk.ndvi_proxy,
+        "sentinel_tile_id": risk.sentinel_tile_id,
+        "cloud_cover_pct": risk.cloud_cover_pct,
+        "acquisition_date": risk.acquisition_date,
+        "band_red": risk.band_red,
+        "band_nir": risk.band_nir,
+        "band_green": risk.band_green,
+        "deforestation_status": risk.deforestation_status,
         "physical_risk_score": risk.physical_risk_score,
         "data_source": risk.data_source,
         "projections": [
@@ -96,3 +111,22 @@ async def satellite_risk_by_company(
         "wildfire": risk.fire_risk,
     }
     return result
+
+
+@router.post("/analyze-coordinates")
+async def analyze_coordinates(
+    body: CoordinateAnalysisIn,
+    current_user: User = Depends(get_current_user),
+):
+    """Canlı koordinat bazlı Sentinel-2 ve NASA Power analizi."""
+    risk = await get_satellite_risk(
+        lat=body.lat,
+        lng=body.lng,
+        city="default",  # will auto-resolve nearest city
+        year=2024
+    )
+    result = _serialize(risk)
+    if body.facility_name:
+        result["facility_name"] = body.facility_name
+    return result
+

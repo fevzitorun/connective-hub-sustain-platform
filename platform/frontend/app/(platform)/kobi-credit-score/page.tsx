@@ -86,6 +86,25 @@ const SECTORS = [
   { id: 'financial_svc', label: 'Finansal Hizmetler' },
 ]
 
+function getRatingFromScore(score: number): string {
+  if (score >= 90) return 'AAA'
+  if (score >= 82) return 'AA'
+  if (score >= 75) return 'A'
+  if (score >= 65) return 'BBB'
+  if (score >= 55) return 'BB'
+  if (score >= 45) return 'B'
+  if (score >= 35) return 'CCC'
+  return 'D'
+}
+
+function getBankCategoryFromScore(score: number): { category: string; label: string; color: string; financing: string } {
+  if (score >= 90) return { category: 'A+', label: 'Mükemmel', color: '#10b981', financing: 'Süper Yeşil Kredi — SOFR+75bps' }
+  if (score >= 75) return { category: 'A', label: 'Çok İyi', color: '#34d399', financing: 'Yeşil Kredi Teşviki — SOFR+110bps' }
+  if (score >= 55) return { category: 'B+', label: 'İyi', color: '#3b82f6', financing: 'Sürdürülebilirlik Bağlantılı Kredi — SOFR+130bps' }
+  if (score >= 35) return { category: 'B-', label: 'İzlemede', color: '#f59e0b', financing: 'Geçiş Finansmanı — SOFR+150bps' }
+  return { category: 'C', label: 'Yüksek Riskli', color: '#ef4444', financing: 'Gelişmiş Durum Tespiti Gerekli' }
+}
+
 // ── Score Gauge SVG ───────────────────────────────────────────────────────────
 function ScoreGauge({ score, rating, color }: { score: number; rating: string; color: string }) {
   const r = 70; const cx = 90; const cy = 90
@@ -169,8 +188,24 @@ export default function KobiCreditScorePage() {
     { id: 'demo',    label: 'Demo Sonuçları' },
     { id: 'assess',  label: 'Değerlendirme Formu' },
     { id: 'results', label: 'Sonuçlar' },
+    { id: 'sroi',    label: 'Proje Sosyal Etki (SROI)' },
     { id: 'actions', label: 'Aksiyon Planı' },
   ]
+
+  // SROI Integration states
+  const [sroiInvestment, setSroiInvestment] = useState('100000')
+  const [sroiJobs, setSroiJobs] = useState('3')
+  const [sroiGreenSpace, setSroiGreenSpace] = useState('500')
+  const [sroiTraining, setSroiTraining] = useState('12')
+  const [sroiRatio, setSroiRatio] = useState<number | null>(null)
+  const [sroiSocialValue, setSroiSocialValue] = useState<number | null>(null)
+  const [sroiApplied, setSroiApplied] = useState(false)
+
+  // Adjusted Scores based on applied SROI bonus
+  const sroiBonus = sroiApplied ? 5 : 0
+  const displayScore = data ? Math.min(100, data.total_score + sroiBonus) : 0
+  const displayRating = data ? getRatingFromScore(displayScore) : ''
+  const displayCategory = data ? getBankCategoryFromScore(displayScore) : null
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -211,15 +246,20 @@ export default function KobiCreditScorePage() {
           {/* Top row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Score gauge */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 text-center">
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 text-center relative overflow-hidden">
+              {sroiApplied && (
+                <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                  +5 SROI Bonusu
+                </div>
+              )}
               <div className="text-sm text-slate-400 mb-2">ESG Kredi Skoru</div>
               <ScoreGauge
-                score={data.total_score}
-                rating={data.rating}
-                color={RATING_COLORS[data.rating] || '#10b981'}
+                score={displayScore}
+                rating={displayRating}
+                color={RATING_COLORS[displayRating] || '#10b981'}
               />
-              <div className="text-xs text-slate-400 mt-2">{data.rating_label}</div>
-              <div className="text-xs text-slate-500 mt-1">{data.company_name}</div>
+              <div className="text-xs text-slate-400 mt-2">Kredi Derecesi: {displayRating}</div>
+              <div className="text-xs text-slate-500 mt-1">{data.company_name} {sroiApplied && '(SROI Teşvikli)'}</div>
             </div>
 
             {/* Bank category */}
@@ -228,16 +268,16 @@ export default function KobiCreditScorePage() {
               <div className="flex items-center gap-3 mb-4">
                 <div
                   className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white"
-                  style={{ backgroundColor: data.bank_category_color }}
-                >{data.bank_category}</div>
+                  style={{ backgroundColor: displayCategory ? displayCategory.color : data.bank_category_color }}
+                >{displayCategory ? displayCategory.category : data.bank_category}</div>
                 <div>
-                  <div className="text-white font-bold text-lg">{data.bank_category_label}</div>
+                  <div className="text-white font-bold text-lg">{displayCategory ? displayCategory.label : data.bank_category_label}</div>
                   <div className="text-xs text-slate-400">PD ≤ {data.pd_max_pct}%</div>
                 </div>
               </div>
-              <p className="text-xs text-slate-400 mb-3">{data.bank_category_description}</p>
+              <p className="text-xs text-slate-400 mb-3">{displayCategory ? (sroiApplied ? 'Yüksek SROI sosyal etkisi ile kredi faiz indirimi kazanılmıştır.' : displayCategory.financing) : data.bank_category_description}</p>
               <div className="bg-slate-900 rounded-lg p-2.5 text-xs text-emerald-400 border border-emerald-500/20">
-                💡 {data.bank_financing_note}
+                💡 {displayCategory ? displayCategory.financing : data.bank_financing_note}
               </div>
             </div>
 
@@ -486,8 +526,116 @@ export default function KobiCreditScorePage() {
             </div>
           </div>
 
-          {/* Financing roadmap */}
+      {/* ── TAB: Proje Sosyal Etki (SROI) ─────────────────────────────────── */}
+      {tab === 'sroi' && data && (
+        <div className="space-y-6">
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+            <h3 className="text-white font-bold mb-2">🌱 Yatırım Sosyal Etki Simülatörü (SROI Entegrasyonu)</h3>
+            <p className="text-xs text-slate-400 leading-relaxed mb-5">
+              KOBİ'nizin finanse etmek istediği sürdürülebilirlik veya toplumsal gelişim projesinin Sosyal Yatırım Getirisini (SROI) hesaplayın. 
+              Projenizin sosyal etki oranı 1.5x'in üzerindeyse, Ziraat Bankası ÇSEYP kuralları gereği kredi notunuza **+5 Puan ESG Teşvik Bonusu** eklenir.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Inputs */}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Talep Edilen Kredi / Yatırım Tutarı (€)</label>
+                  <input type="number" value={sroiInvestment} onChange={e => setSroiInvestment(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-emerald-500" />
+                </div>
+                
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mt-3">Sosyal Etki Göstergeleri</h4>
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">Dezavantajlı gruplardan yeni istihdam (Kişi)</label>
+                    <input type="number" value={sroiJobs} onChange={e => setSroiJobs(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">Kampüs içi yeşil alan / ağaçlandırma alanı (m²)</label>
+                    <input type="number" value={sroiGreenSpace} onChange={e => setSroiGreenSpace(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">Sürdürülebilirlik eğitimi verilen çalışan sayısı (Kişi)</label>
+                    <input type="number" value={sroiTraining} onChange={e => setSroiTraining(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-emerald-500" />
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    const inv = parseFloat(sroiInvestment) || 1
+                    const val = (parseInt(sroiJobs) * 12000) + (parseInt(sroiGreenSpace) * 15) + (parseInt(sroiTraining) * 2500)
+                    const ratio = parseFloat((val / inv).toFixed(2))
+                    setSroiRatio(ratio)
+                    setSroiSocialValue(val)
+                  }}
+                  className="w-full py-2.5 rounded-lg text-sm font-bold text-white bg-sky-600 hover:bg-sky-500 transition-all">
+                  📊 SROI Sosyal Etkisini Hesapla
+                </button>
+              </div>
+
+              {/* SROI Results Panel */}
+              <div className="bg-slate-900 rounded-xl p-5 border border-slate-700 flex flex-col justify-between">
+                {sroiRatio !== null ? (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-xs text-slate-500 uppercase font-bold">Proje Sosyal Yatırım Getirisi</div>
+                      <div className="text-4xl font-black text-emerald-400 mt-1">{sroiRatio}x</div>
+                      <p className="text-[10px] text-slate-400 mt-1">Her 1€ Kredi Yatırımı → {sroiRatio}€ Sosyal Değer Üretiyor</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <div className="text-slate-500 text-[10px]">Toplam Yatırım</div>
+                        <div className="font-bold text-white mt-0.5">{parseFloat(sroiInvestment).toLocaleString('tr-TR')} €</div>
+                      </div>
+                      <div className="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <div className="text-slate-500 text-[10px]">Sosyal Değer Karşılığı</div>
+                        <div className="font-bold text-emerald-400 mt-0.5">{(sroiSocialValue || 0).toLocaleString('tr-TR')} €</div>
+                      </div>
+                    </div>
+
+                    {sroiRatio >= 1.5 ? (
+                      <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-3.5 text-xs text-emerald-300">
+                        🎉 <strong>Tebrikler!</strong> SROI oranınız eşik değerin (1.5x) üzerindedir. 
+                        Bu yatırım projesi, banka kredi notunuza **+5 Puan ESG Teşvik Bonusu** eklemektedir.
+                      </div>
+                    ) : (
+                      <div className="bg-amber-950/20 border border-amber-500/30 rounded-xl p-3.5 text-xs text-amber-300">
+                        ⚠️ SROI oranınız teşvik eşiğinin (1.5x) altındadır. Sosyal etki çıktılarını (örn. istihdam veya yeşil alan) artırarak bonus kazanabilirsiniz.
+                      </div>
+                    )}
+
+                    {sroiRatio >= 1.5 && (
+                      <button 
+                        onClick={() => setSroiApplied(!sroiApplied)}
+                        className={`w-full py-2.5 rounded-lg text-sm font-bold transition-all ${
+                          sroiApplied 
+                            ? 'bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600/30' 
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow shadow-emerald-600/20'
+                        }`}>
+                        {sroiApplied ? '❌ Bonusu İptal Et' : '🔌 Kredi Notuna +5 Bonus Uygula'}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 py-10">
+                    <span className="text-4xl block mb-2">📈</span>
+                    <p className="text-xs font-semibold">Simülasyon Değeri Bekleniyor</p>
+                    <p className="text-[10px] mt-1 max-w-[200px]">Sol taraftaki girdi alanlarını doldurup hesaplamayı başlatın.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Financing roadmap */}
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
             <h3 className="text-white font-bold mb-4">Finansman Yol Haritası</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[

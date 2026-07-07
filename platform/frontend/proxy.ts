@@ -24,7 +24,7 @@ const PLATFORM_PATHS = [
   '/pcf', '/tnfd', '/sroi', '/kobi-credit-score', '/esg',
   '/university', '/academy', '/simulator', '/tcsi', '/sasb-sdg',
   '/uydu', '/risk-assets', '/denetim', '/pazaryeri', '/pre-launch',
-  '/agency', '/denetci',
+  '/agency', '/denetci', '/grid-plus', '/nhs-ppn',
 ]
 
 function detectLocale(request: NextRequest): Locale {
