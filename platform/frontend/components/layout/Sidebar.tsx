@@ -191,14 +191,12 @@ export function Sidebar() {
     >
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold bg-emerald-500"
-        >
-          🌿
+        <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-emerald-500/20">
+          <img src="/logo.png" alt="SustainHub" className="w-8 h-8 object-contain" />
         </div>
         <div>
           <div className="text-sm font-bold text-white">SustainHub</div>
-          <div className="text-xs text-emerald-400">SustainHub.online · v2.0</div>
+          <div className="text-xs text-emerald-400">sustainhub.ai · v2.0</div>
         </div>
       </div>
 

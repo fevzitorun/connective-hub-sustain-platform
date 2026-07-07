@@ -223,9 +223,10 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-black text-base shadow-md shadow-emerald-500/25">🌿</div>
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-emerald-50 shadow-md shadow-emerald-500/25">
+              <img src="/logo.png" alt="SustainHub" className="w-7 h-7 object-contain" />
+            </div>
             <span className="font-black text-xl text-slate-900">SustainHub</span>
-            <span className="text-emerald-600 font-bold text-xl">.online</span>
           </Link>
           <div className="hidden lg:flex items-center gap-6">
             <NavDropdown label="Platform" items={PLATFORM_ITEMS} />
@@ -287,9 +288,9 @@ export default function HomePage() {
           </div>
           <div className="md:col-span-5 relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-100 bg-white p-2">
-              <img 
-                src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=600" 
-                alt="Sustain Environmental Conservation" 
+              <img
+                src="/images/hero-earth.jpg"
+                alt="SustainHub — Sürdürülebilirlik Platformu"
                 className="rounded-2xl w-full h-[350px] object-cover"
               />
               <div className="absolute bottom-6 left-6 right-6 bg-slate-900/90 backdrop-blur-md rounded-2xl p-4 text-white border border-white/10">
@@ -367,28 +368,28 @@ export default function HomePage() {
             {[
               {
                 icon: '🏭', title: 'Industrial Edge', color: '#10b981',
-                image: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=400',
+                image: '/images/hero-smart.jpg',
                 desc: 'Automate CBAM declarations, track Scope 1-2-3 via Magic Import, and optimise decarbonisation ROI with AI-powered MACC curves.',
                 features: ['TSRS 1+2 reporting', 'Scope 3 deep-dive', 'CBAM & EUDR filing', 'Supplier ESG audit'],
                 cta: '/tsrs',
               },
               {
                 icon: '🏛️', title: 'Green Finance', color: '#3b82f6',
-                image: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=400',
+                image: '/images/feature-forest.jpg',
                 desc: "Automate BDDK Green Asset Ratio, calculate PCAF financed emissions, and run SME ESG credit scoring from AAA to D.",
                 features: ['GAR calculation (BDDK/EBA)', 'PCAF financed emissions', 'KOBİ credit score AAA→D', 'Climate stress testing'],
                 cta: '/gar',
               },
               {
                 icon: '🚛', title: 'Supply Nexus', color: '#f59e0b',
-                image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=400',
+                image: '/images/hero-lifestyle.jpg',
                 desc: 'Orchestrate your vendor ecosystem. Full EUDR compliance with map-based traceability, RBA v9.0 audit, and automated red flags.',
                 features: ['EUDR due diligence', 'RBA v9.0 supplier audit', 'Risk heat map', 'Knock-out veto engine'],
                 cta: '/eudr',
               },
               {
                 icon: '🎓', title: 'Academic Core', color: '#a855f7',
-                image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=400',
+                image: '/images/feature-garden.jpg',
                 desc: 'UI GreenMetric automation for campuses. Real-time simulators and satellite-verified sustainability metrics for research institutions.',
                 features: ['GreenMetric automation', 'Research data portal', 'Student ESG simulator', 'Satellite verification'],
                 cta: '/university',

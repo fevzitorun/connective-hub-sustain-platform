@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   category: 'technology',
 }
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? ''
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? ''
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

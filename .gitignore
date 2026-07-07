@@ -4,6 +4,11 @@
 *.png
 *.jpg
 *.jpeg
+# Frontend public assets takip edilsin
+!platform/frontend/public/**/*.png
+!platform/frontend/public/**/*.jpg
+!platform/frontend/public/**/*.jpeg
+!platform/frontend/public/**/*.svg
 fwesgyazlmpiyasaarastirmasihk/
 platform/database/
 platform/**/.env

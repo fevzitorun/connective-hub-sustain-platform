@@ -4,6 +4,11 @@ from .database import engine, Base
 from .models import Company, User, EmissionRecord, Report, ReportDraft, ShareLink  # noqa: F401
 from .models import audit as audit_model  # noqa: F401
 from .models import report_template as template_model  # noqa: F401
+from .models import materiality as materiality_model  # noqa: F401
+from .models import cbam as cbam_model  # noqa: F401
+from .models import supply_chain as supply_chain_model  # noqa: F401
+from .models import credit_score as credit_score_model  # noqa: F401
+from .models import integration as integration_model  # noqa: F401
 from .routes import auth, emissions, reports, dashboard, templates
 from .routes import drafts, bulk_upload, validation, users
 from .routes import benchmarks, audit, cbam, eudr, iso14064, verification
