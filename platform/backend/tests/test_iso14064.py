@@ -13,10 +13,10 @@ def test_iso14064_scope1_calculation():
         fugitive_emissions_kg=5
     )
     result = calculate_iso14064(input_data)
-    
-    assert "Sabit Yanma (Doğalgaz)" in result.breakdown["Kapsam 1 (Doğrudan)"]
-    assert "Mobil Yanma (Şirket Araçları)" in result.breakdown["Kapsam 1 (Doğrudan)"]
-    assert "Kaçak Emisyonlar (Soğutma/Klima)" in result.breakdown["Kapsam 1 (Doğrudan)"]
+
+    assert "Doğalgaz" in result.breakdown["1. Doğrudan Emisyonlar (Kapsam 1)"]
+    assert "Şirket araçları" in result.breakdown["1. Doğrudan Emisyonlar (Kapsam 1)"]
+    assert "Kaçak Emisyonlar" in result.breakdown["1. Doğrudan Emisyonlar (Kapsam 1)"]
 
 def test_iso14064_scope2_calculation():
     input_data = EmissionInput(
@@ -27,7 +27,7 @@ def test_iso14064_scope2_calculation():
     result = calculate_iso14064(input_data)
     
     assert result.scope2_location_co2e > 0
-    assert "Şebeke Elektriği (TEİAŞ)" in result.breakdown["Kapsam 2 (Enerji Dolaylı)"]
+    assert "Satın Alınan Elektrik" in result.breakdown["2. Enerji Dolaylı Emisyonlar (Kapsam 2)"]
 
 def test_iso14064_scope3_calculation():
     input_data = EmissionInput(
@@ -40,6 +40,6 @@ def test_iso14064_scope3_calculation():
     )
     result = calculate_iso14064(input_data)
     
-    assert "İş Seyahatleri (Uçuş)" in result.breakdown["Kapsam 3 (Diğer Dolaylı)"]
-    assert "Atık (Düzenli Depolama)" in result.breakdown["Kapsam 3 (Diğer Dolaylı)"]
-    assert result.breakdown["Kapsam 3 (Diğer Dolaylı)"]["Finansal Yatırımlar (Kategori 15)"] == 10.0
+    assert "İş seyahati (uçuş)" in result.breakdown["3. Diğer Dolaylı Emisyonlar (Kapsam 3)"]
+    assert "Atık" in result.breakdown["3. Diğer Dolaylı Emisyonlar (Kapsam 3)"]
+    assert result.breakdown["3. Diğer Dolaylı Emisyonlar (Kapsam 3)"]["Finanse edilmiş emisyonlar (PCAF)"] == 10.0

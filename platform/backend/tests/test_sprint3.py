@@ -83,7 +83,7 @@ class TestAudit:
     @pytest.mark.asyncio
     async def test_audit_export_csv_unauthenticated(self, client):
         """CSV export auth gerektirir."""
-        response = await client.get("/audit/export/csv")
+        response = await client.get("/audit/logs/export")
         assert response.status_code in (401, 403)
 
 

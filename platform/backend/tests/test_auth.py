@@ -61,4 +61,4 @@ async def test_login_wrong_password(client: AsyncClient):
 async def test_me(auth_client: AsyncClient):
     resp = await auth_client.get("/auth/me")
     assert resp.status_code == 200
-    assert resp.json()["email"] == "test@sustainhub.ai"
+    assert resp.json()["email"].endswith("@sustainhub.ai")

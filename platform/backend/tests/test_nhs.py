@@ -11,9 +11,10 @@ def test_ppn_compliance_success():
         "waste_tons": 5.4,
         "business_travel_flight_km": 12000.0,
         "employee_commute_km": 25000.0,
+        "downstream_transport_co2e": 18.9,
         "year": 2024
     }
-    
+
     res = analyze_ppn_compliance(emissions, company_name="Yildiz Tekstil")
     assert res["compliant"] is True
     assert res["overall_score"] == 100

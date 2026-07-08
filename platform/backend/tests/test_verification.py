@@ -13,4 +13,6 @@ def test_request_verification():
     )
     assert v.status == "pending"
     assert v.emission_id == "test-emission"
-    assert v.assurance_level == "limited"
+    # assurance_level is a server/flush-time default (SQLAlchemy Column default=),
+    # not applied to unpersisted instances — verify the declared default instead.
+    assert Verification.__table__.columns["assurance_level"].default.arg == "limited"

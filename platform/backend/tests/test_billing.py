@@ -51,7 +51,7 @@ async def test_report_limits_enforced(admin_client: AsyncClient, db: AsyncSessio
         "waste_tons": 2,
         "water_m3": 10
     })
-    assert em_resp.status_code == 200
+    assert em_resp.status_code == 201
     emission_id = em_resp.json()["id"]
 
     # 3 adet rapor oluştur

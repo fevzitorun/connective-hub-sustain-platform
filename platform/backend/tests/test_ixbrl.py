@@ -14,7 +14,7 @@ def test_ixbrl_validation_success():
         "scope1_co2e": 1200.0,
         "scope2_location_co2e": 450.0,
         "electricity_kwh": 500000.0,
-        "water_m3": 15000.0,
+        "water_consumption_m3": 15000.0,
         "year": 2024
     }
     

@@ -30,6 +30,12 @@ async def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
+# reports.py'deki BackgroundTasks, Depends(get_db) yerine AsyncSessionLocal'ı
+# doğrudan import ediyor — bu yüzden get_db override'ı onu kapsamıyor.
+# Test izolasyonu için o referansı da test session'ına yönlendiriyoruz.
+import app.routes.reports as _reports_module  # noqa: E402
+_reports_module.AsyncSessionLocal = TestSession
+
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def create_tables():

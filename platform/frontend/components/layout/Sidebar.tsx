@@ -84,6 +84,8 @@ const navItems = [
     { href: '/abonelik', label: 'Subscription', icon: '💳', badge: 'NEW' },
     { href: '/pre-launch', label: 'Pre-Launch QA', icon: '🚀', badge: 'ADMIN' },
   ]},
+]
+
 // TRANSLATION HELPER FOR SIDEBAR
 function getTranslatedLabel(label: string, pathname: string): string {
   if (!pathname.startsWith('/tr')) return label;

@@ -23,13 +23,15 @@ def validate_ixbrl_report(report_data: Dict[str, Any], emission_data: Dict[str, 
     warnings = []
     tags_found = []
     
-    # 1. Resolve values from emission record
+    # 1. Resolve values from emission record — emission_data eksikse zorunlu
+    # etiketler eksik sayılmalı, gerçekçi görünen sahte değerlerle doldurulmamalı
+    # (aksi halde KGK doğrulaması, hiç emisyon verisi olmayan bir raporu "geçerli" işaretler).
     company_name = report_data.get("company_name") or "Simora Carbon A.Ş."
-    scope1 = emission_data.get("scope1_co2e") if emission_data else 1200.0
-    scope2 = emission_data.get("scope2_location_co2e") if emission_data else 450.0
-    electricity = emission_data.get("electricity_kwh") if emission_data else 500000.0
-    water = emission_data.get("water_consumption_m3") or 15000.0
-    period = str(emission_data.get("year") if emission_data else 2024)
+    scope1 = emission_data.get("scope1_co2e") if emission_data else None
+    scope2 = emission_data.get("scope2_location_co2e") if emission_data else None
+    electricity = emission_data.get("electricity_kwh") if emission_data else None
+    water = emission_data.get("water_consumption_m3") if emission_data else None
+    period = str(emission_data.get("year")) if emission_data and emission_data.get("year") else None
     currency = "TRY"
     assurance = report_data.get("assurance_firm") or "PwC"
 

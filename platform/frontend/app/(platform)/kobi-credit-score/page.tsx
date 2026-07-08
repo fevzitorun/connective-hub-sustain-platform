@@ -137,7 +137,7 @@ function ScoreGauge({ score, rating, color }: { score: number; rating: string; c
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function KobiCreditScorePage() {
-  const [tab, setTab] = useState<'demo' | 'assess' | 'results' | 'actions'>('demo')
+  const [tab, setTab] = useState<'demo' | 'assess' | 'results' | 'actions' | 'sroi'>('demo')
   const [data, setData] = useState<CreditScoreResult | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
   const [answers, setAnswers] = useState<Record<string, number>>({})
@@ -525,6 +525,8 @@ export default function KobiCreditScorePage() {
               })}
             </div>
           </div>
+        </div>
+      )}
 
       {/* ── TAB: Proje Sosyal Etki (SROI) ─────────────────────────────────── */}
       {tab === 'sroi' && data && (
@@ -634,6 +636,8 @@ export default function KobiCreditScorePage() {
         </div>
       )}
 
+      {tab === 'actions' && data && (
+        <div className="space-y-5">
       {/* Financing roadmap */}
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
             <h3 className="text-white font-bold mb-4">Finansman Yol Haritası</h3>

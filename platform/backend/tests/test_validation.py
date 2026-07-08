@@ -27,8 +27,8 @@ def test_too_high_electricity():
 
 
 def test_per_employee_ratio():
-    data = {"electricity_kwh": 100_000}
-    # 100 çalışan için 100kWh/çalışan — normalin altında
+    data = {"electricity_kwh": 10_000}
+    # 100 çalışan için 100kWh/çalışan — normalin altında (min 500 kWh/çalışan)
     warnings = validate_emission_data(data, sector="manufacturing", employee_count=100)
     ratio_warnings = [w for w in warnings if w.field == "electricity_kwh"]
     assert len(ratio_warnings) > 0
