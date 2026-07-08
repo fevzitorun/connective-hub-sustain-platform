@@ -153,23 +153,7 @@ jobs:
         working-directory: platform/frontend
         run: npm audit --audit-level=high || true
 
-  # ─── Deploy to Vercel Staging ────────────────────────────────────────────────
-  deploy-staging:
-    name: Deploy Frontend to Vercel (Staging)
-    runs-on: ubuntu-latest
-    needs: [backend-test, frontend-typecheck]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: platform/frontend
-          vercel-args: --prod
-        env:
-          VERCEL_ENV: production
+  # Not: Ayrı bir "Deploy to Vercel" job'u kaldırıldı — Vercel'in kendi GitHub
+  # entegrasyonu (bu workflow'dan bağımsız) zaten her push'ta otomatik deploy
+  # ediyor. Bu job hiç yapılandırılmamış secret'lar (VERCEL_TOKEN vb.) yüzünden
+  # gereksiz yere kırmızı görünüyordu.
