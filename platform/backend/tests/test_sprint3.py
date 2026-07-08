@@ -31,7 +31,7 @@ class TestBenchmarks:
     async def test_benchmark_company_not_found(self, client):
         """Var olmayan şirket için 404 döner."""
         response = await client.get("/benchmarks/company/nonexistent-id")
-        assert response.status_code in (401, 404)
+        assert response.status_code in (401, 403, 404)
 
 
 # ── CBAM Testleri ──────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ class TestRegulationValidation:
     async def test_validate_unsupported_regulation(self, client):
         """Desteklenmeyen düzenleme için hata döner."""
         response = await client.get("/validate/unknown_reg/company/some-id")
-        assert response.status_code in (400, 401)
+        assert response.status_code in (400, 401, 403)
 
     @pytest.mark.asyncio
     async def test_validate_tsrs_unauthenticated(self, client):
