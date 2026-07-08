@@ -18,10 +18,11 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 # ── Stage 2: Runtime ───────────────────────────────────────────────────
 FROM python:3.12-slim
 
-# Sistem kütüphaneleri (runtime) — libpq: Postgres, libpango/gdk-pixbuf: WeasyPrint PDF üretimi
+# Sistem kütüphaneleri (runtime) — libpq: Postgres, libpango: WeasyPrint PDF üretimi
+# (WeasyPrint 53+ görsel işleme için Pillow kullanır, gdk-pixbuf'a ihtiyaç duymaz)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 curl \
-    libpango-1.0-0 libpangoft2-1.0-0 libgdk-pixbuf2.0-0 \
+    libpango-1.0-0 libpangoft2-1.0-0 \
     shared-mime-info fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
