@@ -1,0 +1,107 @@
+version: '3.9'
+
+# SustainHub — Antigravity / Lokal Geliştirme Ortamı
+# Kullanım: docker-compose -f docker-compose.antigravity.yml up --build
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sustain_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sustain
+      POSTGRES_PASSWORD: sustain_dev_2026
+      POSTGRES_DB: sustaindb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sustain -d sustaindb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: sustain_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./platform/backend
+      dockerfile: Dockerfile
+    container_name: sustain_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sustain:sustain_dev_2026@postgres:5432/sustaindb
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-sustainhub-dev-secret-key-min-32-chars-2026}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ENVIRONMENT: development
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./platform/backend:/app
+      # EEA veri erişimi için raporlar/ klasörü
+      - ./raporlar:/app/data/raporlar:ro
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./platform/frontend
+      dockerfile: Dockerfile
+    container_name: sustain_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NODE_ENV: development
+    depends_on:
+      - backend
+    volumes:
+      - ./platform/frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
+# Hızlı başlatma:
+#   docker-compose -f docker-compose.antigravity.yml up --build
+#
+# Sadece backend:
+#   docker-compose -f docker-compose.antigravity.yml up postgres redis backend
+#
+# Migration:
+#   docker exec sustain_api alembic upgrade head
+#
+# Seed:
+#   docker exec sustain_api python scripts/seed_data.py
+#
+# EEA veri yükle:
+#   docker exec sustain_api python scripts/load_eea_data.py \
+#     --csv-dir /app/data/raporlar --output scripts/eea_summary.json

@@ -1,0 +1,174 @@
+name: SustainHub CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  # ─── Backend Tests ──────────────────────────────────────────────────────────
+  backend-test:
+    name: Backend Tests (FastAPI + pytest)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sustain
+          POSTGRES_PASSWORD: sustain_dev_2026
+          POSTGRES_DB: sustaindb_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: platform/backend/requirements.txt
+
+      - name: Install dependencies
+        working-directory: platform/backend
+        run: |
+          pip install -r requirements.txt
+
+      - name: Create test DB schema
+        working-directory: platform/backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://sustain:sustain_dev_2026@localhost:5432/sustaindb_test
+          SECRET_KEY: ci_test_secret
+          ANTHROPIC_API_KEY: ""
+        run: |
+          python -c "
+          import asyncio, os
+          os.environ.setdefault('DATABASE_URL', 'postgresql+asyncpg://sustain:sustain_dev_2026@localhost:5432/sustaindb_test')
+          os.environ.setdefault('SECRET_KEY', 'ci_test_secret')
+          from app.database import engine, Base
+          import app.models  # noqa: F401
+          async def main():
+              async with engine.begin() as conn:
+                  await conn.run_sync(Base.metadata.create_all)
+          asyncio.run(main())
+          print('Schema created OK')
+          "
+
+      - name: Run tests with coverage
+        working-directory: platform/backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://sustain:sustain_dev_2026@localhost:5432/sustaindb_test
+          REDIS_URL: redis://localhost:6379
+          SECRET_KEY: ci_test_secret
+          ANTHROPIC_API_KEY: ""
+          ENVIRONMENT: test
+        run: |
+          pytest tests/ \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --asyncio-mode=auto \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: platform/backend/coverage.xml
+          flags: backend
+
+  # ─── Frontend Type Check ────────────────────────────────────────────────────
+  frontend-typecheck:
+    name: Frontend TypeScript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: platform/frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: platform/frontend
+        run: npm ci
+
+      - name: TypeScript type check
+        working-directory: platform/frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: |
+          # next build generates next-env.d.ts and type-checks simultaneously
+          npm run build
+
+      - name: ESLint
+        working-directory: platform/frontend
+        run: npx eslint . --ext .ts,.tsx --max-warnings 0
+        continue-on-error: true
+
+      # Build step merged into TypeScript check above (npm run build covers both)
+
+  # ─── Security Scan ──────────────────────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-typecheck]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python security audit (pip-audit)
+        working-directory: platform/backend
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt --ignore-vuln PYSEC-2022-42974 || true
+
+      - name: Node security audit
+        working-directory: platform/frontend
+        run: npm audit --audit-level=high || true
+
+  # ─── Deploy to Vercel Staging ────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy Frontend to Vercel (Staging)
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-typecheck]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: platform/frontend
+          vercel-args: --prod
+        env:
+          VERCEL_ENV: production

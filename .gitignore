@@ -1,0 +1,43 @@
+.DS_Store
+*.pdf
+*.docx
+*.png
+*.jpg
+*.jpeg
+# Frontend public assets takip edilsin
+!platform/frontend/public/**/*.png
+!platform/frontend/public/**/*.jpg
+!platform/frontend/public/**/*.jpeg
+!platform/frontend/public/**/*.svg
+fwesgyazlmpiyasaarastirmasihk/
+platform/database/
+platform/**/.env
+platform/**/*.db
+platform/**/node_modules/
+platform/**/.venv/
+platform/**/venv/
+platform/**/__pycache__/
+platform/**/.next/
+platform/**/.pytest_cache/
+platform/**/.coverage
+platform/**/htmlcov/
+ilknur/
+Prone notlar/
+LOGO/
+sürdürebilir enerji/
+.claude/
+ANTIGRAVITY-PROMPT.md
+MASTERPLAN-V2.md
+SIMORA-CARBON-MASTERPLAN.md
+GUNLUK-2026-05-24.md
+KEMAL-BEY-OZET-MESAJ.md
+KEMAL-BEY-WHATSAPP.md
+output.png
+.vercel
+*.crdownload
+.env*
+# Bilgi tabanı (643MB, yerel) ve yerel görsel/asset taslakları
+raporlar/
+image.sustain/
+README.copy
+platform/frontend/public/test.txt
