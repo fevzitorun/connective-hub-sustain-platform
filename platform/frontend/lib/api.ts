@@ -35,7 +35,7 @@ export const api = {
       request<{ access_token: string; user: { id: string; email: string; name: string } }>(
         '/auth/register', { method: 'POST', body: JSON.stringify(data) }
       ),
-    me: () => request<{ id: string; email: string; name: string; company_id: string }>('/auth/me'),
+    me: () => request<{ id: string; email: string; name: string; company_id: string; role: string }>('/auth/me'),
     forgotPassword: (email: string) =>
       request<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
   },

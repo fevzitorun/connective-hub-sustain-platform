@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 
 // ── Mock data (Sprint 18'de canlı API'ye bağlanacak) ─────────────────────────
@@ -61,8 +62,22 @@ const PRIORITY_STYLE: Record<string, { bg: string; text: string; label: string }
 }
 
 export default function AdminPage() {
+  const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
   const [tab, setTab] = useState<Tab>('companies')
   const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    api.auth.me()
+      .then(user => {
+        if (user.role !== 'admin') {
+          router.replace('/dashboard')
+        } else {
+          setAuthChecked(true)
+        }
+      })
+      .catch(() => router.replace('/login'))
+  }, [router])
 
   // Advisory state
   const [noteCompany, setNoteCompany] = useState(COMPANIES[0].id)
@@ -101,6 +116,14 @@ export default function AdminPage() {
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.sector.toLowerCase().includes(search.toLowerCase())
   )
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0F172A', color: '#64748b' }}>
+        Yetki kontrol ediliyor…
+      </div>
+    )
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
