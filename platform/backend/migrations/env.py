@@ -17,15 +17,12 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Import all models so Base.metadata knows about them
+# Import all models so Base.metadata knows about them.
+# app.main imports every route module, which transitively imports every
+# model (including advisory/audit, which app.models.__init__ doesn't
+# re-export) — this guarantees target_metadata is complete.
 from app.database import Base
-from app.models import *  # noqa: F401,F403
-from app.models import report_template  # noqa: F401
-from app.models import materiality  # noqa: F401
-from app.models import cbam  # noqa: F401
-from app.models import supply_chain  # noqa: F401
-from app.models import credit_score  # noqa: F401
-from app.models import integration  # noqa: F401
+import app.main  # noqa: F401
 
 target_metadata = Base.metadata
 
