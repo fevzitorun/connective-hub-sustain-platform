@@ -1,9 +1,16 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { CookieConsent } from '@/components/ui/CookieConsent'
+
+// globals.css bu değişkenleri bekliyordu (--font-sans / --font-geist-mono) ama
+// hiçbir font bağlı değildi → site tarayıcı varsayılan serif fontuna düşüyordu.
+// next/font Google fontları self-host eder (KVKK/GDPR uyumlu, Google'a istek gitmez).
+const geistSans = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono', display: 'swap' })
 
 const BASE_URL = 'https://sustainhub.online'
 
@@ -79,10 +86,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_MEASUR
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-      </head>
+    <html lang="tr" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
         {children}
         <CookieConsent />
