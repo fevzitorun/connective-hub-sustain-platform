@@ -96,6 +96,21 @@ class EmissionInput:
     clinker_tons: Optional[float] = None
     cement_production_tons: Optional[float] = None
 
+    def __post_init__(self):
+        # DB'den (SQLAlchemy Numeric) Decimal gelebilir; float'a normalize et.
+        # Aksi halde emisyon faktörleriyle (float) çarpımda 'Decimal * float' TypeError.
+        _num_fields = (
+            "natural_gas_m3", "diesel_liters", "lpg_kg", "coal_tons",
+            "company_vehicles_km", "fugitive_emissions_kg", "sector_activity_value",
+            "electricity_kwh", "steam_gj", "business_travel_flight_km",
+            "employee_commute_km", "waste_tons", "financed_emissions_co2e",
+            "clinker_tons", "cement_production_tons",
+        )
+        for _f in _num_fields:
+            _v = getattr(self, _f)
+            if _v is not None:
+                setattr(self, _f, float(_v))
+
 
 @dataclass
 class EmissionResult:
