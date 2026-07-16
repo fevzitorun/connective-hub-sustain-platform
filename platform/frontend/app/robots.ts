@@ -17,24 +17,18 @@ const PLATFORM_DISALLOW = [
 ]
 
 export default function robots(): MetadataRoute.Robots {
+  // Lansman öncesi: tüm site tarayıcılara kapalı. Tam lansmanda bu kural
+  // aşağıdaki allow-liste + PLATFORM_DISALLOW yapısına geri döndürülecek.
   return {
     rules: [
       {
         userAgent: '*',
-        allow: [
-          '/',
-          '/products',
-          '/pricing',
-          '/investors',
-          '/request-demo',
-          '/contact',
-          '/about',
-          '/legal/',
-        ],
-        disallow: PLATFORM_DISALLOW,
+        disallow: '/',
       },
     ],
-    sitemap: 'https://www.sustainhub.online/sitemap.xml',
     host: 'https://www.sustainhub.online',
   }
 }
+
+// NOT: PLATFORM_DISALLOW yukarıda tam lansmanda kullanılmak üzere korunuyor.
+void PLATFORM_DISALLOW

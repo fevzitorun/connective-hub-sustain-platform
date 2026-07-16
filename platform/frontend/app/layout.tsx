@@ -30,10 +30,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'SustainHub — Connective Hub Digital Technologies' }],
   creator: 'Connective Hub Digital Technologies Ltd.',
   publisher: 'SustainHub',
+  // Lansman öncesi: site arama motorlarına kapalı (noindex). Canlıya tam
+  // çıkışta true'ya çevrilecek.
   robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+    index: false,
+    follow: false,
+    googleBot: { index: false, follow: false },
   },
   openGraph: {
     type: 'website',
