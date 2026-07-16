@@ -97,6 +97,16 @@ export const api = {
     exportDocxUrl: (reportId: string) => `${API_URL}/reports/${reportId}/export/docx`,
     validateiXBRL: (id: string) =>
       request<unknown>(`/reports/${id}/validate-ixbrl`, { method: 'POST' }),
+    publicView: (token: string, password?: string) =>
+      request<{
+        id: string
+        status: string
+        content_text: string
+        compliance_score: number | null
+        compliance_grade: string | null
+        created_at: string
+        version_number: number
+      }>(`/reports/public/${token}${password ? `?password=${encodeURIComponent(password)}` : ''}`),
   },
 
   dashboard: {
