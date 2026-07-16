@@ -103,6 +103,20 @@ railway run --service backend -- alembic upgrade head
 Railway Dashboard → **Settings** → **Networking** → **Generate Domain**
 veya Custom Domain: `api.sustainhub.ai`
 
+### 8. İlk Admin Hesabı (Seed)
+
+Deploy sonrası admin panelini (`/admin`) kullanmak için bir admin hesabı gerekir
+(kayıt formu "editor" rolü verir). Seed scripti idempotenttir:
+
+```bash
+# Railway shell / lokal (backend dizininde)
+python scripts/seed_admin.py --email admin@sustainhub.online --password 'GÜÇLÜ-PAROLA' --name 'Yönetici' --company 'SustainHub'
+# veya env ile (CI/prod):
+SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD=... python scripts/seed_admin.py
+```
+
+Kullanıcı varsa admin rolüne yükseltir, yoksa şirket + admin kullanıcı oluşturur.
+
 ---
 
 ## Option B: Render Deploy
