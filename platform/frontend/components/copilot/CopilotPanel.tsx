@@ -127,7 +127,7 @@ export function CopilotPanel() {
           </div>
           <div className="flex-1">
             <div className="text-sm font-bold text-white">Sustain Copilot</div>
-            <div className="text-xs text-emerald-400/80">claude-sonnet-4-6 · Akbank bağlamı aktif</div>
+            <div className="text-xs text-emerald-400/80">claude-sonnet-5 · Akbank bağlamı aktif</div>
           </div>
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
         </div>

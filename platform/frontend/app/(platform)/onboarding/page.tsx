@@ -310,7 +310,7 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-black text-slate-900 mb-2">Raporunuz Oluşturuluyor!</h2>
                 <p className="text-slate-500 text-sm max-w-sm mx-auto">
                   {STANDARDS.find(s => s.id === selectedStandard)?.label} standardına göre
-                  AI raporunuz hazırlanıyor. Ortalama 30–60 saniye sürer.
+                  AI raporunuz hazırlanıyor. Tam TSRS raporu için tipik olarak 3-5 dakika sürer.
                 </p>
               </div>
               <div className="flex flex-col gap-3 max-w-xs mx-auto">

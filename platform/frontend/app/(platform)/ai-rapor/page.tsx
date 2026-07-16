@@ -48,6 +48,7 @@ function AIRaporContent() {
   const [report, setReport] = useState<Report | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
   const pollRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -70,6 +71,13 @@ function AIRaporContent() {
     poll()
     return () => { if (pollRef.current) clearTimeout(pollRef.current) }
   }, [reportId])
+
+  // Üretim sürerken geçen süreyi say (ilerleme göstergesi için)
+  useEffect(() => {
+    if (report?.status !== 'generating') return
+    const t = setInterval(() => setElapsed(e => e + 1), 1000)
+    return () => clearInterval(t)
+  }, [report?.status])
 
   async function handleNewReport() {
     router.push('/veri-girisi')
@@ -107,7 +115,7 @@ function AIRaporContent() {
           <span className="text-5xl block mb-4">🤖</span>
           <h2 className="text-xl font-black mb-2" style={{ color: 'var(--green-900)' }}>AI TSRS Rapor Oluşturucu</h2>
           <p className="text-sm mb-6" style={{ color: 'var(--muted-foreground)' }}>
-            Claude claude-sonnet-4-6 ile TSRS 1 & 2 uyumlu Türkçe sürdürülebilirlik raporu oluşturun.
+            Claude claude-sonnet-5 ile TSRS 1 & 2 uyumlu Türkçe sürdürülebilirlik raporu oluşturun.
             Önce emisyon verilerinizi girin.
           </p>
           <button
@@ -181,27 +189,59 @@ function AIRaporContent() {
       </div>
 
       {/* Generating state */}
-      {report?.status === 'generating' && (
-        <div className="rounded-2xl p-8 mb-5 text-center"
-          style={{ background: 'var(--green-50)', border: '2px dashed var(--green-300)' }}>
-          <div className="w-14 h-14 rounded-full border-4 border-t-transparent mx-auto mb-4 animate-spin"
-            style={{ borderColor: 'var(--green-300)', borderTopColor: 'var(--green-700)' }} />
-          <p className="font-bold mb-1" style={{ color: 'var(--green-900)' }}>
-            Claude claude-sonnet-4-6 raporunuzu yazıyor…
-          </p>
-          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            TSRS 1 & 2 standardına göre Türkçe rapor hazırlanıyor. Bu işlem 30-60 saniye sürebilir.
-          </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {['Emisyon analizi', 'Senaryo değerlendirmesi', 'SASB metrikleri', 'Yönetim beyanı', 'Hedef tabloları'].map(step => (
-              <span key={step} className="px-3 py-1 rounded-full text-xs font-medium"
-                style={{ background: 'var(--green-100)', color: 'var(--green-700)' }}>
-                {step}
-              </span>
-            ))}
+      {report?.status === 'generating' && (() => {
+        const EST_SECONDS = 300 // ~5 dk tahmini üretim süresi
+        const pct = Math.min(95, Math.round((elapsed / EST_SECONDS) * 100))
+        const stages = [
+          'Emisyon verileri analiz ediliyor',
+          'Yönetişim & strateji bölümleri yazılıyor',
+          'Risk ve senaryo analizi hazırlanıyor',
+          'Metrikler & SASB tabloları oluşturuluyor',
+          'Rapor sonlandırılıyor (TSRS içerik endeksi)',
+        ]
+        const activeIdx = Math.min(stages.length - 1, Math.floor((pct / 100) * stages.length))
+        const mm = Math.floor(elapsed / 60)
+        const ss = String(elapsed % 60).padStart(2, '0')
+        return (
+          <div className="rounded-2xl p-8 mb-5 text-center"
+            style={{ background: 'var(--green-50)', border: '2px dashed var(--green-300)' }}>
+            <div className="w-14 h-14 rounded-full border-4 border-t-transparent mx-auto mb-4 animate-spin"
+              style={{ borderColor: 'var(--green-300)', borderTopColor: 'var(--green-700)' }} />
+            <p className="font-bold mb-1" style={{ color: 'var(--green-900)' }}>
+              Claude claude-sonnet-5 raporunuzu yazıyor…
+            </p>
+            <p className="text-sm mb-5" style={{ color: 'var(--muted-foreground)' }}>
+              Tam TSRS 1 &amp; 2 raporu hazırlanıyor — bu işlem tipik olarak 3-5 dakika sürer.
+              Sayfadan ayrılabilirsiniz; rapor hazır olduğunda burada görünecek.
+            </p>
+
+            {/* İlerleme çubuğu */}
+            <div className="max-w-md mx-auto mb-2">
+              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--green-100)' }}>
+                <div className="h-full rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${pct}%`, background: 'linear-gradient(90deg,var(--green-500),var(--green-700))' }} />
+              </div>
+              <div className="flex justify-between mt-1.5 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                <span>%{pct}</span>
+                <span>Geçen süre: {mm}:{ss}</span>
+              </div>
+            </div>
+
+            {/* Aşamalar — aktif olan vurgulanır */}
+            <div className="mt-4 flex flex-col items-center gap-1.5 text-sm">
+              {stages.map((step, i) => (
+                <div key={step} className="flex items-center gap-2"
+                  style={{ opacity: i <= activeIdx ? 1 : 0.4 }}>
+                  <span>{i < activeIdx ? '✅' : i === activeIdx ? '⏳' : '○'}</span>
+                  <span style={{ color: i === activeIdx ? 'var(--green-900)' : 'var(--green-700)', fontWeight: i === activeIdx ? 700 : 400 }}>
+                    {step}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Failed state */}
       {report?.status === 'failed' && (
