@@ -13,7 +13,7 @@ const PRODUCTS = [
     desc: 'A comprehensive carbon calculation and ESG reporting engine supporting the GHG Protocol, TSRS 1&2, CSRD/ESRS, GRI, and ISSB S2.',
     features: ['Scope 1/2/3 calculation', 'AI Report Generator (PDF/Word)', 'Multi-framework (TSRS, GRI, ISSB)', 'Magic Import (Excel/OCR)', 'XBRL digital filings'],
     target: 'All sectors · 200+ Enterprises · 70,000+ SMEs',
-    price: '₺30.000 / year · €800 / year',
+    price: 'From ₺180.000 / year',
     cta: '/register',
     ctaText: 'Start Demo',
   },
@@ -27,7 +27,7 @@ const PRODUCTS = [
     desc: 'Asset-level physical climate risk screening using ESA Sentinel-2, NASA, and Copernicus data. Verifies green claims with independent satellite observation, issuing the "Sustain Verified" badge.',
     features: ['Flood / drought / earthquake risk', 'NDVI green space analysis', 'IPCC AR6 2050 projections', 'TCFD physical risk module', '"Sustain Verified" badge'],
     target: 'Banks · Insurance · Real Estate · Utilities',
-    price: '₺72.000 / yıl · €2.000 / year',
+    price: 'Contact sales',
     cta: '/dashboard',
     ctaText: 'Earth Demo',
   },
@@ -41,7 +41,7 @@ const PRODUCTS = [
     desc: 'Automated Green Asset Ratio (GAR) calculation portal matching BDDK/EBA guidelines. Scope 3 Category 15 financed emissions based on the PCAF Standard v2. EU Taxonomy classification.',
     features: ['GAR calculation (BDDK/EBA/FCA)', 'PCAF financed emissions', 'EU Taxonomy NACE mapping', 'SME ESG Credit Scoring (AAA→D)', 'Climate stress testing (IEA NZE/NGFS)'],
     target: '34 Turkish banks · Investment Funds · Insurance',
-    price: '₺120.000 / year · €3.300 / year (KSRU)',
+    price: 'Contact sales',
     cta: '/gar',
     ctaText: 'GAR Portal',
   },
@@ -190,10 +190,10 @@ export default function ProductsPage() {
           <h2 className="text-3xl font-black text-white mb-4">Which plan is right for you?</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 text-sm">
             {[
-              { plan: 'Starter', price: '₺30.000 / year', for: 'SME & Early Adopter', color: '#64748b' },
-              { plan: 'Professional', price: '₺72.000 / year', for: 'Mid-size Company', color: '#10b981' },
-              { plan: 'Enterprise', price: '₺180.000+ / year', for: 'Large Corp & Holding', color: '#3b82f6' },
-              { plan: 'KSRU Partner', price: '₺120.000 / year', for: 'Responsible® Supplier', color: '#f59e0b' },
+              { plan: 'Starter', price: 'From ₺180.000 / year', for: 'SME & Early Adopter', color: '#64748b' },
+              { plan: 'Professional', price: '₺600.000 / year', for: 'Mid-size Company', color: '#10b981' },
+              { plan: 'Enterprise', price: 'Contact sales', for: 'Large Corp & Holding', color: '#3b82f6' },
+              { plan: 'Bank / Financial', price: 'Contact sales', for: '34 BDDK Banks', color: '#f59e0b' },
             ].map(t => (
               <div key={t.plan} className="rounded-xl p-4 border text-center"
                 style={{ borderColor: t.color + '30', background: t.color + '08' }}>

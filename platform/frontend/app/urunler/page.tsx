@@ -13,7 +13,7 @@ const PRODUCTS = [
     desc: 'GHG Protokolü, TSRS 1&2, CSRD/ESRS, GRI ve ISSB S2\'yi destekleyen tam teşekküllü karbon hesaplama ve ESG raporlama motoru.',
     features: ['Kapsam 1/2/3 hesaplama', 'AI Rapor Üretici (PDF/Word)', 'Çoklu çerçeve (TSRS, GRI, ISSB)', 'Magic Import (Excel/OCR)', 'XBRL dijital beyan'],
     target: 'Tüm sektörler · 200+ büyük şirket · 70.000+ KOBİ',
-    price: '₺30K / yıl\'dan başlayan',
+    price: '₺180K / yıl\'dan başlayan',
     cta: '/register',
     ctaText: 'Demo Başlat',
   },
@@ -192,10 +192,10 @@ export default function UrunlerPage() {
           <h2 className="text-3xl font-black text-white mb-4">Hangi plan size uygun?</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 text-sm">
             {[
-              { plan: 'Starter', price: '₺30K/yıl', for: 'KOBİ & İhracatçılar', color: '#64748b' },
-              { plan: 'Professional', price: '₺72K/yıl', for: 'Orta ölçekli', color: '#10b981' },
-              { plan: 'Enterprise', price: '₺180K+/yıl', for: 'Büyük kurumlar', color: '#3b82f6' },
-              { plan: 'Bank GAR', price: 'Özel', for: '34 BDDK bankası', color: '#f59e0b' },
+              { plan: 'Starter', price: '₺180K/yıl\'dan', for: 'KOBİ & İhracatçılar', color: '#64748b' },
+              { plan: 'Professional', price: '₺600K/yıl', for: 'Orta ölçekli', color: '#10b981' },
+              { plan: 'Enterprise', price: 'İletişime geçin', for: 'Büyük kurumlar', color: '#3b82f6' },
+              { plan: 'Bank GAR', price: 'İletişime geçin', for: '34 BDDK bankası', color: '#f59e0b' },
             ].map(t => (
               <div key={t.plan} className="rounded-xl p-4 border text-center"
                 style={{ borderColor: t.color + '30', background: t.color + '08' }}>
