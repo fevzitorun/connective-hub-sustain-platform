@@ -118,6 +118,16 @@ async def validate_existing_emission(
 # ANTIGRAVITY-PROMPT.md satır 333:
 #   /validate/{regulation}/company/{id}  ← CBAM, EUDR, TSRS, CSRD uyum
 
+# Mantıksal zorunlu alan adı → EmissionRecord'daki gerçek sütun(lar).
+# required_fields okunabilir isimler kullanır (mesajlarda görünür); veri varlığı
+# kontrolü bu eşleme üzerinden gerçek sütunlara bakar. Aksi halde ör. scope1_total
+# modelde olmadığından, veri MEVCUT olsa bile hep "eksik" raporlanır.
+FIELD_ALIASES: dict[str, list[str]] = {
+    "scope1_total": ["scope1_co2e"],
+    "scope2_total": ["scope2_location_co2e", "scope2_market_co2e"],
+    "scope3_total": ["scope3_co2e"],
+}
+
 REGULATION_REQUIREMENTS: dict[str, dict] = {
     "tsrs": {
         "name": "TSRS 1 & 2 (KGK)",
@@ -210,9 +220,10 @@ async def validate_regulation_compliance(
     for field in reg["required_fields"]:
         total_checks += 1
         has_data = False
-        if latest_emission and hasattr(latest_emission, field):
-            val = getattr(latest_emission, field)
-            has_data = val is not None and val != 0
+        check_attrs = FIELD_ALIASES.get(field, [field])
+        model_attrs = [a for a in check_attrs if latest_emission and hasattr(latest_emission, a)]
+        if model_attrs:
+            has_data = any(getattr(latest_emission, a) not in (None, 0) for a in model_attrs)
         elif field == "employee_count" and company.employee_count:
             has_data = True
         elif field == "export_quantity" and company.is_exporter:
