@@ -419,7 +419,12 @@ async def view_shared_report(
         raise HTTPException(404, "Paylaşım linki bulunamadı veya geçersiz")
 
     now = datetime.now(timezone.utc)
-    if link.expires_at and link.expires_at < now:
+    # SQLite tz bilgisini saklamaz → expires_at naive dönebilir; UTC kabul et
+    # (Postgres'te zaten aware). Aksi halde naive/aware karşılaştırması TypeError.
+    expires_at = link.expires_at
+    if expires_at is not None and expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at and expires_at < now:
         raise HTTPException(410, "Bu paylaşım linkinin süresi dolmuş")
     if link.max_views and link.view_count >= link.max_views:
         raise HTTPException(410, "Bu link maksimum görüntüleme sayısına ulaşmış")
