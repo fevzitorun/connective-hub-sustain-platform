@@ -9,6 +9,7 @@ from ..database import get_db
 from ..models import User, EmissionRecord, Company
 from ..services.rbac import require_permission
 from ..services.validation_engine import validate_emission_data
+from ..services.calculation_engine import calculate_emissions, EmissionInput
 from .auth import get_current_user
 
 router = APIRouter(prefix="/emissions", tags=["emissions"])
@@ -139,6 +140,25 @@ async def bulk_upload(
         )
         row_warnings = [{"field": w.field, "message": w.message, "severity": w.severity} for w in warnings]
 
+        # Emisyonları hesapla (tekli girişle aynı motor) — aksi halde scope
+        # değerleri boş kalır ve rapor/dashboard/gap-analizi veriyi göremez.
+        calc = calculate_emissions(EmissionInput(
+            company_id=current_user.company_id,
+            year=year,
+            sector=company.sector or "manufacturing",
+            electricity_source=electricity_source,
+            natural_gas_m3=natural_gas_m3,
+            diesel_liters=diesel_liters,
+            lpg_kg=lpg_kg,
+            coal_tons=coal_tons,
+            company_vehicles_km=company_vehicles_km,
+            electricity_kwh=electricity_kwh or 0.0,
+            steam_gj=steam_gj,
+            business_travel_flight_km=business_travel_km,
+            employee_commute_km=employee_commute_km,
+            waste_tons=waste_tons,
+        ))
+
         # Mevcut kayıt var mı?
         existing_result = await db.execute(
             select(EmissionRecord).where(
@@ -161,6 +181,10 @@ async def bulk_upload(
             existing.employee_commute_km = employee_commute_km
             existing.waste_tons = waste_tons
             existing.water_m3 = water_m3
+            existing.scope1_co2e = calc.scope1_co2e
+            existing.scope2_location_co2e = calc.scope2_location_co2e
+            existing.scope2_market_co2e = calc.scope2_market_co2e
+            existing.scope3_co2e = calc.scope3_co2e
             record_id = existing.id
             action = "updated"
         else:
@@ -179,6 +203,10 @@ async def bulk_upload(
                 employee_commute_km=employee_commute_km,
                 waste_tons=waste_tons,
                 water_m3=water_m3,
+                scope1_co2e=calc.scope1_co2e,
+                scope2_location_co2e=calc.scope2_location_co2e,
+                scope2_market_co2e=calc.scope2_market_co2e,
+                scope3_co2e=calc.scope3_co2e,
             )
             db.add(record)
             await db.flush()
