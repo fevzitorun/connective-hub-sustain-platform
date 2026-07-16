@@ -512,13 +512,17 @@ async def export_report_docx(
     company = await db.get(Company, company_id)
     company_name = company.name if company else "Şirket"
 
+    # Rapor yılı doğrudan Report'ta tutulmuyor; bağlı emisyon kaydından alınır.
+    emission = await db.get(EmissionRecord, report.emission_data_id) if report.emission_data_id else None
+    reporting_year = emission.year if emission else 2024
+
     file_bytes = generate_docx(
         title=f"{report.standard} Sürdürülebilirlik Raporu",
         content=report.content_text,
         company_name=company_name,
         standard=report.standard.upper(),
         version=report.version_number or 1,
-        reporting_year=report.reporting_year,
+        reporting_year=reporting_year,
     )
     filename = f"sustainhub-{report.standard}-v{report.version_number}.docx"
 
