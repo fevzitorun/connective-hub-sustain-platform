@@ -176,7 +176,7 @@ export default function DashboardPage() {
               {displayCompany} — ESG Executive Summary
             </h1>
             <p className="text-sm mt-1" style={{ color: '#64748b' }}>
-              Kaynak: SustainHub Intelligence Platform · Gerçek zamanlı veri
+              SustainHub Intelligence Platform · Örnek YK sunum görünümü
             </p>
           </div>
 
