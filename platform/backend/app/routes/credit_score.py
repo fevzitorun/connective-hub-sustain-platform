@@ -41,7 +41,7 @@ async def get_credit_score(
     emission_result = await db.execute(
         select(EmissionRecord)
         .where(EmissionRecord.company_id == company_id)
-        .order_by(EmissionRecord.reporting_year.desc())
+        .order_by(EmissionRecord.year.desc())
         .limit(1)
     )
     emission = emission_result.scalar_one_or_none()
@@ -52,10 +52,10 @@ async def get_credit_score(
     renewable_pct = 0.0
 
     if emission:
-        total_emissions = float((emission.scope1_direct or 0) + (emission.scope2_location or 0))
+        total_emissions = float((emission.scope1_co2e or 0) + (emission.scope2_location_co2e or 0))
         employees = company.employee_count or 1
         carbon_intensity = total_emissions / employees
-        renewable_pct = float(emission.renewable_energy_pct or 0)
+        renewable_pct = float(emission.renewable_ratio or 0)
 
     # Sektöre göre ortalama (benchmark_service ile paralel)
     from ..services.benchmark_service import SECTOR_BENCHMARKS

@@ -556,7 +556,7 @@ async def get_report_targets(
         raise HTTPException(404, "Rapor bulunamadı")
 
     # Raporun emisyon verisini getir
-    emission = await db.get(EmissionRecord, report.emission_id) if report.emission_id else None
+    emission = await db.get(EmissionRecord, report.emission_data_id) if report.emission_data_id else None
 
     base_scope12 = 0.0
     base_scope3 = 0.0
@@ -564,9 +564,9 @@ async def get_report_targets(
     base_year = 2022
 
     if emission:
-        base_scope12 = float((emission.scope1_direct or 0) + (emission.scope2_location or 0))
-        base_scope3 = float(emission.scope3_total or 0)
-        base_year = emission.reporting_year or 2022
+        base_scope12 = float((emission.scope1_co2e or 0) + (emission.scope2_location_co2e or 0))
+        base_scope3 = float(emission.scope3_co2e or 0)
+        base_year = emission.year or 2022
 
     company = await db.get(Company, company_id)
     if company and company.sector:
@@ -624,7 +624,7 @@ async def generate_report_targets(
     if not report:
         raise HTTPException(404, "Rapor bulunamadı")
 
-    emission = await db.get(EmissionRecord, report.emission_id) if report.emission_id else None
+    emission = await db.get(EmissionRecord, report.emission_data_id) if report.emission_data_id else None
 
     base_scope12 = 0.0
     base_scope3 = 0.0
@@ -632,9 +632,9 @@ async def generate_report_targets(
     base_year = 2022
 
     if emission:
-        base_scope12 = float((emission.scope1_direct or 0) + (emission.scope2_location or 0))
-        base_scope3 = float(emission.scope3_total or 0)
-        base_year = emission.reporting_year or 2022
+        base_scope12 = float((emission.scope1_co2e or 0) + (emission.scope2_location_co2e or 0))
+        base_scope3 = float(emission.scope3_co2e or 0)
+        base_year = emission.year or 2022
 
     company = await db.get(Company, company_id)
     if company and company.sector:
