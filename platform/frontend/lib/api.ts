@@ -605,4 +605,21 @@ export const api = {
       plan_distribution: Record<string, number>
     }>('/stats/admin/overview'),
   },
+
+  integration: {
+    providers: () => request<{
+      providers: Array<{
+        provider: string
+        display_name: string
+        maturity: 'available' | 'beta' | 'planned'
+        description: string
+        required_config: string[]
+      }>
+    }>('/integration/providers'),
+    testConnection: (provider: string, config: Record<string, string> = {}) =>
+      request<{ provider: string; ok: boolean; status?: string; message: string }>(
+        `/integration/providers/${provider}/test`,
+        { method: 'POST', body: JSON.stringify({ config }) },
+      ),
+  },
 }
