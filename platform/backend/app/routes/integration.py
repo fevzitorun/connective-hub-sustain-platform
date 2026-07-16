@@ -6,9 +6,39 @@ from typing import Optional, Dict, Any
 from ..database import get_db
 from ..models import Company, EmissionRecord
 from ..services.erp_adapter import process_erp_sync
+from ..services.integrations import get_adapter, list_providers, IntegrationNotConfigured
 from ..services.audit_service import log_action
 
 router = APIRouter(prefix="/integration", tags=["integration"])
+
+
+@router.get("/providers")
+async def get_providers():
+    """Desteklenen entegrasyon sağlayıcıları + olgunluk + gereken config alanları."""
+    return {"providers": list_providers()}
+
+
+class TestConnectionPayload(BaseModel):
+    config: Dict[str, Any] = {}
+
+
+@router.post("/providers/{provider}/test")
+async def test_provider_connection(provider: str, payload: TestConnectionPayload):
+    """Bir sağlayıcı için bağlantıyı test eder. Kimlik yoksa 'kurulum gerekli' döner (çökmez)."""
+    try:
+        adapter = get_adapter(provider, payload.config)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Bilinmeyen sağlayıcı: {provider}")
+
+    missing = adapter.validate_config()
+    if missing:
+        return {"provider": provider, "ok": False, "status": "config_required",
+                "message": f"Eksik yapılandırma: {', '.join(missing)}"}
+    try:
+        result = adapter.test_connection()
+        return {"provider": provider, **result}
+    except IntegrationNotConfigured as e:
+        return {"provider": provider, "ok": False, "status": "not_configured", "message": str(e)}
 
 # Çok basit bir API Key mock yapısı (Normalde DB tablosu olur)
 VALID_API_KEYS = {
