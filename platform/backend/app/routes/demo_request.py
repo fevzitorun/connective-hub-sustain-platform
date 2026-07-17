@@ -30,39 +30,73 @@ def _save_request(entry: dict) -> None:
 
 
 async def _send_notification_email(entry: dict) -> None:
-    """Send email via Resend if API key is configured."""
+    """İki e-posta gönderir (Resend API key varsa):
+    1) Ekibe bildirim (yeni talep detayları)
+    2) Talep sahibine otomatik onay yanıtı ("alındı, 1 iş günü içinde dönüyoruz")
+    Resend yoksa sessizce çıkar; hata API yanıtını asla bozmaz.
+    """
     api_key = os.getenv("RESEND_API_KEY", "")
     if not api_key:
         return
+
+    from_addr = "SustainHub <noreply@sustainhub.online>"
+    notify_to = os.getenv("DEMO_NOTIFY_EMAIL", "demo@sustainhub.online")
+
+    team_html = f"""
+    <h2>Yeni Demo Talebi — SustainHub</h2>
+    <table>
+      <tr><td><b>Ad Soyad:</b></td><td>{entry['name']}</td></tr>
+      <tr><td><b>E-posta:</b></td><td>{entry['email']}</td></tr>
+      <tr><td><b>Şirket:</b></td><td>{entry['company']}</td></tr>
+      <tr><td><b>Sektör:</b></td><td>{entry['sector']}</td></tr>
+      <tr><td><b>Çalışan:</b></td><td>{entry['employees']}</td></tr>
+      <tr><td><b>Telefon:</b></td><td>{entry.get('phone', '—') or '—'}</td></tr>
+      <tr><td><b>Mesaj:</b></td><td>{entry.get('message', '—') or '—'}</td></tr>
+      <tr><td><b>Tarih:</b></td><td>{entry['created_at']}</td></tr>
+    </table>
+    """
+
+    reply_html = f"""
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1e293b">
+      <p>Merhaba {entry['name']},</p>
+      <p>SustainHub demo talebiniz bize ulaştı — teşekkürler! 🌿</p>
+      <p>Ekibimiz talebinizi inceliyor ve <b>en geç 1 iş günü içinde</b> sizinle iletişime geçecek.
+         Bu sürede platformu keşfetmek isterseniz kayıt olabilirsiniz:
+         <a href="https://www.sustainhub.online/register">www.sustainhub.online</a></p>
+      <p>Sürdürülebilir bir gelecek için,<br/><b>SustainHub Ekibi</b></p>
+      <hr style="border:none;border-top:1px solid #e2e8f0"/>
+      <p style="font-size:12px;color:#94a3b8">Bu otomatik bir onay mesajıdır. Sorularınız için bu e-postayı yanıtlayabilirsiniz.</p>
+    </div>
+    """
+
     try:
         import httpx
-        body_html = f"""
-        <h2>Yeni Demo Talebi — SustainHub</h2>
-        <table>
-          <tr><td><b>Ad Soyad:</b></td><td>{entry['name']}</td></tr>
-          <tr><td><b>E-posta:</b></td><td>{entry['email']}</td></tr>
-          <tr><td><b>Şirket:</b></td><td>{entry['company']}</td></tr>
-          <tr><td><b>Sektör:</b></td><td>{entry['sector']}</td></tr>
-          <tr><td><b>Çalışan:</b></td><td>{entry['employees']}</td></tr>
-          <tr><td><b>Mesaj:</b></td><td>{entry.get('message', '—')}</td></tr>
-          <tr><td><b>Tarih:</b></td><td>{entry['created_at']}</td></tr>
-        </table>
-        """
-        async with httpx.AsyncClient() as client:
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        async with httpx.AsyncClient(timeout=10) as client:
+            # 1) Ekibe bildirim
             await client.post(
-                "https://api.resend.com/emails",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                "https://api.resend.com/emails", headers=headers,
                 json={
-                    "from": "SustainHub <noreply@sustainhub.online>",
-                    "to": [os.getenv("DEMO_NOTIFY_EMAIL", "demo@sustainhub.online")],
+                    "from": from_addr,
+                    "to": [notify_to],
                     "reply_to": entry["email"],
                     "subject": f"Demo Talebi: {entry['company']} — {entry['sector']}",
-                    "html": body_html,
+                    "html": team_html,
                 },
-                timeout=10,
+            )
+            # 2) Talep sahibine otomatik yanıt
+            await client.post(
+                "https://api.resend.com/emails", headers=headers,
+                json={
+                    "from": from_addr,
+                    "to": [entry["email"]],
+                    "reply_to": notify_to,
+                    "subject": "Demo talebiniz alındı — SustainHub",
+                    "html": reply_html,
+                },
             )
     except Exception:
-        pass  # Email failure must not break the API response
+        pass  # E-posta hatası API yanıtını bozmamalı
 
 
 class DemoRequestInput(BaseModel):
