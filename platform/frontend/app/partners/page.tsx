@@ -84,6 +84,7 @@ export default function PartnersPage() {
           email: form.email,
           company: form.organization,
           message: `[Ortaklık Başvurusu — ${form.type}] ${form.message}`,
+          source: 'partners',
         }),
       })
       setSubmitted(true)
@@ -257,7 +258,7 @@ export default function PartnersPage() {
               <div className="text-5xl mb-4">🎉</div>
               <h3 className="text-xl font-black text-white mb-2">Başvurunuz Alındı!</h3>
               <p className="text-slate-400 text-sm mb-6">
-                Ekibimiz 48 saat içinde {form.email} adresine dönüş yapacak.
+                Ekibimiz en geç 1 iş günü içinde {form.email} adresine dönüş yapacak.
               </p>
               <Link href="/" className="text-emerald-400 hover:underline text-sm font-bold">
                 ← Ana Sayfaya Dön
