@@ -15,7 +15,7 @@ from ..services.ai_report_writer import generate_tsrs_report
 from ..services.calculation_engine import SECTOR_BENCHMARKS, calculate_tsrs_compliance
 from ..services.rbac import require_permission, can, get_active_company_id
 from ..services.auth import hash_password, verify_password
-from ..services.pdf_generator import generate_pdf, get_content_type, get_file_extension
+from ..services.pdf_generator import generate_pdf
 from ..services.docx_generator import generate_docx
 from ..services.email_service import send_report_ready, send_report_submitted_for_approval
 from ..services.target_engine import calculate_sbti_targets
@@ -475,15 +475,13 @@ async def export_report(
     company = await db.get(Company, company_id)
     company_name = company.name if company else "Şirket"
 
-    file_bytes = generate_pdf(
+    file_bytes, ct, ext = generate_pdf(
         report_text=report.content_text,
         company_name=company_name,
         standard=report.standard,
         year=2024,
         compliance_score=report.compliance_score,
     )
-    ext = get_file_extension()
-    ct = get_content_type()
     filename = f"sustainhub-{report.standard}-v{report.version_number}.{ext}"
 
     return Response(

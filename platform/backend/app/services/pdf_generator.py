@@ -6,7 +6,10 @@ Kurulum: pip install weasyprint
 macOS: brew install cairo pango gdk-pixbuf libffi
 """
 import re
+import logging
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 try:
     from weasyprint import HTML, CSS  # type: ignore
@@ -122,17 +125,24 @@ def generate_pdf(
 </html>"""
 
     if WEASYPRINT_AVAILABLE:
-        pdf_bytes = HTML(string=full_html).write_pdf(
-            stylesheets=[CSS(string=_REPORT_CSS)]
-        )
-        return pdf_bytes
+        try:
+            pdf_bytes = HTML(string=full_html).write_pdf(
+                stylesheets=[CSS(string=_REPORT_CSS)]
+            )
+            return pdf_bytes, "application/pdf", "pdf"
+        except Exception:
+            # Render hatası (font/native lib/CSS) → 500 verme, metne düş.
+            # Banka/demo önünde çökme yerine indirilebilir çıktı garanti edilir.
+            logger.exception("PDF render başarısız — metin fallback'e düşülüyor")
 
     # Fallback: UTF-8 text
     plain = re.sub(r'<[^>]+>', '', full_html)
     plain = re.sub(r'\n{3,}', '\n\n', plain)
-    return plain.encode("utf-8")
+    return plain.encode("utf-8"), "text/plain; charset=utf-8", "txt"
 
 
+# Geriye dönük uyum (artık generate_pdf tuple döndürüyor; bu yardımcılar
+# WEASYPRINT_AVAILABLE'a göre statik değer verir, tercihen kullanılmaz).
 def get_content_type() -> str:
     return "application/pdf" if WEASYPRINT_AVAILABLE else "text/plain; charset=utf-8"
 
