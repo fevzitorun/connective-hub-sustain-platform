@@ -113,30 +113,48 @@ def to_jsonld(passport, product) -> dict:
     }
 
 
-def make_public_snapshot(passport, product) -> dict:
+def make_public_snapshot(passport, product, lang: str = "tr") -> dict:
     """
-    Kamuya açık görüntüleyici için sadeleştirilmiş payload.
-    Hiçbir kişisel/iç veri sızmamalı.
+    Kamuya açık görüntüleyici için sadeleştirilmiş payload (çok dilli).
+
+    Kişisel/iç veri sızmaz: company_id, kullanıcı, email ve created_by yok.
     """
+    from . import dpp_i18n
+
+    display_name = dpp_i18n.product_name(product, lang)
+    description = dpp_i18n.product_description(product, lang)
+
     return {
         "id": passport.id,
         "version": passport.version,
         "status": passport.status,
+        "lang": dpp_i18n.normalize_lang(lang),
+        "labels": dpp_i18n.labels(lang),
         "product": {
-            "name": product.name_tr,
+            "name": display_name,
+            "name_tr": product.name_tr,
             "name_en": product.name_en,
+            "description": description,
             "sku": product.sku,
             "gtin": product.gtin,
             "category": product.category,
             "subcategory": product.subcategory,
+            "batch_number": product.batch_number,
             "manufactured_at": product.manufactured_at.isoformat() if product.manufactured_at else None,
             "country_of_origin": product.manufacturing_country,
+            "manufacturing_site": product.manufacturing_site,
+            "weight_kg": product.weight_kg,
+            "dimensions": product.dimensions,
+            "ce_marked": product.ce_marked,
+            "energy_class": product.energy_class,
+            "warranty_months": product.warranty_months,
         },
         "sustainability": {
             "carbon_footprint_kgco2e": passport.carbon_footprint_kgco2e,
             "recycled_content_pct": passport.recycled_content_pct,
             "repairability_score": passport.repairability_score,
             "green_score": passport.green_score,
+            "green_score_grade": (passport.green_score_breakdown or {}).get("grade"),
             "green_score_breakdown": passport.green_score_breakdown,
         },
         "recycling_instructions": passport.recycling_instructions,
@@ -150,6 +168,16 @@ def make_public_snapshot(passport, product) -> dict:
             }
             for m in (passport.materials or [])
         ],
+        "suppliers": [
+            {
+                "tier": s.tier,
+                "name": s.name,
+                "country": s.country,
+                "role": s.role,
+                "certifications": s.certifications or [],
+            }
+            for s in (passport.suppliers or [])
+        ],
         "documents": [
             {
                 "type": d.doc_type,
@@ -160,6 +188,11 @@ def make_public_snapshot(passport, product) -> dict:
             }
             for d in (passport.documents or [])
         ],
+        "metrics": {
+            "scan_count": passport.scan_count,
+            "ai_query_count": passport.ai_query_count,
+            "return_request_count": passport.return_request_count,
+        },
         "issued_at": passport.issued_at.isoformat() if passport.issued_at else None,
         "gs1_digital_link": passport.gs1_digital_link,
     }

@@ -13,6 +13,7 @@ from .integration import IntegrationConnection, IntegrationLog
 from .product import Product
 from .product_passport import (
     ProductPassport, PassportMaterial, PassportDocument, PassportEvent,
+    PassportSupplier,
 )
 
 __all__ = [
@@ -22,5 +23,5 @@ __all__ = [
     "SupplyChainEntry", "SupplyChainAlert", "CreditScore",
     "IntegrationConnection", "IntegrationLog",
     "Product", "ProductPassport", "PassportMaterial",
-    "PassportDocument", "PassportEvent",
+    "PassportDocument", "PassportEvent", "PassportSupplier",
 ]

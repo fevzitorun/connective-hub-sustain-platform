@@ -281,3 +281,58 @@ Gemini'nin 3-fazlı öneri + 7-madde teknik tavsiyesi V1'e şu şekilde eklendi:
 | Onarılabilirlik | 10 | `repairability_score` (0-10 skala) |
 
 Not: Formül **deterministik**. V2'de Claude ile "yumuşak override" (aynı verilere farklı ağırlıklandırma) eklenebilir; şu an tutarlılık + açıklanabilirlik için sabit ağırlık.
+
+---
+
+## 13. V1.5 Derinleştirme
+
+Ürünleştirme öncesi ikinci pas — sektörel derinlik ve kurumsal özellikler.
+
+### Model genişletme
+- **Product:** `name_de`, `name_fr`, `description_tr/en`, `batch_number`, `serial_number`, `weight_kg`, `dimensions` (JSON), `ce_marked`, `energy_class` (A–G), `warranty_months`
+- **ProductPassport:** `scan_count`, `ai_query_count`, `return_request_count`, `completeness_pct`
+- **Yeni tablo:** `PassportSupplier` — Tier 1 tedarik zinciri (V2'de tier 2/3 + davet)
+
+### Sektör şablonları (`services/dpp_templates.py`)
+| Sektör | Zorunlu belge(ler) | Min. malzeme | Min. Tier 1 tedarikçi | Skor ağırlığı (öne çıkan) |
+|--------|-------------------|--------------|----------------------|---------------------------|
+| textile | OEKO-TEX (veya GOTS/EPD) | 2 | 1 | malzeme 35 + tehlike 25 |
+| battery | CE + Energy Label | 3 | 2 | karbon 35 + tehlike 25 |
+| electronics | CE + RoHS | 2 | 1 | onarılabilirlik 20 + belge 15 |
+| furniture | — | 1 | 0 | malzeme 35 + onarılabilirlik 15 |
+| generic | — | 1 | 0 | 30/25/20/15/10 |
+
+Endpoint: `GET /dpp/passports/{id}/validate` — tamamlanma yüzdesi + eksik alan listesi.
+
+### Yeni endpoint'ler
+| Method | Yol | İşlev |
+|--------|-----|-------|
+| PATCH | `/dpp/products/{id}` | Ürün güncelleme |
+| PATCH | `/dpp/passports/{id}` | Draft alan güncelleme |
+| POST | `/dpp/passports/{id}/suppliers` | Tedarikçi ekle |
+| GET | `/dpp/passports/{id}/validate` | Şablona göre tamamlanma |
+| GET | `/dpp/templates/{category}` | Sektör şablon şeması |
+| GET | `/dpp/passports/{id}/pdf` | Baskı PDF (weasyprint, HTML fallback) |
+| GET | `/dpp/passports/{id}/compare/{other}` | İki pasaport metrik diff |
+| GET | `/dpp/analytics` | Şirket portföyü metrikleri |
+| GET | `/dpp/products/bulk-template` | Toplu içe aktarma CSV şablonu |
+| POST | `/dpp/products/bulk-import` | CSV toplu ürün |
+| GET | `/public/passport/{id}/qr` | Kamu QR görseli |
+
+### Kamu görüntüleyici zenginleşmesi
+- `?lang=tr\|en\|de\|fr` parametresi — TR/EN/DE/FR UI etiketleri
+- Her başarılı görüntülemede `scan_count += 1`
+- Her AI sorusunda `ai_query_count += 1`
+- Her iade talebinde `return_request_count += 1`
+- Snapshot şimdi tedarikçileri, boyutları, garantiyi, CE ve enerji sınıfını içeriyor
+
+### Test kapsamı
+`tests/test_dpp.py` — 18 test:
+- Ürün CRUD + GTIN/enerji/kategori doğrulama (5)
+- Pasaport draft→issue→revoke + supersede (4)
+- Şablon doğrulama (2)
+- Public endpoint + lang + counters (3)
+- İade + kupon (1)
+- Analytics, compare (2)
+- Bulk import başarılı + hatalı (2)
+- Tenant izolasyon (1)

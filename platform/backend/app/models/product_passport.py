@@ -68,6 +68,14 @@ class ProductPassport(Base):
     revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     revoke_reason: Mapped[Optional[str]] = mapped_column(Text)
 
+    # Tüketici etkileşimi metrikleri
+    scan_count: Mapped[int] = mapped_column(Integer, default=0)
+    ai_query_count: Mapped[int] = mapped_column(Integer, default=0)
+    return_request_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Sektör şablon tamamlanma (0-100)
+    completeness_pct: Mapped[Optional[float]] = mapped_column(Float)
+
     created_by: Mapped[Optional[str]] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
@@ -92,6 +100,41 @@ class ProductPassport(Base):
         cascade="all, delete-orphan", lazy="selectin",
         order_by="PassportEvent.timestamp.desc()",
     )
+    suppliers = relationship(
+        "PassportSupplier", back_populates="passport",
+        cascade="all, delete-orphan", lazy="selectin",
+    )
+
+
+class PassportSupplier(Base):
+    """
+    passport_suppliers — Tedarik zinciri Tier 1 kaydı (ESPR + EUDR uyum).
+
+    Bir malzemenin/bileşenin kimden alındığı, hangi ülkede işlendiği,
+    hangi sertifikaya sahip. V2'de Tier 2/3 ve tedarikçi davet akışı.
+    """
+    __tablename__ = "passport_suppliers"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True,
+        default=lambda: str(uuid.uuid4()),
+    )
+    passport_id: Mapped[str] = mapped_column(ForeignKey("product_passports.id"), nullable=False, index=True)
+
+    tier: Mapped[int] = mapped_column(Integer, default=1)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    country: Mapped[Optional[str]] = mapped_column(String(2))
+    role: Mapped[Optional[str]] = mapped_column(String(100))  # örn: iplik, boya, kumaş, dikim, ambalaj
+    material_or_component: Mapped[Optional[str]] = mapped_column(String(255))
+    certifications: Mapped[Optional[list]] = mapped_column(JSON)  # ["OEKO-TEX", "GOTS", …]
+    contact_email: Mapped[Optional[str]] = mapped_column(String(255))
+    verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    added_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
+    )
+
+    passport = relationship("ProductPassport", back_populates="suppliers")
 
 
 class PassportMaterial(Base):
