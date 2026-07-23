@@ -21,7 +21,10 @@ from ..models import (
 from ..models.product import PRODUCT_CATEGORIES
 from ..models.product_passport import PASSPORT_STATUS, EVENT_TYPES, DOCUMENT_TYPES
 from ..services import dpp_service
+from ..services.green_score_service import compute_green_score
+from ..services.dpp_ai_service import ask_passport_assistant
 from .auth import get_current_user
+import secrets
 
 router = APIRouter(prefix="/dpp", tags=["dpp"])
 public_router = APIRouter(prefix="/public/passport", tags=["dpp-public"])
@@ -80,6 +83,17 @@ class PassportCreate(BaseModel):
 
 class RevokeRequest(BaseModel):
     reason: str = Field(min_length=1, max_length=500)
+
+
+class AskRequest(BaseModel):
+    question: str = Field(min_length=3, max_length=500)
+
+
+class ReturnRequest(BaseModel):
+    requestor_email: Optional[str] = None
+    requestor_name: Optional[str] = None
+    location: Optional[str] = None
+    notes: Optional[str] = Field(default=None, max_length=500)
 
 
 # ─────────────────── Helpers ───────────────────
@@ -354,6 +368,71 @@ async def qr_code(
     return Response(content=svg, media_type="image/svg+xml")
 
 
+# ─────────────────── Green Score (Gemini önerisi) ───────────────────
+
+@router.post("/passports/{passport_id}/score")
+async def compute_and_save_score(
+    passport_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Yeşil Skor'u yeniden hesapla ve pasaporta kaydet."""
+    passport = await _get_passport_or_403(db, passport_id, user)
+    product = await db.get(Product, passport.product_id)
+
+    materials_dict = [
+        {
+            "material_name": m.material_name,
+            "percentage_by_weight": m.percentage_by_weight,
+            "recycled_content_pct": m.recycled_content_pct,
+            "is_hazardous": m.is_hazardous,
+        }
+        for m in (passport.materials or [])
+    ]
+    documents_dict = [{"doc_type": d.doc_type} for d in (passport.documents or [])]
+
+    result = compute_green_score(
+        materials=materials_dict,
+        carbon_kgco2e=passport.carbon_footprint_kgco2e,
+        category=product.category,
+        documents=documents_dict,
+        repairability=passport.repairability_score,
+    )
+    passport.green_score = result.total
+    passport.green_score_breakdown = {
+        "grade": result.grade,
+        "formula_version": result.formula_version,
+        **result.breakdown,
+    }
+    db.add(_log_event(passport.id, "score_computed", user.email,
+                       {"score": result.total, "grade": result.grade}))
+    return {
+        "passport_id": passport.id,
+        "green_score": result.total,
+        "grade": result.grade,
+        "breakdown": result.breakdown,
+    }
+
+
+# ─────────────────── AI Q&A (Gemini önerisi) ───────────────────
+
+@router.post("/passports/{passport_id}/ask")
+async def ask_ai_authenticated(
+    passport_id: str,
+    body: AskRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Kimliği doğrulanmış kullanıcı için pasaport bağlamında Q&A."""
+    passport = await _get_passport_or_403(db, passport_id, user)
+    product = await db.get(Product, passport.product_id)
+    context = dpp_service.make_public_snapshot(passport, product)
+    result = await ask_passport_assistant(body.question, passport.id, context)
+    db.add(_log_event(passport.id, "ai_query", user.email,
+                       {"question": body.question[:100], "source": result["source"]}))
+    return result
+
+
 @router.get("/passports/{passport_id}/jsonld")
 async def jsonld_export(
     passport_id: str,
@@ -369,21 +448,68 @@ async def jsonld_export(
 
 # ─────────────────── Public (no auth) ───────────────────
 
-@public_router.get("/{passport_id}")
-async def public_passport(passport_id: str, db: AsyncSession = Depends(get_db)):
-    """QR kodun hedefi. Yalnızca `issued` pasaportlar erişilebilir."""
+async def _fetch_public_passport(db: AsyncSession, passport_id: str) -> tuple[ProductPassport, Product]:
     passport = await db.get(ProductPassport, passport_id)
     if not passport:
         raise HTTPException(404, "Pasaport bulunamadı")
     if passport.status not in ("issued", "revoked"):
         raise HTTPException(404, "Pasaport yayınlanmamış")
-
     product = await db.get(Product, passport.product_id)
     if not product:
         raise HTTPException(404, "Ürün bulunamadı")
+    return passport, product
 
+
+@public_router.get("/{passport_id}")
+async def public_passport(passport_id: str, db: AsyncSession = Depends(get_db)):
+    """QR kodun hedefi. Yalnızca yayınlanmış (issued/revoked) pasaportlar."""
+    passport, product = await _fetch_public_passport(db, passport_id)
     snapshot = dpp_service.make_public_snapshot(passport, product)
     if passport.status == "revoked":
         snapshot["revoked"] = True
         snapshot["revoked_at"] = passport.revoked_at.isoformat() if passport.revoked_at else None
     return snapshot
+
+
+@public_router.post("/{passport_id}/ask")
+async def public_ask_ai(
+    passport_id: str,
+    body: AskRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Kamuya açık Q&A — QR'den gelen tüketici için. Cache + fallback korumalı."""
+    passport, product = await _fetch_public_passport(db, passport_id)
+    context = dpp_service.make_public_snapshot(passport, product)
+    result = await ask_passport_assistant(body.question, passport.id, context)
+    db.add(_log_event(passport.id, "ai_query", "public",
+                       {"question": body.question[:100], "source": result["source"]}))
+    return result
+
+
+@public_router.post("/{passport_id}/return-request", status_code=201)
+async def public_return_request(
+    passport_id: str,
+    body: ReturnRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    İade / geri dönüşüm talebi (Gemini önerisi — döngüsel ekonomi).
+    Kupon kodu üretilir; PassportEvent'e yazılır. Kuponu geri alma akışı V2.
+    """
+    passport, _ = await _fetch_public_passport(db, passport_id)
+    coupon = f"DPP-{secrets.token_hex(4).upper()}"
+    meta = {
+        "coupon_code": coupon,
+        "discount_pct": 10,
+        "requestor_email": body.requestor_email,
+        "requestor_name": body.requestor_name,
+        "location": body.location,
+        "notes": body.notes,
+    }
+    db.add(_log_event(passport.id, "return_requested", "public", meta))
+    return {
+        "passport_id": passport.id,
+        "coupon_code": coupon,
+        "discount_pct": 10,
+        "message": "İade talebiniz alındı. Aşağıdaki kupon kodunu üreticinin geri dönüşüm noktasında gösterin.",
+    }

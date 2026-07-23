@@ -20,7 +20,8 @@ PASSPORT_STATUS = ("draft", "issued", "revoked", "superseded")
 EVENT_TYPES = (
     "created", "updated", "issued", "transferred",
     "repaired", "recycled", "revoked", "material_added",
-    "document_added",
+    "document_added", "return_requested", "return_redeemed",
+    "score_computed", "ai_query",
 )
 
 DOCUMENT_TYPES = (
@@ -54,6 +55,11 @@ class ProductPassport(Base):
     carbon_footprint_kgco2e: Mapped[Optional[float]] = mapped_column(Float)
     recycled_content_pct: Mapped[Optional[float]] = mapped_column(Float)
     repairability_score: Mapped[Optional[float]] = mapped_column(Float)
+
+    # Yeşil Skor (Gemini önerisi) — 0-100, otomatik hesaplanır, breakdown JSON'da
+    green_score: Mapped[Optional[float]] = mapped_column(Float)
+    green_score_breakdown: Mapped[Optional[dict]] = mapped_column(JSON)
+    recycling_instructions: Mapped[Optional[str]] = mapped_column(Text)
 
     data_json: Mapped[Optional[dict]] = mapped_column(JSON)
     signature: Mapped[Optional[str]] = mapped_column(Text)

@@ -136,7 +136,10 @@ def make_public_snapshot(passport, product) -> dict:
             "carbon_footprint_kgco2e": passport.carbon_footprint_kgco2e,
             "recycled_content_pct": passport.recycled_content_pct,
             "repairability_score": passport.repairability_score,
+            "green_score": passport.green_score,
+            "green_score_breakdown": passport.green_score_breakdown,
         },
+        "recycling_instructions": passport.recycling_instructions,
         "materials": [
             {
                 "name": m.material_name,

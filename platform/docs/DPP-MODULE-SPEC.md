@@ -241,3 +241,43 @@ Bu doküman onaylanır onaylanmaz:
 4. Pilot müşteri #1 ile ürün seçimi
 
 **Beklenen toplam:** 4–6 hafta MVP canlıya, +2 hafta pilot onboarding.
+
+---
+
+## 12. Gemini Entegrasyon Eki (V1'e eklenenler)
+
+Gemini'nin 3-fazlı öneri + 7-madde teknik tavsiyesi V1'e şu şekilde eklendi:
+
+### Alındı → V1'de canlı
+| Gemini önerisi | Uygulama |
+|---|---|
+| QR ile pasaport verisi | `/public/passport/{id}` — issued'de canlı |
+| Sürdürülebilirlik Puanı (0–100) | `ProductPassport.green_score` + `green_score_service.py` (5 kalem: malzeme, karbon, tehlike, belge, onarılabilirlik) |
+| İade / kupon akışı | `POST /public/passport/{id}/return-request` — coupon kodu üretir, PassportEvent'e yazar |
+| Sürdürülebilirlik Asistanı (Claude) | `POST /passports/{id}/ask` (auth) + `/public/passport/{id}/ask` — cache + statik fallback |
+| Cache | Process-içi TTL cache (500 giriş, 1s), Redis'e taşınabilir |
+| Fallback | `ANTHROPIC_API_KEY` yoksa veya API 5xx'te statik metin |
+| Kural koyucu değil rehber | Sistem prompt'ta yalnızca pasaport verisine dayanma direktifi |
+
+### Ertelendi → V2
+| Öneri | Neden |
+|---|---|
+| Claude Vision ile etiket/QR fotoğrafı analizi | Kapsam büyük; ayrı endpoint + resim upload akışı |
+| Google Maps ile en yakın geri dönüşüm noktası | API key + adres çözümleme kütüphanesi; V2 |
+| Sandbox test ortamı (10-15 senaryo) | Pilot müşteri onboarding ile birlikte |
+
+### Reddedildi / V3+
+| Öneri | Neden |
+|---|---|
+| Blockchain üretim geçmişi | Şu an talep eden yok, karmaşıklık ROI'yi taşımaz; PassportEvent tablosu zaten değişmez log görevi görüyor |
+
+### Yeşil Skor Formülü (V1)
+| Kalem | Puan | Kaynak alan |
+|---|---|---|
+| Malzeme (ağırlıklı geri dönüştürülmüş içerik) | 30 | `PassportMaterial.recycled_content_pct` |
+| Karbon yoğunluğu (sektör benchmark'ına göre) | 25 | `carbon_footprint_kgco2e` + `SECTOR_CARBON_BENCHMARK` |
+| Tehlikeli madde (yok = tam puan) | 20 | `PassportMaterial.is_hazardous` |
+| Uygunluk belgesi çeşitliliği | 15 | `PassportDocument.doc_type` unique count × 3 |
+| Onarılabilirlik | 10 | `repairability_score` (0-10 skala) |
+
+Not: Formül **deterministik**. V2'de Claude ile "yumuşak override" (aynı verilere farklı ağırlıklandırma) eklenebilir; şu an tutarlılık + açıklanabilirlik için sabit ağırlık.
