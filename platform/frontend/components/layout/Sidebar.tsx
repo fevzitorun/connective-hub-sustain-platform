@@ -30,6 +30,7 @@ const navItems = [
     { href: '/compliance', label: 'Global Tracker', icon: '🗓️', badge: 'NEW' },
     { href: '/cbam', label: 'CBAM Declaration', icon: '🏭' },
     { href: '/eudr', label: 'EUDR Supply', icon: '🌳' },
+    { href: '/dpp', label: 'Dijital Ürün Pasaportu', icon: '📇', badge: 'ESPR' },
   ]},
   { section: 'Climate & ESG', items: [
     { href: '/health-check', label: 'ESG Health Check', icon: '🩺', badge: 'NEW' },

@@ -367,13 +367,22 @@ async def get_passport(
     product = await db.get(Product, passport.product_id)
     return {
         "id": passport.id, "version": passport.version, "status": passport.status,
-        "product": {"id": product.id, "sku": product.sku, "name_tr": product.name_tr},
+        "product": {"id": product.id, "sku": product.sku, "name_tr": product.name_tr,
+                     "category": product.category},
         "carbon_footprint_kgco2e": passport.carbon_footprint_kgco2e,
         "recycled_content_pct": passport.recycled_content_pct,
         "repairability_score": passport.repairability_score,
+        "recycling_instructions": passport.recycling_instructions,
+        "green_score": passport.green_score,
+        "green_score_breakdown": passport.green_score_breakdown,
+        "completeness_pct": passport.completeness_pct,
         "gs1_digital_link": passport.gs1_digital_link,
         "public_url": dpp_service.build_public_url(passport.id),
         "issued_at": passport.issued_at.isoformat() if passport.issued_at else None,
+        "revoked_at": passport.revoked_at.isoformat() if passport.revoked_at else None,
+        "scan_count": passport.scan_count,
+        "ai_query_count": passport.ai_query_count,
+        "return_request_count": passport.return_request_count,
         "materials": [
             {"id": m.id, "material_name": m.material_name,
              "percentage_by_weight": m.percentage_by_weight,
@@ -381,6 +390,14 @@ async def get_passport(
              "recycled_content_pct": m.recycled_content_pct,
              "is_hazardous": m.is_hazardous}
             for m in (passport.materials or [])
+        ],
+        "suppliers": [
+            {"id": s.id, "tier": s.tier, "name": s.name,
+             "country": s.country, "role": s.role,
+             "material_or_component": s.material_or_component,
+             "certifications": s.certifications or [],
+             "verified": s.verified}
+            for s in (passport.suppliers or [])
         ],
         "documents": [
             {"id": d.id, "doc_type": d.doc_type, "title": d.title,
