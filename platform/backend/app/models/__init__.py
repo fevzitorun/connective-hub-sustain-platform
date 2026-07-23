@@ -10,6 +10,10 @@ from .cbam import CBAMDeclaration, CBAMProduct
 from .supply_chain import SupplyChainEntry, SupplyChainAlert
 from .credit_score import CreditScore
 from .integration import IntegrationConnection, IntegrationLog
+from .product import Product
+from .product_passport import (
+    ProductPassport, PassportMaterial, PassportDocument, PassportEvent,
+)
 
 __all__ = [
     "Company", "User", "EmissionRecord", "Report", "ReportDraft", "ShareLink",
@@ -17,4 +21,6 @@ __all__ = [
     "MaterialityAssessment", "CBAMDeclaration", "CBAMProduct",
     "SupplyChainEntry", "SupplyChainAlert", "CreditScore",
     "IntegrationConnection", "IntegrationLog",
+    "Product", "ProductPassport", "PassportMaterial",
+    "PassportDocument", "PassportEvent",
 ]
