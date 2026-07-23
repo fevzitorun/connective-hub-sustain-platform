@@ -5,36 +5,34 @@ import Link from 'next/link'
 const TEAM = [
   {
     name: 'Fevzi Torun',
-    title: 'CEO & Co-Founder',
-    location: 'İstanbul Teknokent',
-    bio: 'Seri girişimci. Connective Hub ekosisteminin kurucusu. 35+ yıllık sektör deneyimi. Teknokent şirketi, UK-Türkiye köprüsü.',
+    title: 'CEO & Kurucu',
+    location: 'Dijitalpark Teknokent, İstanbul',
+    bio: 'Seri girişimci. Connective Hub ekosisteminin kurucusu. 35+ yıllık sektör deneyimi. Dijitalpark Teknokent ve Londra merkezli yapı.',
     linkedin: '#',
     icon: '👨‍💼',
   },
   {
-    name: 'Kemal Yıldırım',
-    title: 'CTO & Technical Advisor',
-    location: 'Londra',
-    bio: 'Mimari, uydu entegrasyonu ve AI altyapısı. theconnective.uk teknik liderliği. UK-Türkiye teknik köprüsü.',
+    name: 'Dr. Ayla Torun',
+    title: 'Akademik Danışman',
+    location: 'Atlas Üniversitesi',
+    bio: 'Dijital inovasyon ve sosyal bilimler uzmanı. Projenin metodolojik altyapısını, kurumsal dönüşüm ve sosyal etki (S ve G) modellerini yönetir.',
     linkedin: '#',
-    icon: '👨‍💻',
+    icon: '👩‍🏫',
   },
   {
-    name: 'Erbil Büyükbay',
-    title: 'Research Lead',
-    location: 'Türkiye',
-    bio: 'Sustain Research Institute yönetimi, pazar araştırması ve rekabetçi zeka.',
+    name: 'Kemal Yıldırım',
+    title: 'CTO & Teknik Danışman',
+    location: 'Londra',
+    bio: 'Platform mimarisi, uydu entegrasyonu ve AI altyapısı. theconnective.uk teknik liderliği. UK-Türkiye teknik köprüsü.',
     linkedin: '#',
-    icon: '📊',
+    icon: '👨‍💻',
   },
 ]
 
 const ECOSYSTEM = [
   { name: 'SustainHub.online', desc: 'Sürdürülebilirlik İstihbarat Platformu (bu platform)', active: true },
   { name: 'Scanbook.uk', desc: 'Dijital içerik & kütüphane platformu', active: true },
-  { name: '7fil.com', desc: 'Medya & içerik ekosistemi', active: true },
-  { name: 'MedProtocol', desc: 'Sağlık protokol yönetim sistemi', active: false },
-  { name: 'theconnective.uk', desc: 'UK merkezi — B2B dijital dönüşüm', active: true },
+  { name: 'theconnective.uk', desc: 'UK merkezi — B2B dijital dönüşüm', active: false },
 ]
 
 const STANDARDS = [
@@ -74,7 +72,7 @@ export default function HakkimizdaPage() {
           </span>
         </h1>
         <p className="text-slate-400 text-base leading-relaxed">
-          İstanbul Teknokent'te doğduk. Londra'dan büyüyoruz. Türkiye'nin
+          Dijitalpark Teknokent'te doğduk. Londra'dan büyüyoruz. Türkiye'nin
           ilk <strong className="text-white">Sürdürülebilirlik İstihbarat İşletim Sistemi (SIOS)</strong>'ni
           inşa ediyoruz — karbon hesaplamadan uydu doğrulamaya, GAR raporlamasından COP31 hazırlığına.
         </p>
@@ -126,10 +124,10 @@ export default function HakkimizdaPage() {
       <section className="max-w-5xl mx-auto px-6 py-8 border-t border-white/5">
         <h2 className="text-xl font-black text-white mb-6">Connective Hub Ekosistemi</h2>
         <p className="text-slate-400 text-sm mb-6 max-w-2xl">
-          SustainHub, Connective Hub Dijital Teknolojiler Ltd. bünyesinde geliştirilen 5 projeden biridir.
-          35 yıllık sektör deneyimi ve İstanbul Teknokent + Londra çift merkezli yapıyla inşa edilmektedir.
+          SustainHub, Connective Hub Dijital Teknolojiler Limited bünyesinde geliştirilmektedir.
+          35 yıllık sektör deneyimi ve Dijitalpark Teknokent + Londra çift merkezli yapıyla inşa edilmektedir.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {ECOSYSTEM.map(e => (
             <div key={e.name} className="rounded-xl p-4 border text-center"
               style={{

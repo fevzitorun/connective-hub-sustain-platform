@@ -52,3 +52,8 @@ IS-PLANI-2026.md
 platform/backend/app/data/demo_requests.json
 analiz/
 sabancı_koc/
+grok_logs.csv
+*.af
+PAZARLAMA-PLANI.md
+MODUL-D-denetim.md
+DEVELOPER_BRIEF.md

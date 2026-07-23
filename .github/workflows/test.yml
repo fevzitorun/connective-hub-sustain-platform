@@ -84,6 +84,8 @@ jobs:
           SECRET_KEY: ci_test_secret
           ANTHROPIC_API_KEY: ""
           ENVIRONMENT: test
+        # Not: Bu komut `tests/` klasöründeki tüm `test_*.py` dosyalarını (örn:
+        # test_target_engine.py, test_analysis_router.py) otomatik olarak çalıştırır.
         run: |
           pytest tests/ \
             --cov=app \

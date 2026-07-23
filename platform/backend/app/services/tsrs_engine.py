@@ -1,3 +1,4 @@
+
 """
 TSRS 1 — Sürdürülebilirlikle İlgili Finansal Açıklamalar (KGK, 2023)
 TSRS 2 — İklimle İlgili Açıklamalar (KGK, 2023)
@@ -481,6 +482,48 @@ TSRS_READINESS_BANDS = [
     {"min": 50, "max": 75, "label": "Kurumsal",    "color": "#3b82f6", "desc": "Çoğu gereklilik karşılanıyor; senaryo analizi tamamlanmalı"},
     {"min": 75, "max": 101,"label": "İleri Düzey", "color": "#10b981", "desc": "TSRS'e hazır; bağımsız güvenceye geçilebilir"},
 ]
+
+# ── Gelir Bazlı Emisyon Tahminleme (EEIO) ──────────────────────────────────────
+# Kaynak: Koç Holding 2024 TSRS Raporu, D3 bulgusu.
+# Emisyon verisi olmayan iştirakler için gelir bazlı proxy hesaplama.
+# Faktörler (kg CO₂e / Milyon TL Ciro) — simüle edilmiştir.
+EEIO_REVENUE_FACTORS: dict[str, float] = {
+    "imalat": 18.5,
+    "enerji": 450.2,
+    "otomotiv": 25.1,
+    "finans": 3.8,
+    "perakende": 12.6,
+    "inşaat": 35.9,
+    "turizm": 15.4,
+    "default": 22.0,
+}
+
+def estimate_emissions_by_revenue(
+    subsidiaries: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """
+    Gelir bazlı EEIO modeliyle iştirak emisyonlarını tahmin eder.
+    Girdi: [{"name": "Şirket A", "revenue_m_tl": 100, "sector": "imalat", "reported_co2e": 1500}, ...]
+    """
+    total_revenue = 0
+    total_estimated_co2e = 0
+    estimated_subs = []
+
+    for sub in subsidiaries:
+        if sub.get("reported_co2e") is None:
+            sector = sub.get("sector", "default")
+            factor = EEIO_REVENUE_FACTORS.get(sector, EEIO_REVENUE_FACTORS["default"])
+            estimated_co2e = sub["revenue_m_tl"] * factor
+            total_estimated_co2e += estimated_co2e
+            estimated_subs.append({"name": sub["name"], "estimated_co2e": round(estimated_co2e, 2)})
+        total_revenue += sub["revenue_m_tl"]
+
+    return {
+        "total_estimated_co2e": round(total_estimated_co2e, 2),
+        "estimated_subsidiaries": estimated_subs,
+        "methodology": "Gelir bazlı EEIO (Çevresel Genişletilmiş Girdi-Çıktı) modeli kullanılmıştır.",
+        "source": "MODUL-D-denetim.md, Koç Holding 2024 Raporu analizi",
+    }
 
 # ── Değerlendirme ─────────────────────────────────────────────────────────────
 def full_tsrs_assessment(

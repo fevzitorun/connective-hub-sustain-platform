@@ -337,7 +337,7 @@ Enerji:   1M–10B kWh
 
 ## 12. AI Rapor Yazıcısı
 
-**Model:** `claude-sonnet-4-6` (Anthropic)  
+**Model:** `claude-sonnet-5` (Anthropic Claude 3.5 Sonnet)  
 **Prompt Caching:** Ephemeral 5 dakika — %80 maliyet tasarrufu  
 **Çıktı:** ~3,000–5,000 kelime TSRS uyumlu Türkçe rapor  
 **Async:** `asyncio.to_thread()` — event loop'u bloke etmez  

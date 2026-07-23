@@ -1,10 +1,94 @@
 """
 Claude claude-sonnet-5 ile TSRS 1 & 2 uyumlu Türkçe rapor üretimi.
 Prompt caching aktif — sistem promptu cache'te tutulur (maliyet optimizasyonu).
-16 gerçek Türk TSRS raporundan öğrenilen format.
+16+ gerçek Türk TSRS raporundan ve kendi ideal taslağımızdan öğrenen format.
 """
 import anthropic
 from ..config import settings
+
+FEW_SHOT_EXAMPLE = """
+---
+ÖRNEK GİRDİ (KULLANICI İSTEĞİ):
+
+ŞİRKET PROFİLİ:
+- Ad: SustainHub Holding A.Ş.
+- Sektör: Holding
+- Çalışan Sayısı: 1.500
+- Raporlama Yılı: 2024
+- Raporlama Sınırı: Konsolide
+- Güvence Firması: PwC
+- Güvence Kapsamındaki Metrikler: Kapsam 1, Kapsam 2, Kapsam 3 (Kategori 1-5), Toplam Enerji
+
+EMİSYON VERİLERİ:
+Kapsam 1: 25.100 ton CO₂e
+Kapsam 2 (Piyasa Bazlı): 8.500 ton CO₂e
+Kapsam 3: 162.000 ton CO₂e
+TOPLAM: 195.600 ton CO₂e
+
+KARŞILAŞTIRMALI VERİ (ÖNCEKİ YIL):
+- Yıl: 2023, Toplam Emisyon: 193.600 ton CO₂e
+
+---
+ÖRNEK ÇIKTI (İSTENEN RAPOR FORMATI):
+
+# **SustainHub Holding A.Ş. 2024 Yılı TSRS Sürdürülebilirlik Raporu**
+
+## 1. Rapor Hakkında
+
+Bu rapor, SustainHub Holding A.Ş. ve konsolidasyona tabi tüm iştiraklerinin 1 Ocak 2024 - 31 Aralık 2024 dönemindeki sürdürülebilirlik performansını, KGK tarafından yayımlanan TSRS 1 ve TSRS 2 standartlarına tam uyumlu olarak sunmaktadır.
+
+**Stratejik Yaklaşım:** İlk raporlama yılımız olmasına rağmen, KGK tarafından tanınan geçiş kolaylıklarından (Kapsam 3 ve karşılaştırmalı veri muafiyeti gibi) faydalanmayarak paydaşlarımıza en üst düzeyde şeffaflık sunmayı hedefledik.
+
+**Güvence:** Raporumuzdaki Kapsam 1, Kapsam 2, Kapsam 3 (Kategori 1-5) ve toplam enerji tüketimi metrikleri, PwC tarafından GDS 3410 standardı kapsamında **sınırlı güvence** denetimine tabi tutulmuştur.
+
+---
+
+## 2. Yönetişim
+
+Sürdürülebilirlik, Yönetim Kurulu seviyesinde üç ayda bir toplanan "Sürdürülebilirlik ve ESG Komitesi" tarafından yönetilmekte ve gözetilmektedir. Üst düzey yönetimin prim sistemi, Topluluk geneli emisyon azaltım hedeflerine ulaşma performansına %15 oranında bağlanmıştır.
+
+---
+
+## 3. Strateji
+
+Stratejimiz, IEA'nın Net Sıfır 2050 (NZE) ve IPCC'nin 1.5°C senaryoları çerçevesinde yapılan analizlere dayanmaktadır. Holding olarak, tüm iştiraklerimizin verilerini konsolide ederek Bilim Temelli Hedefler inisiyatifi (SBTi) ile uyumlu, topluluk geneli bir karbonsuzlaşma yol haritası belirledik.
+
+---
+
+## 4. Risk Yönetimi
+
+İklimle ilgili fiziksel riskler (kuraklık, sel) ve geçiş riskleri (karbon vergileri, teknoloji değişimi), kurumsal risk yönetimi çerçevemize tam entegre edilmiştir. Riskler, FAVÖK'ün %2'sini aşma potansiyeline göre önceliklendirilmektedir.
+
+---
+
+## 5. Metrikler ve Hedefler
+
+### 5.1. Sera Gazı Emisyonları (ton CO₂e)
+
+| Kapsam | 2023 | **2024** | Değişim | Yorum (SustainHub AI) |
+|:---|---:|---:|:---:|:---|
+| **Kapsam 1** (Doğrudan) | 26.500 | **25.100** | ▼ %5,3 | Enerji verimliliği projeleri sayesinde yakıt tüketimi azaldı. |
+| **Kapsam 2** (Piyasa Bazlı) | 12.100 | **8.500** | ▼ %29,8 | YEK-G sertifikalı yenilenebilir enerji alımına geçiş yapıldı. |
+| **Kapsam 3** (Değer Zinciri) | 155.000 | **162.000** | ▲ %4,5 | Büyümeye paralel artış; tedarikçi emisyon ölçüm kapasitesi arttı. |
+| **TOPLAM** | 193.600 | **195.600** | ▲ %1,0 | Kapsam 1 ve 2'deki belirgin düşüşe rağmen Kapsam 3'teki artış toplam emisyonları etkiledi. |
+
+### 5.2. Kapsam 3 Emisyonları ve Stratejik Liderlik
+
+Şirketimiz, değer zinciri emisyonlarını (Kapsam 3) hesaplayarak Türkiye'deki ilk raporlama döneminde birçok büyük şirketin ilerisinde bir şeffaflık ve sorumluluk seviyesi sergilemektedir. Bu, iklim risk yönetimi olgunluğumuzun ve paydaşlarımıza karşı olan sorumluluğumuzun bir göstergesidir.
+
+### 5.3. Holding Konsolidasyonu ve Tahminleme
+
+Holdingimizin toplam emisyonlarının %92'si birincil veriye dayanmaktadır. Geriye kalan ve henüz kendi emisyon raporlamasını yapmayan %8'lik iştirak dilimi için, gelir bazlı EEIO (Çevresel Genişletilmiş Girdi-Çıktı) modeli kullanılarak tahmini emisyon hesaplanmış ve Kapsam 3'e dahil edilmiştir.
+
+### 5.4. Topluluk Geneli Hedefler ve Performans
+
+Holdingimiz, iştiraklerimizin sektörel dağılımını ve emisyon ağırlıklarını dikkate alarak konsolide bir SBTi hedefi belirlemiştir.
+
+- **Hedef:** 2030 yılına kadar Kapsam 1+2 emisyonlarında %42, Kapsam 3 emisyonlarında %25 mutlak azaltım (2023 baz yılına göre).
+- **Performans:** Aşağıdaki grafik, mevcut emisyon trendimiz ile 1.5°C uyumlu SBTi hedef yolu arasındaki farkı göstermektedir.
+
+---
+"""
 
 SYSTEM_PROMPT = """Sen Türkiye'nin en deneyimli sürdürülebilirlik raporu yazarısın.
 KGK tarafından yayımlanan TSRS 1 ve TSRS 2 (29.12.2023, 32414 sayılı RG),
@@ -16,6 +100,8 @@ Afyon Çimento 2024, OYAK Çimento 2025, Aksa Enerji 2024,
 Alarko Holding 2024, ENKA 2025, Migros 2025 (Çift Yönlü Önemlilik),
 Tüpraş 2025 (AB Taksonomisi), İller Bankası 2025 (ilk entegre rapor),
 Bupa Acıbadem 2024.
+
+Ayrıca, aşağıda sana verilen "ÖRNEK ÇIKTI" formatı, senin için en önemli referanstır. Bu formata harfiyen uy.
 
 RAPOR FORMATI KURALLARI (gerçek raporlardan çıkarıldı):
 
@@ -70,6 +156,21 @@ RAPOR FORMATI KURALLARI (gerçek raporlardan çıkarıldı):
    kısmında bu notu A seviyesine çıkarmak için yapması gereken 3 somut yatırımı
    (Örn: Güneş paneli, atık ısı geri kazanımı) ROI (Yatırım Getirisi) odaklı olarak öner."""
 
+SYSTEM_PROMPT = FEW_SHOT_EXAMPLE + SYSTEM_PROMPT
+
+SYSTEM_PROMPT_ADDITION = """
+10. STRATEJİK VURGU - KAPSAM 3 LİDERLİĞİ:
+   Eğer bu şirket için Kapsam 3 emisyon verisi (scope3_co2e > 0) sağlanmışsa, bu çok önemli bir başarıdır.
+   Türkiye'nin en büyük holdingleri bile ilk TSRS raporlarında (Koç Holding 2024 Raporu gibi) Kapsam 3 verisini geçiş muafiyeti kapsamında açıklayamamıştır.
+   Bu nedenle, raporun 'Metrik ve Hedefler' bölümünde Kapsam 3 başlığı altında şu anlama gelen bir cümle kur:
+   "Şirketimiz, değer zinciri emisyonlarını (Kapsam 3) hesaplayarak Türkiye'deki ilk raporlama döneminde birçok büyük şirketin ilerisinde bir şeffaflık ve sorumluluk seviyesi sergilemektedir. Bu, iklim risk yönetimi olgunluğumuzun ve paydaşlarımıza karşı olan sorumluluğumuzun bir göstergesidir."
+   Bu vurguyu sadece Kapsam 3 verisi varsa yap. Veri yoksa bu konudan hiç bahsetme."""
+SYSTEM_PROMPT_ADDITION += """
+11. AB TAKSONOMİSİ BÖLÜMÜ:
+   Eğer kullanıcı isteğinde `eu_taxonomy_result` adında bir veri varsa, raporun 'Strateji' bölümünün sonuna 'AB Taksonomisi Uyumu' adında yeni bir alt başlık ekle.
+   Bu bölümde, `eu_taxonomy_result` içindeki `overall_alignment_pct` (genel uyum yüzdesi), `aligned_objectives` (uyumlu hedef sayısı) ve `gaps` (eksikler) listesini kullanarak bir özet paragraf yaz.
+   Örnek: "Şirketimizin ana faaliyeti, AB Taksonomisi çerçevesinde %XX oranında uyumlu olarak değerlendirilmiştir. 6 çevresel hedeften X tanesi ile uyum sağlanırken, özellikle 'Biyoçeşitlilik' ve 'Döngüsel Ekonomi' alanlarında iyileştirme potansiyeli bulunmaktadır."
+   Bu bölümü sadece `eu_taxonomy_result` verisi varsa ekle."""
 
 def generate_tsrs_report(
     company_name: str,
@@ -95,10 +196,13 @@ def generate_tsrs_report(
     is_regulated: bool = False,
     is_public: bool = False,
     language: str = "en",
+    verified_metrics: list[str] | None = None,
     assurance_firm: str = "PwC",
     sector_avg_intensity: float = 2.4,
     compliance_score: int = 0,
     missing_items: list[str] | None = None,
+    eu_taxonomy_result: dict | None = None,
+    historical_data: list[dict] | None = None,
 ) -> tuple[str, dict]:
     """
     TSRS uyumlu tam rapor üret.
@@ -118,7 +222,29 @@ def generate_tsrs_report(
     else:
         lang_instruction = "ÖNEMLİ: Raporu tamamen Türkçe yaz. Sadece TSRS terminolojisini kullan."
 
-    dynamic_system_prompt = SYSTEM_PROMPT + "\n\n10. LANGUAGE & STANDARDS MAPPING:\n" + lang_instruction
+    # Dinamik prompt parçaları
+    if verified_metrics:
+        verified_list_str = ", ".join(verified_metrics)
+        assurance_text = f"Bu raporun {verified_list_str} metrikleri, [{assurance_firm}] tarafından GDS 3000/3410 standardı kapsamında sınırlı güvence denetimine tabi tutulmuştur. Diğer metrikler güvence kapsamında değildir."
+    else:
+        assurance_text = f"Bu rapor, [{assurance_firm}] tarafından GDS 3000/3410 standardı kapsamında sınırlı güvence denetimine tabi tutulmamıştır. Veriler şirket içi kontrollerle hazırlanmıştır."
+
+    historical_text = ""
+    if historical_data:
+        historical_text += "\n\nKARŞILAŞTIRMALI VERİ (ÖNCEKİ YIL):\n"
+        for item in historical_data:
+            historical_text += f"- Yıl: {item['year']}, Toplam Emisyon: {item['total_co2e']:,.1f} ton CO₂e\n"
+        historical_text += "Sistem Prompt Kuralı: Metrikler bölümünde bu veriyi kullanarak trend analizi yap (yüzdesel değişimle)."
+
+    taxonomy_text = ""
+    if eu_taxonomy_result:
+        taxonomy_text += "\n\nAB TAKSONOMİSİ SONUCU:\n"
+        taxonomy_text += f"Genel Uyum: {eu_taxonomy_result.get('overall_alignment_pct', 0)}%\n"
+        taxonomy_text += f"Eksikler: {', '.join(eu_taxonomy_result.get('gaps', []))}\n"
+
+    # Sistem prompt'undaki kural 6'yı dinamik metinle override et
+    dynamic_system_prompt = SYSTEM_PROMPT.replace('Bu rapor, [Denetim Firması] tarafından GDS 3000/3410 standardı\n   kapsamında sınırlı güvence denetimine tabi tutulmuştur.', assurance_text)
+    dynamic_system_prompt += "\n\n" + SYSTEM_PROMPT_ADDITION + "\n\n12. LANGUAGE & STANDARDS MAPPING:\n" + lang_instruction
 
     user_prompt = f"""Aşağıdaki şirket için eksiksiz sürdürülebilirlik raporu yaz. (Zorunlu dil/standart kuralı: {language})
 Tüm zorunlu bölümleri sistem promptundaki kurallara göre hazırla.
@@ -132,6 +258,7 @@ Tüm zorunlu bölümleri sistem promptundaki kurallara göre hazırla.
 - SPK/BDDK Tabi: {'Evet' if is_regulated else 'Hayır'}
 - Halka Açık: {'Evet' if is_public else 'Hayır'}
 - Güvence Firması: {assurance_firm}
+- Güvence Kapsamındaki Metrikler: {', '.join(verified_metrics) if verified_metrics else 'Yok'}
 
 EMİSYON VERİLERİ:
 Kapsam 1 (Doğrudan): {scope1_co2e:,.1f} ton CO₂e
@@ -159,7 +286,7 @@ Kuraklık Riski: {drought_risk}
 TSRS UYUMLULUK SKORU: {compliance_score}/100
 Eksik alanlar: {', '.join(missing_items or []) or 'Yok'}
 
-Şimdi tam raporu yaz. Tüm bölümleri ekle.
+Şimdi tam raporu yaz. Tüm bölümleri ekle.{historical_text}{taxonomy_text}
 Son bölüm olarak TSRS İçerik Endeksi tablosunu oluştur."""
 
     # Streaming: uzun (~15k token) raporlarda tek-parça HTTP okuması read-timeout'a

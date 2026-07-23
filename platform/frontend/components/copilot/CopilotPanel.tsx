@@ -31,7 +31,16 @@ function renderMarkdown(text: string) {
 
 export function CopilotPanel() {
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MSG])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === 'undefined') return [WELCOME_MSG]
+    try {
+      const saved = localStorage.getItem('copilot-messages')
+      return saved ? JSON.parse(saved) : [WELCOME_MSG]
+    } catch (error) {
+      console.error('Failed to parse copilot messages from localStorage', error)
+      return [WELCOME_MSG]
+    }
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [unread, setUnread] = useState(0)
@@ -48,6 +57,13 @@ export function CopilotPanel() {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [open])
+
+  useEffect(() => {
+    // Mesajlar her değiştiğinde localStorage'a kaydet
+    if (messages.length > 1) { // Sadece hoşgeldin mesajı varsa kaydetme
+      localStorage.setItem('copilot-messages', JSON.stringify(messages))
+    }
+  }, [messages])
 
   const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim()
@@ -91,13 +107,13 @@ export function CopilotPanel() {
         aria-label="Sustain Copilot"
       >
         {open ? (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
         ) : (
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            <circle cx="9" cy="10" r="1" fill="white"/>
-            <circle cx="12" cy="10" r="1" fill="white"/>
-            <circle cx="15" cy="10" r="1" fill="white"/>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            <circle cx="9" cy="10" r="1" fill="white" />
+            <circle cx="12" cy="10" r="1" fill="white" />
+            <circle cx="15" cy="10" r="1" fill="white" />
           </svg>
         )}
         {!open && unread > 0 && (
@@ -211,8 +227,8 @@ export function CopilotPanel() {
               }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
               </svg>
             </button>
           </div>

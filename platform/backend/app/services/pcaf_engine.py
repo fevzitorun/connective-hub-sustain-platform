@@ -240,7 +240,13 @@ def _esg_grade(score: int) -> str:
 
 def calculate_borrower(b: BorrowerInput) -> BorrowerResult:
     # PCAF attribution factor = outstanding / EVIC
-    attribution = min(b.outstanding_eur / b.evic_eur, 1.0)
+    if b.evic_eur and b.evic_eur > 0:
+        attribution = min(b.outstanding_eur / b.evic_eur, 1.0)
+    elif b.revenue_eur and b.revenue_eur > 0:
+        # Fallback: EVIC yoksa ciro kullan (daha düşük kaliteli ama kabul edilebilir bir PCAF proxy'si)
+        attribution = min(b.outstanding_eur / b.revenue_eur, 1.0)
+    else:
+        attribution = 0.25 # Son çare: varsayılan bir atıf faktörü
 
     # Company emissions: use reported if available, else proxy
     intensity = SECTOR_INTENSITY.get(b.sector_key, 200.0)

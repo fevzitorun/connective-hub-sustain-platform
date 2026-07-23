@@ -79,9 +79,9 @@ sustainhub/
 | Destekler | Government grants & incentives tracker |
 
 ### Sprint 2 — Enterprise Features ✅
-| Feature | Endpoints |
-|---------|-----------|
-| Draft / Auto-Save | `POST /drafts/save` · `GET /drafts/latest` |
+| Feature | Description |
+|---------|-------------|
+| Draft / Auto-Save | `POST /drafts/save`, `GET /drafts/latest` |
 | Report Versioning | `GET /reports/{id}/versions` — v1/v2/v3 history |
 | RBAC (5 roles) | admin · editor · data_entry · auditor · viewer |
 | Approval Workflow | draft → pending → approved → rejected → published |
@@ -89,16 +89,24 @@ sustainhub/
 | Validation Engine | 8 sector baselines, real-time anomaly detection |
 | Share Links | Password-protected, time-limited report sharing |
 | User Management | Invite, role assignment, deactivation |
-| Test Suite | pytest + pytest-asyncio, SQLite in-memory, 60%+ coverage |
+| Test Suite | pytest + pytest-asyncio, SQLite in-memory, 70%+ coverage |
+
+### Sprint 3 — Analysis Engine & Holding Capabilities 🗺️
+| Feature | Description |
+|---------|-------------|
+| **Holding Consolidation** | İştirakler için gelir bazlı emisyon tahmini (EEIO modeli). |
+| **Strategic Target Setting** | Holding geneli için konsolide, SBTi uyumlu hedef belirleme. |
+| **Advanced Reporting AI** | Kapsam 3 liderliğini vurgular, trend analizi yapar, dinamik güvence beyanı ekler. |
+| **EU Taxonomy Engine** | Faaliyetlerin AB Taksonomisi'ne uyumunu 6 çevresel hedefe göre yüzdesel olarak hesaplar. |
+| **Analysis API** | Tüm motor yeteneklerini (`/analysis/...`) sunan yeni API endpoint'leri. |
 
 ### Roadmap — Phase 3+ 🗺️
 | Phase | Features |
 |-------|----------|
-| 3.0 | Sector benchmark radar, AI target setting (SBTi), audit log |
-| 3.5 | Integration marketplace (SAP, Logo, Eta), COP31 templates, credit scoring |
-| 4.0 | Satellite real data (NASA/ESA), PDF/XBRL export, Stripe billing |
-| 4.5 | CSRD double materiality, CBAM declaration, EUDR supply chain map |
-| 5.0 | Digital Product Passport, FLAG emissions (SBTi), GRI/TCFD/ESRS full |
+| 3.5 | Sektör Kıyaslama Radarı, Denetim İzi (Audit Log), Entegrasyon Pazaryeri (SAP, Logo, Oracle). |
+| 4.0 | **CSRD Çifte Önemlilik Matrisi**, CBAM Beyanı, **EUDR Tedarik Zinciri Haritası**, PDF/XBRL Çıktısı. |
+| 4.5 | **TNFD (Doğa Riskleri) Modülü**, Dijital Ürün Pasaportu, **SROI (Yatırımın Sosyal Getirisi) Motoru**. |
+| 5.0 | FLAG Emisyonları (SBTi), GRI/TCFD/ESRS tam kapsam, Stripe ile faturalama. |
 
 ---
 
@@ -138,25 +146,24 @@ docker-compose up --build
 |----------|--------|--------|
 | TSRS 1 & 2 (KGK) | Turkey | ✅ Sprint 1 |
 | ISO 14064-1 | Global | ✅ Sprint 1 |
-| CBAM | EU→Turkey | 🗺️ Phase 3.5 |
-| CSRD / ESRS | EU | 🗺️ Phase 4.5 |
-| EUDR | EU | 🗺️ Phase 4.5 |
+| BDDK GAR | Turkey | ✅ Sprint 1 |
+| SBTi / Holding Targets | Global | ✅ Sprint 3 |
+| CBAM | EU→Turkey | 🗺️ Phase 4.0 |
+| CSRD / ESRS | EU | 🗺️ Phase 4.0 |
+| EUDR | EU | 🗺️ Phase 4.0 |
 | UK SRS | UK | 🗺️ Phase 3 |
-| GRI | Global | 🗺️ Phase 4.5 |
+| GRI | Global | 🗺️ Phase 5.0 |
 | TCFD | Global | 🗺️ Phase 3 |
 | ISSB S1/S2 | Global | 🗺️ Phase 4 |
-| BDDK GAR | Turkey | ✅ Sprint 1 |
-| SBTi / FLAG | Global | 🗺️ Phase 5 |
-| Digital Product Passport | EU | 🗺️ Phase 5 |
 
 ---
 
 ## Investment
 
 - **Stage:** Seed round  
-- **Ask:** €1.5M (pre-money €5M, 23% equity, SAFE note)  
+- **Ask:** €400K (pre-money €2M, 16.7% equity)  
 - **5-year ARR target:** €40M+  
-- **Headquarters:** Istanbul Teknopark + London
+- **Headquarters:** Dijitalpark Teknokent, İstanbul + Londra
 
 ---
 
@@ -164,11 +171,11 @@ docker-compose up --build
 
 | Role | Person | Location |
 |------|--------|----------|
-| CEO / Founder | Fevzi Torun | Istanbul |
-| CTO (Advisor) | Kemal Yıldırım | London |
-| Research Lead | Erbil Büyükbay | Istanbul |
+| CEO / Founder | Fevzi Torun | İstanbul |
+| Akademik Danışman | Dr. Ayla Torun | Atlas Üniversitesi |
+| CTO (Advisor) | Kemal Yıldırım | Londra |
 
 ---
 
-*Built by Connective Hub Dijital Teknolojiler Ltd.*  
+*Built by Connective Hub Dijital Teknolojiler Limited*  
 *Confidential — not for public distribution*
