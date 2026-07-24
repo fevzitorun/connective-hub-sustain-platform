@@ -1,53 +1,36 @@
+'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { api } from '@/lib/api'
 
-const reports = [
-  {
-    name: 'Akbank 2024 TSRS Sürdürülebilirlik Raporu',
-    sector: '🏦 Bankacılık',
-    standard: 'TSRS 1 & 2',
-    lang: 'TR / EN',
-    score: '87/100 · B',
-    scoreColor: 'var(--green-700)',
-    status: 'Yayında',
-    statusClass: 'bg-green-100 text-green-800',
-    date: 'Mar 2025',
-  },
-  {
-    name: 'Akbank 2024 GAR Portalı',
-    sector: '🏦 BDDK',
-    standard: 'GAR / PCAF',
-    lang: 'TR',
-    score: '%34.2 GAR',
-    scoreColor: '#00897B',
-    status: 'Gönderildi',
-    statusClass: 'bg-green-100 text-green-800',
-    date: 'Nis 2025',
-  },
-  {
-    name: 'Akbank 2023 Sürdürülebilirlik Raporu',
-    sector: '🏦 Bankacılık',
-    standard: 'TSRS 1 & 2',
-    lang: 'TR / EN / DE',
-    score: '76/100 · C',
-    scoreColor: '#F57F17',
-    status: 'Yayında',
-    statusClass: 'bg-green-100 text-green-800',
-    date: 'Mar 2024',
-  },
-  {
-    name: '2025 Taslak Raporu',
-    sector: '🏦 Bankacılık',
-    standard: 'TSRS 1 & 2',
-    lang: 'TR',
-    score: 'Hesaplanıyor…',
-    scoreColor: 'var(--muted-foreground)',
-    status: 'Taslak',
-    statusClass: 'bg-amber-100 text-amber-800',
-    date: 'Devam ediyor',
-  },
-]
+const STANDARD_LABELS: Record<string, string> = {
+  tsrs: 'TSRS 1 & 2', gri: 'GRI Universal', tcfd: 'TCFD', integrated: 'Entegre Rapor', uk_srs: 'UK SRS',
+}
+const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
+  draft: { label: 'Taslak', cls: 'bg-amber-100 text-amber-800' },
+  generating: { label: 'Oluşturuluyor', cls: 'bg-amber-100 text-amber-800' },
+  completed: { label: 'Tamamlandı', cls: 'bg-green-100 text-green-800' },
+  failed: { label: 'Başarısız', cls: 'bg-red-100 text-red-800' },
+  pending: { label: 'Onay Bekliyor', cls: 'bg-amber-100 text-amber-800' },
+  approved: { label: 'Onaylandı', cls: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Reddedildi', cls: 'bg-red-100 text-red-800' },
+  published: { label: 'Yayında', cls: 'bg-green-100 text-green-800' },
+}
 
 export function RecentReports() {
+  const [summary, setSummary] = useState<Awaited<ReturnType<typeof api.dashboard.summary>> | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.dashboard.summary()
+      .then(setSummary)
+      .catch(() => setSummary(null))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const reports = summary?.reports.recent ?? []
+  const companyName = summary?.company.name ?? 'Şirketiniz'
+
   return (
     <div className="bg-white rounded-xl border p-5 shadow-sm" style={{ borderColor: 'var(--border)' }}>
       <div className="flex items-center justify-between mb-4">
@@ -60,46 +43,61 @@ export function RecentReports() {
           Tümünü Gör
         </Link>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-              {['Rapor Adı', 'Sektör', 'Standart', 'Dil', 'TSRS Skoru', 'Durum', 'Tarih', ''].map(h => (
-                <th key={h} className="pb-2 text-left text-xs font-semibold uppercase tracking-wide"
-                  style={{ color: 'var(--muted-foreground)' }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {reports.map(r => (
-              <tr key={r.name} className="border-b hover:bg-green-50/50 transition-colors"
-                style={{ borderColor: 'var(--border)' }}>
-                <td className="py-3 font-semibold pr-4">{r.name}</td>
-                <td className="py-3 pr-4 text-xs whitespace-nowrap">{r.sector}</td>
-                <td className="py-3 pr-4 text-xs">{r.standard}</td>
-                <td className="py-3 pr-4 text-xs">{r.lang}</td>
-                <td className="py-3 pr-4 text-xs font-bold" style={{ color: r.scoreColor }}>{r.score}</td>
-                <td className="py-3 pr-4">
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${r.statusClass}`}>
-                    {r.status}
-                  </span>
-                </td>
-                <td className="py-3 pr-4 text-xs" style={{ color: 'var(--muted-foreground)' }}>{r.date}</td>
-                <td className="py-3">
-                  <button
-                    className="text-xs font-semibold px-2 py-1 rounded-md border transition-colors"
-                    style={{ borderColor: 'var(--green-700)', color: 'var(--green-700)' }}
-                  >
-                    İndir
-                  </button>
-                </td>
+      {loading ? (
+        <div className="h-32 animate-pulse bg-gray-50 rounded" />
+      ) : reports.length === 0 ? (
+        <p className="text-sm text-slate-400 py-8 text-center">Henüz rapor oluşturulmadı.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
+                {['Rapor Adı', 'Standart', 'Dil', 'Uyum Skoru', 'Durum', 'Tarih', ''].map(h => (
+                  <th key={h} className="pb-2 text-left text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: 'var(--muted-foreground)' }}>
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {reports.map(r => {
+                const status = STATUS_LABELS[r.status] ?? { label: r.status, cls: 'bg-slate-100 text-slate-600' }
+                return (
+                  <tr key={r.id} className="border-b hover:bg-green-50/50 transition-colors"
+                    style={{ borderColor: 'var(--border)' }}>
+                    <td className="py-3 font-semibold pr-4">
+                      {companyName} — v{r.version_number} {STANDARD_LABELS[r.standard ?? ''] ?? r.standard}
+                    </td>
+                    <td className="py-3 pr-4 text-xs">{STANDARD_LABELS[r.standard ?? ''] ?? r.standard ?? '—'}</td>
+                    <td className="py-3 pr-4 text-xs uppercase">{r.language ?? '—'}</td>
+                    <td className="py-3 pr-4 text-xs font-bold">
+                      {r.compliance_score != null ? `${r.compliance_score}/100 · ${r.compliance_grade ?? ''}` : 'Hesaplanıyor…'}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${status.cls}`}>
+                        {status.label}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                      {r.created_at ? new Date(r.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                    </td>
+                    <td className="py-3">
+                      <Link
+                        href="/raporlar"
+                        className="text-xs font-semibold px-2 py-1 rounded-md border transition-colors inline-block"
+                        style={{ borderColor: 'var(--green-700)', color: 'var(--green-700)' }}
+                      >
+                        Görüntüle
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

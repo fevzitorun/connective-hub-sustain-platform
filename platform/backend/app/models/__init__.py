@@ -16,6 +16,7 @@ from .product_passport import (
     ProductPassport, PassportMaterial, PassportDocument, PassportEvent,
     PassportSupplier,
 )
+from .taxonomy_assessment import TaxonomyAssessment
 
 __all__ = [
     "Company", "User", "EmissionRecord", "Report", "ReportDraft", "ShareLink",
@@ -26,4 +27,5 @@ __all__ = [
     "Municipality", "MunicipalityIndexScore",
     "Product", "ProductPassport", "PassportMaterial",
     "PassportDocument", "PassportEvent", "PassportSupplier",
+    "TaxonomyAssessment",
 ]

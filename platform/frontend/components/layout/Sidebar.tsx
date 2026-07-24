@@ -83,6 +83,7 @@ const navItems = [
   ]},
   { section: 'Account', items: [
     { href: '/abonelik', label: 'Subscription', icon: '💳', badge: 'NEW' },
+    { href: '/ayarlar', label: 'Herkese Açık Profil', icon: '🌐' },
     { href: '/pre-launch', label: 'Pre-Launch QA', icon: '🚀', badge: 'ADMIN' },
   ]},
 ]

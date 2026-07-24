@@ -1,5 +1,5 @@
 # SustainHub — Developer Brief
-**Global Sustainability Intelligence Platform — sustainhub.ai**
+**Global Sustainability Intelligence Platform — sustainhub.online**
 Connective Hub Dijital Teknolojiler Ltd. · Gizli · İstanbul & Londra
 
 ---
@@ -286,7 +286,7 @@ Frontend: Vercel / Netlify (Next.js)
 Backend:  Railway / Render / AWS ECS
 DB:       Supabase / AWS RDS PostgreSQL
 Redis:    Upstash / AWS ElastiCache
-Domain:   sustainhub.ai (satın alınacak)
+Domain:   sustainhub.online (kanonik — bkz. app/robots.ts, platform/frontend/vercel.json)
 ```
 
 ---
@@ -346,4 +346,4 @@ Enerji:   1M–10B kWh
 ---
 
 *SustainHub · Connective Hub Dijital Teknolojiler Ltd.*  
-*Haziran 2026 · sustainhub.ai*
+*Haziran 2026 · sustainhub.online*

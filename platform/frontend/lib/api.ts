@@ -111,11 +111,17 @@ export const api = {
 
   dashboard: {
     summary: () => request<{
+      company: { name: string | null; sector: string | null; employee_count: number | null }
       reporting_year: number
       emissions: { scope1: number; scope2: number; scope3: number; total: number; unit: string }
+      emissions_history: Array<{ year: number; scope1: number; scope2: number; scope3: number; total: number }>
       energy: { electricity_kwh: number; renewable_pct: number }
       reports: { total: number; approved: number; recent: Report[] }
-      compliance: { score: number | null; grade: string | null }
+      compliance: { score: number | null; grade: string | null; checks: Record<string, boolean> | null }
+      deadlines: Array<{
+        segment: string; deadline: string; regulator: string
+        mandatory: boolean; note: string; days_left: number | null
+      }>
     }>('/dashboard/summary'),
   },
 
@@ -798,5 +804,25 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       }).then(r => r.json()),
+  },
+
+  company: {
+    updatePublicProfile: (data: { slug: string; enabled: boolean }) =>
+      request<{ slug: string; public_profile_enabled: boolean }>(
+        '/companies/me/public-profile', { method: 'PATCH', body: JSON.stringify(data) }
+      ),
+  },
+
+  publicCompany: {
+    get: (slug: string) =>
+      request<{
+        name: string
+        sector: string | null
+        sustainScore: { grade: string | null; score: number | null }
+        emissionsReducedTco2e: number | null
+        netZeroTargetYear: number | null
+        verification: { assuranceFirm: string | null; verified: boolean }
+        badges: string[]
+      }>(`/api/public/companies/${slug}`),
   },
 }

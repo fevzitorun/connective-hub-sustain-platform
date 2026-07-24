@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-from pydantic import BaseModel
 import csv
 import io
 
@@ -84,20 +83,9 @@ async def export_audit_csv(
         headers={"Content-Disposition": "attachment; filename=denetim-izi.csv"},
     )
 
-class VerifyPayload(BaseModel):
-    record_id: int
-    status: str
-    notes: str = ""
-
-@router.post("/verify")
-async def verify_emission_record(
-    payload: VerifyPayload,
-    current_user=Depends(get_current_user)
-):
-    """Denetçi tarafından kaydın doğrulanması."""
-    require_role("auditor")(current_user)
-    from ..services.verification_service import verify_record
-    
-    auditor_name = current_user.full_name or current_user.email
-    result = verify_record(payload.record_id, auditor_name, payload.status, payload.notes)
-    return result
+# Not: Emisyon kaydı doğrulama akışı artık burada değil — bkz. app/routes/verification.py
+# (POST /api/verification/request, POST /api/verification/{id}/verify). Bu dosyadaki eski
+# hali gerçek Verification tablosunu değil bellek-içi bir mock'u kullanıyordu, kayıt ID'si
+# tipi (int) EmissionRecord'un gerçek UUID id'siyle uyuşmuyordu ve `current_user.full_name`
+# (User modelinde böyle bir alan yok, doğrusu `name`) her çağrıda AttributeError/500
+# fırlatıyordu — kaldırıldı.

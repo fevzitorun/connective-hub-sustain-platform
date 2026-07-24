@@ -2,7 +2,7 @@
 
 **The Operating System for Sustainability — Any Sector. Any Country.**
 
-Istanbul · London | sustainhub.ai
+Istanbul · London | sustainhub.online
 
 ---
 
@@ -91,14 +91,14 @@ sustainhub/
 | User Management | Invite, role assignment, deactivation |
 | Test Suite | pytest + pytest-asyncio, SQLite in-memory, 70%+ coverage |
 
-### Sprint 3 — Analysis Engine & Holding Capabilities 🗺️
+### Sprint 3 — Analysis Engine & Holding Capabilities (kısmen ✅)
 | Feature | Description |
 |---------|-------------|
-| **Holding Consolidation** | İştirakler için gelir bazlı emisyon tahmini (EEIO modeli). |
-| **Strategic Target Setting** | Holding geneli için konsolide, SBTi uyumlu hedef belirleme. |
-| **Advanced Reporting AI** | Kapsam 3 liderliğini vurgular, trend analizi yapar, dinamik güvence beyanı ekler. |
-| **EU Taxonomy Engine** | Faaliyetlerin AB Taksonomisi'ne uyumunu 6 çevresel hedefe göre yüzdesel olarak hesaplar. |
-| **Analysis API** | Tüm motor yeteneklerini (`/analysis/...`) sunan yeni API endpoint'leri. |
+| **Holding Consolidation** ✅ | İştirakler için gelir bazlı emisyon tahmini (EEIO modeli). `POST /analysis/estimate-emissions-by-revenue` |
+| **Strategic Target Setting** ✅ | Holding geneli için konsolide, SBTi uyumlu hedef belirleme. `POST /analysis/calculate-holding-target` |
+| **Advanced Reporting AI** 🗺️ | Kapsam 3 liderliğini vurgular, trend analizi yapar, dinamik güvence beyanı ekler. |
+| **EU Taxonomy Engine** 🗺️ | Hesaplama motoru (`/taxonomy/calculate`) çalışıyor; sonuç kalıcı kaydı ve rapor üretimi henüz eksik. |
+| **Analysis API** ✅ | `/analysis/...` altında Holding Consolidation + Strategic Target Setting endpoint'leri auth'lu şekilde aktif (`app/routes/analysis.py`). |
 
 ### Roadmap — Phase 3+ 🗺️
 | Phase | Features |
@@ -132,29 +132,54 @@ docker-compose up --build
 
 ## Live Deployments
 
+Kanonik domain **sustainhub.online** — `platform/frontend` (Next.js) burada deploy edilir,
+`app/robots.ts`'teki `host` alanı ve `platform/frontend/vercel.json`'daki API rewrite
+hedefi (`api.sustainhub.online`) bunu doğrular.
+
 | URL | Environment |
 |-----|-------------|
-| sustaincomtr.vercel.app | Marketing site + pitch deck |
-| sustaincomtr.vercel.app/pitch | Investor deck |
-| sustaincomtr.vercel.app/demo | Platform prototype |
+| www.sustainhub.online | Platform + marketing (canonical) |
+| api.sustainhub.online | Backend API |
+
+> **Eski/paralel site**: Kök dizindeki `index.html` / `pitch-deck.html` / `prototype.html` +
+> kök `vercel.json`, ayrı ve daha eski bir statik pazarlama sitesi olup `sustaincomtr.vercel.app`
+> altında hâlâ yaşıyor olabilir. Bu artık kanonik değil — `platform/frontend`'in kendi
+> pazarlama sayfaları (`/`, `/hakkimizda`, `/products`, `/investors` vb.) esas siteyi
+> oluşturuyor. Bu iki paralel site birleştirilmeli veya eski statik site arşivlenmeli.
 
 ---
 
 ## Regulatory Coverage
 
+> ⚠️ Bu tablo uzun süre kod tabanının çok gerisinde kaldı (birçok "🗺️ planlanan" satır
+> aslında aylardır kodda mevcuttu). Aşağıdaki durumlar `app/routes/`'daki gerçek route
+> dosyalarına bakılarak doğrulandı (2026-07-24). "✅ Implemented" = endpoint gerçekten
+> var ve çalışıyor; regülasyon-doğruluğu açısından tam denetlenmiş/sertifikalı anlamına
+> gelmez — bkz. `app/services/*_engine.py` içindeki bazı motorlar hâlâ basitleştirilmiş
+> varsayımlar kullanıyor (ör. `taxonomy_engine.py`).
+
 | Standard | Region | Status |
 |----------|--------|--------|
-| TSRS 1 & 2 (KGK) | Turkey | ✅ Sprint 1 |
-| ISO 14064-1 | Global | ✅ Sprint 1 |
-| BDDK GAR | Turkey | ✅ Sprint 1 |
-| SBTi / Holding Targets | Global | ✅ Sprint 3 |
-| CBAM | EU→Turkey | 🗺️ Phase 4.0 |
-| CSRD / ESRS | EU | 🗺️ Phase 4.0 |
-| EUDR | EU | 🗺️ Phase 4.0 |
-| UK SRS | UK | 🗺️ Phase 3 |
-| GRI | Global | 🗺️ Phase 5.0 |
-| TCFD | Global | 🗺️ Phase 3 |
-| ISSB S1/S2 | Global | 🗺️ Phase 4 |
+| TSRS 1 & 2 (KGK) | Turkey | ✅ Implemented (`tsrs.py`) |
+| ISO 14064-1 | Global | ✅ Implemented (`iso14064.py`) |
+| BDDK GAR | Turkey | ✅ Implemented (`gar.py`, `gar_bank.py`) |
+| SBTi / Holding Targets | Global | ✅ Implemented (`sbti.py`, `analysis.py`) |
+| CBAM | EU→Turkey | ✅ Implemented (`cbam.py`) |
+| CSRD / ESRS (Double Materiality) | EU | ✅ Implemented (`materiality.py`) |
+| EUDR | EU | ✅ Implemented (`eudr.py`) |
+| UK SRS / SDR | UK | ✅ Implemented (`uk_sdr.py`) |
+| GRI 2021 | Global | ✅ Implemented (`gri.py`) |
+| TCFD | Global | ✅ Implemented (`tcfd.py`) |
+| ISSB S1/S2 | Global | ✅ Implemented (`issb.py`) |
+| TNFD | Global | ✅ Implemented (`tnfd.py`) |
+| EU Taxonomy (2020/852) | EU | ✅ Implemented — 2 ayrı motor: `eu_taxonomy.py` (stateless) + `taxonomy.py` (kalıcı, company/yıl bazlı) |
+| Digital Product Passport (ESPR 2024/1781) | EU | ✅ Implemented (`dpp.py`) |
+| Water Footprint / ESRS E2-E5 | Global | ✅ Implemented (`water_esrs.py`) |
+| SASB + UN SDG | Global | ✅ Implemented (`sasb_sdg.py`) |
+
+**Test kapsamı**: Yukarıdaki motorların çoğu için `tests/test_regulatory_engines_smoke.py`'de
+temel "happy path" testleri var (derin regülasyon-doğruluğu değil, endpoint'in çökmediğini
+ve mantıklı sonuç ürettiğini doğrular).
 
 ---
 

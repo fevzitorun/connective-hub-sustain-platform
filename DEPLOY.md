@@ -101,7 +101,7 @@ railway run --service backend -- alembic upgrade head
 ### 7. Domain
 
 Railway Dashboard → **Settings** → **Networking** → **Generate Domain**
-veya Custom Domain: `api.sustainhub.ai`
+veya Custom Domain: `api.sustainhub.online`
 
 ### 8. İlk Admin Hesabı (Seed)
 
@@ -152,7 +152,7 @@ asyncio.run(engine.begin().__aenter__().then(lambda c: c.run_sync(Base.metadata.
 
 ### 4. Custom Domain
 
-Render Dashboard → **Settings** → **Custom Domains** → `api.sustainhub.ai`
+Render Dashboard → **Settings** → **Custom Domains** → `api.sustainhub.online`
 
 ---
 
@@ -178,13 +178,19 @@ curl -X POST https://your-domain.com/auth/register \
 
 ## Frontend (Vercel)
 
-Frontend zaten Vercel'de deploy: `sustaincomtr.vercel.app`
+Frontend zaten Vercel'de deploy: `www.sustainhub.online` (bkz. `platform/frontend/vercel.json`,
+`app/robots.ts`'teki `host` alanı — kanonik domain).
+
+> Not: Kök dizindeki `vercel.json` + `index.html`/`pitch-deck.html`/`prototype.html` eski,
+> ayrı bir statik pazarlama sitesi — `sustaincomtr.vercel.app` altında hâlâ mevcut olabilir
+> ama artık kanonik değil. `platform/frontend`'in kendi pazarlama sayfaları (`/`, `/hakkimizda`,
+> `/products` vb.) esas siteyi oluşturuyor.
 
 Backend URL'sini frontend'e bağlamak için:
 
 ```
 # Vercel Dashboard → Settings → Environment Variables
-NEXT_PUBLIC_API_URL=https://api.sustainhub.ai
+NEXT_PUBLIC_API_URL=https://api.sustainhub.online
 ```
 
 ---

@@ -175,7 +175,7 @@ GET    /public/passport/slug/{slug}        Kısa slug ile
 | `/p/product/[dpp_id]` | QR hedefi — tüketici arayüzü |
 | `/urunler/dpp` | Pazarlama sayfası + demo |
 
-**QR akışı:** Kullanıcı ürün etiketindeki QR'yi tarar → `https://sustaincomtr.vercel.app/p/product/{uuid}` → responsive pasaport sayfası açılır (menşei, malzeme, karbon, geri dönüşüm bilgisi, indirilebilir belgeler).
+**QR akışı:** Kullanıcı ürün etiketindeki QR'yi tarar → `https://www.sustainhub.online/p/product/{uuid}` → responsive pasaport sayfası açılır (menşei, malzeme, karbon, geri dönüşüm bilgisi, indirilebilir belgeler).
 
 **Not (AGENTS.md):** Frontend'de bu proje özel Next.js sürümü kullanıyor. Kod yazmadan önce `node_modules/next/dist/docs/` okunacak.
 
@@ -226,7 +226,7 @@ GET    /public/passport/slug/{slug}        Kısa slug ile
 ## 10. Karar Bekleyen Noktalar
 
 1. **Public URL yolu:** `/p/product/{uuid}` mı, `/dpp/{slug}` mı? (SEO + kısalık)
-2. **QR domain:** `sustaincomtr.vercel.app` mı yoksa özel kısa domain `dpp.st` mi?
+2. **QR domain:** `sustainhub.online` (kanonik platform domaini) mı yoksa özel kısa domain `dpp.st` mi?
 3. **Pilot fiyatlama:** ücretsiz mi, sembolik mi (1 EUR)? Erbil Hanım'ın görüşü lazım.
 4. **Marka:** "SustainHub DPP" mi "SustainPass" gibi alt-marka mı?
 

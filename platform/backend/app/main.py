@@ -189,6 +189,16 @@ from .routes import dpp
 app.include_router(dpp.router)
 app.include_router(dpp.public_router)
 
+# Herkese Açık Şirket Profili (/p/{slug}) — opt-in, gerçek veriden hesaplanır
+from .routes import public_company
+app.include_router(public_company.router)
+app.include_router(public_company.public_router)
+
+# Sprint 3 — Analysis API: Holding Konsolidasyonu (eskiden .github/workflows/'ta
+# yanlış yerde duran, hiç bağlanmamış ölü kod — şimdi gerçekten çalışıyor)
+from .routes import analysis
+app.include_router(analysis.router)
+
 
 @app.on_event("startup")
 async def startup():

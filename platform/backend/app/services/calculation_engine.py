@@ -351,6 +351,7 @@ def calculate_tsrs_compliance(report_data: dict) -> dict:
         "total_checks": total,
         "missing": [k for k, v in checks.items() if not v],
         "grade": grade,
+        "checks": checks,
     }
 
 

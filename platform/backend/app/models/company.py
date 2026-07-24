@@ -23,6 +23,9 @@ class Company(Base):
     plan_type: Mapped[str] = mapped_column(String(20), default="free")
     is_regulated: Mapped[bool] = mapped_column(Boolean, default=False)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Herkese açık şirket profili (/p/{slug}) — is_public'ten farklı, o "halka açık/BIST" anlamında kullanılıyor.
+    slug: Mapped[str | None] = mapped_column(String(80), unique=True, index=True, nullable=True)
+    public_profile_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     is_exporter: Mapped[bool] = mapped_column(Boolean, default=False)
     net_zero_target_year: Mapped[int | None] = mapped_column(Integer)
     brand_color: Mapped[str | None] = mapped_column(String(7))

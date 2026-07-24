@@ -16,6 +16,7 @@ from ..services.ai_report_writer import generate_tsrs_report
 from ..models.taxonomy_engine import calculate_full_taxonomy
 from ..models.materiality_engine import calculate_double_materiality
 from ..models.taxonomy_schema import TaxonomyCalculationRequest, TaxonomyResult
+from .taxonomy import save_taxonomy_assessment
 from ..services.calculation_engine import SECTOR_BENCHMARKS, calculate_tsrs_compliance
 from ..services.rbac import require_permission, can, get_active_company_id
 from ..services.auth import hash_password, verify_password
@@ -86,6 +87,7 @@ async def _run_report_generation(
                     activities=taxonomy_activities
                 )
                 taxonomy_result_obj = calculate_full_taxonomy(taxonomy_request)
+                await save_taxonomy_assessment(db, taxonomy_result_obj, nace_code=nace_code)
 
                 # 4. Çifte Önemlilik motorunu Taksonomi sonuçlarıyla entegre çalıştır
                 materiality_result_obj = calculate_double_materiality(

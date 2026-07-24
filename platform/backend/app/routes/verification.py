@@ -53,17 +53,42 @@ async def request_verification(
     res_exist = await db.execute(stmt_exist)
     if res_exist.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Bu emisyon için zaten doğrulama talebi var")
-        
+
+    # Şirkette "auditor" rolüne sahip bir kullanıcıya ata (Verification.auditor_id NOT NULL
+    # bir FK — önceden burada gerçek olmayan bir ID yazılıyordu, Postgres'te FK ihlaliyle
+    # her talebi kırıyordu).
+    auditor_stmt = select(User).where(
+        User.company_id == current_user.company_id,
+        User.role == "auditor",
+        User.is_active.is_(True),
+    ).limit(1)
+    auditor = (await db.execute(auditor_stmt)).scalar_one_or_none()
+    if not auditor:
+        raise HTTPException(
+            status_code=400,
+            detail="Şirketinizde 'auditor' rolüne sahip aktif bir kullanıcı yok. "
+                   "Doğrulama talebi oluşturmadan önce bir denetçi davet edin.",
+        )
+
     verification = Verification(
         emission_id=req.emission_id,
-        auditor_id="mock-auditor-id", # In real app, auditor is assigned or chosen
+        auditor_id=auditor.id,
         status="pending"
     )
     db.add(verification)
     await db.commit()
     await db.refresh(verification)
-    
-    return verification
+
+    return VerificationResponse(
+        id=verification.id,
+        emission_id=verification.emission_id,
+        auditor_id=verification.auditor_id,
+        status=verification.status,
+        assurance_level=verification.assurance_level,
+        materiality_threshold=verification.materiality_threshold,
+        verified_at=verification.verified_at,
+        created_at=verification.created_at,
+    )
 
 @router.get("/list")
 async def list_verifications(
@@ -72,12 +97,29 @@ async def list_verifications(
 ):
     """Denetçinin kendisine atanmış doğrulamaları görmesi."""
     require_role("auditor")(current_user)
-    
-    stmt = select(Verification) # In real app: where(Verification.auditor_id == current_user.id)
+
+    # Önceden şirket/denetçi filtresi yoktu — herhangi bir "auditor" rolündeki kullanıcı
+    # sistemdeki TÜM şirketlerin doğrulama kayıtlarını görebiliyordu (tenant izolasyon açığı).
+    stmt = select(Verification).where(Verification.auditor_id == current_user.id)
     res = await db.execute(stmt)
     verifications = res.scalars().all()
-    
-    return {"verifications": verifications}
+
+    return {
+        "verifications": [
+            {
+                "id": v.id,
+                "emission_id": v.emission_id,
+                "auditor_id": v.auditor_id,
+                "status": v.status,
+                "findings": v.findings,
+                "assurance_level": v.assurance_level,
+                "materiality_threshold": v.materiality_threshold,
+                "verified_at": v.verified_at.isoformat() if v.verified_at else None,
+                "created_at": v.created_at.isoformat() if v.created_at else None,
+            }
+            for v in verifications
+        ]
+    }
 
 @router.post("/{verification_id}/verify")
 async def verify_record(
@@ -95,7 +137,12 @@ async def verify_record(
     
     if not verification:
         raise HTTPException(status_code=404, detail="Doğrulama kaydı bulunamadı")
-        
+
+    # Sadece bu kayda atanmış denetçi tamamlayabilir — önceden herhangi bir "auditor"
+    # rolündeki kullanıcı sistemdeki HERHANGİ bir doğrulamayı değiştirebiliyordu.
+    if verification.auditor_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Bu doğrulama size atanmamış.")
+
     verification.status = update.status
     verification.findings = update.findings
     if update.status == "verified":
