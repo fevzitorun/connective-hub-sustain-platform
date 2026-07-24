@@ -13,6 +13,7 @@ class Company(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     tax_id: Mapped[str | None] = mapped_column(String(11), unique=True)
     sector: Mapped[str | None] = mapped_column(String(100))
+    nace_code: Mapped[str | None] = mapped_column(String(20))
     sasb_volume: Mapped[str | None] = mapped_column(String(50))
     employee_count: Mapped[int | None] = mapped_column(Integer)
     annual_revenue_tl: Mapped[float | None] = mapped_column(Numeric(20, 2))

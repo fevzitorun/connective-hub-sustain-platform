@@ -2,6 +2,7 @@ from sqlalchemy import Integer, String, ForeignKey, DateTime, Text, JSON, Boolea
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timezone
 from ..database import Base
 
@@ -22,7 +23,7 @@ class Report(Base):
     content_text: Mapped[str | None] = mapped_column(Text)
     compliance_score: Mapped[int | None] = mapped_column(Integer)
     compliance_grade: Mapped[str | None] = mapped_column(String(2))
-    compliance_detail: Mapped[dict | None] = mapped_column(JSON)
+    compliance_detail: Mapped[dict | None] = mapped_column(JSONB().with_variant(JSON, "sqlite"))
 
     pdf_url: Mapped[str | None] = mapped_column(Text)
     word_url: Mapped[str | None] = mapped_column(Text)

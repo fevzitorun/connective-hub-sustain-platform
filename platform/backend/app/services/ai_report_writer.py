@@ -172,6 +172,13 @@ SYSTEM_PROMPT_ADDITION += """
    Örnek: "Şirketimizin ana faaliyeti, AB Taksonomisi çerçevesinde %XX oranında uyumlu olarak değerlendirilmiştir. 6 çevresel hedeften X tanesi ile uyum sağlanırken, özellikle 'Biyoçeşitlilik' ve 'Döngüsel Ekonomi' alanlarında iyileştirme potansiyeli bulunmaktadır."
    Bu bölümü sadece `eu_taxonomy_result` verisi varsa ekle."""
 
+SYSTEM_PROMPT_ADDITION += """
+12. ENTEGRE ANALİZ (TAKSONOMİ & ÖNEMLİLİK):
+   Eğer hem `eu_taxonomy_result` hem de `materiality_result` verileri mevcutsa, 'Strateji' bölümünün sonuna 'Entegre Sürdürülebilirlik Analizi (Taksonomi & Çifte Önemlilik)' adında bir alt başlık ekle.
+   Bu bölümde, şirketin Taksonomi uyumunun (%XX) Çifte Önemlilik matrisindeki finansal riskleri nasıl etkilediğini açıkla.
+   Örnek: "Şirketimizin AB Taksonomisi'ne %YY oranındaki uyumu, Çifte Önemlilik analizimizde 'İklim Değişikliği' ve 'Döngüsel Ekonomi' gibi konuların finansal önemliliğini doğrudan etkilemektedir. Düşük uyum, bu alanlardaki geçiş risklerini artırmaktadır. En önemli konularımız şunlardır: [material_topics listesi]."
+   Bu entegre bölümü sadece her iki veri de mevcutsa ekle. Eğer sadece biri varsa, kendi kuralına göre (örn: Kural 11) ekle."""
+
 def generate_tsrs_report(
     company_name: str,
     sector: str,
@@ -202,6 +209,7 @@ def generate_tsrs_report(
     compliance_score: int = 0,
     missing_items: list[str] | None = None,
     eu_taxonomy_result: dict | None = None,
+    materiality_result: dict | None = None,
     historical_data: list[dict] | None = None,
 ) -> tuple[str, dict]:
     """
@@ -239,9 +247,17 @@ def generate_tsrs_report(
     taxonomy_text = ""
     if eu_taxonomy_result:
         taxonomy_text += "\n\nAB TAKSONOMİSİ SONUCU:\n"
-        taxonomy_text += f"Genel Uyum: {eu_taxonomy_result.get('overall_alignment_pct', 0)}%\n"
-        taxonomy_text += f"Eksikler: {', '.join(eu_taxonomy_result.get('gaps', []))}\n"
+        taxonomy_text += f"- Genel Uyum: {eu_taxonomy_result.get('overall_alignment_pct', 0)}%\n"
+        taxonomy_text += f"- Uyumlu Hedef Sayısı: {eu_taxonomy_result.get('aligned_objectives', 0)}\n"
+        taxonomy_text += f"- Eksikler: {', '.join(eu_taxonomy_result.get('gaps', []))}\n"
 
+    materiality_text = ""
+    if materiality_result:
+        materiality_text += "\n\nÇİFTE ÖNEMLİLİK SONUCU:\n"
+        materiality_text += f"- Önemli Konular: {', '.join(materiality_result.get('material_topics', []))}\n"
+        materiality_text += f"- Finansal Önemlilik Skoru (Ortalama): {materiality_result.get('financial_score', 0)}\n"
+
+ 
     # Sistem prompt'undaki kural 6'yı dinamik metinle override et
     dynamic_system_prompt = SYSTEM_PROMPT.replace('Bu rapor, [Denetim Firması] tarafından GDS 3000/3410 standardı\n   kapsamında sınırlı güvence denetimine tabi tutulmuştur.', assurance_text)
     dynamic_system_prompt += "\n\n" + SYSTEM_PROMPT_ADDITION + "\n\n12. LANGUAGE & STANDARDS MAPPING:\n" + lang_instruction
@@ -286,7 +302,7 @@ Kuraklık Riski: {drought_risk}
 TSRS UYUMLULUK SKORU: {compliance_score}/100
 Eksik alanlar: {', '.join(missing_items or []) or 'Yok'}
 
-Şimdi tam raporu yaz. Tüm bölümleri ekle.{historical_text}{taxonomy_text}
+Şimdi tam raporu yaz. Tüm bölümleri ekle.{historical_text}{taxonomy_text}{materiality_text}
 Son bölüm olarak TSRS İçerik Endeksi tablosunu oluştur."""
 
     # Streaming: uzun (~15k token) raporlarda tek-parça HTTP okuması read-timeout'a

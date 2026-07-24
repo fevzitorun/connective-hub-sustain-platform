@@ -169,6 +169,82 @@ BUILTIN_TEMPLATES = [
         ),
         "is_active": True,
     },
+    {
+        "id": "eu-taxonomy-v1",
+        "name": "EU Taxonomy Raporu",
+        "standard": "eu_taxonomy",
+        "language": "en",
+        "description": "Tüzük (AB) 2020/852 — Bir şirketin ekonomik faaliyetlerinin 6 çevresel hedefe "
+                       "göre sürdürülebilirlik performansını değerlendiren rapor.",
+        "required_sections": [
+            "Executive Summary",
+            "Taxonomy-Eligible Activities",
+            "Alignment with Environmental Objectives",
+            "Substantial Contribution Analysis",
+            "Do No Significant Harm (DNSH) Assessment",
+            "Taxonomy KPI Disclosures (Turnover, CapEx, OpEx)",
+            "Minimum Safeguards Compliance",
+        ],
+        "regulatory_refs": ["Regulation (EU) 2020/852", "Taxonomy Delegated Acts"],
+        "prompt_suffix": (
+            "This is an EU Taxonomy report in ENGLISH. Focus on the 3 core KPIs: Turnover, CapEx, and OpEx. "
+            "Clearly distinguish between 'eligible' and 'aligned' activities. Detail the SC and DNSH criteria."
+        ),
+        "is_active": True,
+    },
+    {
+        "id": "cdp-climate-v2024",
+        "name": "CDP İklim Değişikliği Raporu",
+        "standard": "cdp",
+        "language": "en",
+        "description": "CDP (Carbon Disclosure Project) 2024 İklim Değişikliği soru setine dayalı "
+                       "kapsamlı beyan raporu. A'dan D-'ye puanlama için temel oluşturur.",
+        "required_sections": [
+            "C0: Introduction",
+            "C1: Governance",
+            "C2: Risks and Opportunities",
+            "C3: Business Strategy",
+            "C4: Targets and Performance",
+            "C5: Emissions Methodology",
+            "C6: Emissions Data",
+            "C7: Emissions Breakdown",
+            "C8: Energy",
+            "C9: Additional Metrics",
+            "C11: Carbon Pricing",
+            "C12: Engagement",
+        ],
+        "regulatory_refs": ["CDP Climate Change Questionnaire 2024", "TCFD"],
+        "prompt_suffix": (
+            "This is a CDP Climate Change report in ENGLISH. The structure must follow the official "
+            "CDP questionnaire modules (C1, C2, C3...). Answer each question clearly and provide "
+            "quantitative data where requested. The goal is to achieve a high score (A or B)."
+        ),
+        "is_active": True,
+    },
+    {
+        "id": "eu-taxonomy-v2024",
+        "name": "EU Taxonomy Alignment Report",
+        "standard": "eu_taxonomy",
+        "language": "en",
+        "description": "AB Taksonomisi (EU 2020/852) uygunluk ve uyum raporu.",
+        "required_sections": [
+            "Executive Summary",
+            "Business Activities & NACE Mapping",
+            "Eligibility Assessment (Turnover, CapEx, OpEx)",
+            "Alignment Assessment (SC, DNSH, MS)",
+            "Substantial Contribution (SC) Analysis",
+            "Do No Significant Harm (DNSH) Evaluation",
+            "Minimum Safeguards (MS) Compliance",
+            "Taxonomy KPI Disclosures",
+            "Recommendations & Action Plan"
+        ],
+        "regulatory_refs": ["EU Taxonomy Regulation 2020/852", "EU 2021/2139", "EU 2023/2486"],
+        "prompt_suffix": (
+            "This is an EU Taxonomy Alignment Report in ENGLISH. Clearly explain the difference between Eligibility and Alignment. "
+            "Detail the results for the three main KPIs: Turnover, CapEx, and OpEx. Provide a section for each of the 6 environmental objectives."
+        ),
+        "is_active": True,
+    },
 ]
 
 

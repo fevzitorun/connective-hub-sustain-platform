@@ -1,17 +1,21 @@
-"""EMİR 1+3: Rapor oluşturma, versiyonlama ve onay workflow."""
+"""Rapor oluşturma, versiyonlama ve onay workflow."""
 import asyncio
 import secrets
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Any
 from datetime import datetime, timezone
 from ..database import get_db, AsyncSessionLocal
 from ..models import Report, EmissionRecord, Company, User
+from .report_detail import ReportComplianceDetail, TsrsChecksResult
 from ..models.report import ShareLink
 from ..services.ai_report_writer import generate_tsrs_report
+from ..models.taxonomy_engine import calculate_full_taxonomy
+from ..models.materiality_engine import calculate_double_materiality
+from ..models.taxonomy_schema import TaxonomyCalculationRequest, TaxonomyResult
 from ..services.calculation_engine import SECTOR_BENCHMARKS, calculate_tsrs_compliance
 from ..services.rbac import require_permission, can, get_active_company_id
 from ..services.auth import hash_password, verify_password
@@ -27,10 +31,10 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 class GenerateReportRequest(BaseModel):
-    emission_id: str
+    emission_id: str = Field(..., description="Raporun temel alacağı emisyon kaydı ID'si")
     standard: str = "tsrs"
     language: str = "tr"
-    assurance_firm: Optional[str] = "PwC"
+    assurance_firm: Optional[str] = Field("PwC", description="Güvence denetimini yapan firma")
 
 
 class ApproveRequest(BaseModel):
@@ -48,15 +52,49 @@ async def _run_report_generation(
     report_id: str,
     emission_id: str,
     company_id: str,
+    user_email: str,
     assurance_firm: str,
 ):
     async with AsyncSessionLocal() as db:
         try:
+            # 1. Gerekli verileri DB'den çek
             emission = await db.get(EmissionRecord, emission_id)
             company = await db.get(Company, company_id)
 
             if not emission or not company:
                 raise ValueError("Emisyon verisi veya şirket bulunamadı")
+
+            taxonomy_result_obj: TaxonomyResult | None = None
+            materiality_result_obj: dict[str, Any] | None = None
+
+            try:
+                # 2. Taksonomi motoru için teknik metrikleri emisyon verilerinden hesapla
+                taxonomy_activities = []
+                nace_code = company.nace_code or "D35" # Fallback
+                if nace_code.startswith("D35") and emission.electricity_generated_mwh and emission.electricity_generated_mwh > 0:
+                    total_emissions_kg = ((emission.scope1_co2e or 0) + (emission.scope2_location_co2e or 0)) * 1000
+                    total_generated_kwh = emission.electricity_generated_mwh * 1000
+                    intensity = (total_emissions_kg * 1000) / total_generated_kwh
+                    taxonomy_activities.append({"metric": "ghg_intensity_kwh", "value": intensity})
+
+                # 3. EU Taxonomy motorunu çalıştır
+                taxonomy_request = TaxonomyCalculationRequest(
+                    company_id=company_id, year=emission.year, nace_code=nace_code,
+                    revenue_eur=(company.annual_revenue_tl or 1) / 35.0, # EUR'a çevir
+                    capex_eur=((company.annual_revenue_tl or 1) / 35.0) * 0.1,
+                    opex_eur=((company.annual_revenue_tl or 1) / 35.0) * 0.05,
+                    activities=taxonomy_activities
+                )
+                taxonomy_result_obj = calculate_full_taxonomy(taxonomy_request)
+
+                # 4. Çifte Önemlilik motorunu Taksonomi sonuçlarıyla entegre çalıştır
+                materiality_result_obj = calculate_double_materiality(
+                    company_id=company_id, year=emission.year, taxonomy_result=taxonomy_result_obj
+                )
+            except Exception as e:
+                print(f"Analysis engine error: {e}")  # Hata durumunda rapor devam etsin
+
+            # 5. AI Rapor Yazıcısını tüm verilerle çağır
 
             sector_avg = SECTOR_BENCHMARKS.get(company.sector or "manufacturing", 2.4)
 
@@ -90,6 +128,8 @@ async def _run_report_generation(
                 is_public=company.is_public,
                 assurance_firm=assurance_firm,
                 sector_avg_intensity=sector_avg,
+                eu_taxonomy_result=taxonomy_result_obj.model_dump() if taxonomy_result_obj else None,
+                materiality_result=materiality_result_obj,
             )
 
             compliance = calculate_tsrs_compliance({
@@ -123,6 +163,15 @@ async def _run_report_generation(
                 report.prompt_tokens = usage.get("input_tokens", 0)
                 report.completion_tokens = usage.get("output_tokens", 0)
                 report.compliance_score = compliance["total_score"]
+                # Rapor metadatasına Pydantic modelleri ile yapılandırılmış analiz sonuçlarını ekle
+                compliance_detail_model = ReportComplianceDetail(
+                    tsrs_checks=TsrsChecksResult(**compliance),
+                    eu_taxonomy=taxonomy_result_obj,
+                    materiality=materiality_result_obj,
+                )
+                report.compliance_detail = compliance_detail_model.model_dump(
+                    exclude_none=True
+                )
                 report.compliance_grade = compliance["grade"]
                 await db.commit()
 
@@ -133,6 +182,16 @@ async def _run_report_generation(
                     report.status = "failed"
                     report.content_text = f"Hata: {str(e)}"
                     await err_db.commit()
+        
+        # Rapor oluşturma tamamlandığında e-posta gönder
+        report = await db.get(Report, report_id)
+        if report and report.status == "completed":
+            await send_report_ready(
+                to=user_email,
+                company_name=company.name,
+                report_standard=report.standard,
+                report_id=report.id
+            )
 
 
 @router.post("/generate", status_code=202)
@@ -197,6 +256,7 @@ async def generate(
         report.id,
         body.emission_id,
         company_id,
+        current_user.email,
         body.assurance_firm or "PwC",
     )
 
@@ -226,6 +286,7 @@ async def get_status(
         "version_number": report.version_number,
         "version_of": report.version_of,
         "submitted_at": report.submitted_at.isoformat() if report.submitted_at else None,
+        "compliance_detail": report.compliance_detail,
         "approved_at": report.approved_at.isoformat() if report.approved_at else None,
         "created_at": report.created_at.isoformat(),
     }
@@ -693,6 +754,7 @@ async def list_reports(
             "compliance_score": r.compliance_score,
             "compliance_grade": r.compliance_grade,
             "version_number": r.version_number,
+            "compliance_detail": r.compliance_detail,
             "version_of": r.version_of,
             "submitted_at": r.submitted_at.isoformat() if r.submitted_at else None,
             "approved_at": r.approved_at.isoformat() if r.approved_at else None,

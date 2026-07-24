@@ -1,0 +1,45 @@
+{
+    "A01": {
+        "description": "Crop and animal production, hunting and related service activities",
+        "eligible_objectives": [
+            "climate_change_adaptation",
+            "biodiversity"
+        ],
+        "technical_criteria_ref": "EU 2021/2139 Annex II",
+        "is_transitional": true
+    },
+    "C24": {
+        "description": "Manufacture of basic metals (Steel)",
+        "eligible_objectives": [
+            "climate_change_mitigation",
+            "circular_economy"
+        ],
+        "technical_criteria_ref": "EU 2021/2139 Annex I, 3.1",
+        "is_transitional": true
+    },
+    "D35": {
+        "description": "Electricity, gas, steam and air conditioning supply",
+        "eligible_objectives": [
+            "climate_change_mitigation"
+        ],
+        "technical_criteria_ref": "EU 2021/2139 Annex I, 4.1",
+        "is_transitional": false
+    },
+    "F41": {
+        "description": "Construction of buildings",
+        "eligible_objectives": [
+            "climate_change_mitigation",
+            "circular_economy"
+        ],
+        "technical_criteria_ref": "EU 2021/2139 Annex I, 7.1",
+        "is_transitional": false
+    },
+    "H49": {
+        "description": "Land transport and transport via pipelines",
+        "eligible_objectives": [
+            "climate_change_mitigation"
+        ],
+        "technical_criteria_ref": "EU 2021/2139 Annex I, 6.5",
+        "is_transitional": false
+    }
+}

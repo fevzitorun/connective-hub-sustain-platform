@@ -1,11 +1,14 @@
 """CSRD Double Materiality API — ESRS Çift Önemlilik analizi."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from typing import Optional
 from ..database import get_db
 from ..models import Company, User
 from ..services.materiality_service import assess_materiality, get_esrs_topics
+from ..models.taxonomy_engine import calculate_full_taxonomy
+from ..models.materiality_engine import calculate_double_materiality
+from ..models.taxonomy_schema import TaxonomyCalculationRequest
 from .auth import get_current_user
 
 router = APIRouter(prefix="/materiality", tags=["materiality"])
@@ -71,6 +74,29 @@ async def get_my_matrix(
         sector=sector,
     )
     return _serialize(matrix)
+
+
+@router.post("/calculate_with_taxonomy", summary="EU Taksonomi entegrasyonlu çift önemlilik")
+async def calculate_materiality_with_taxonomy(
+    taxonomy_request: TaxonomyCalculationRequest = Body(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    EU Taksonomi sonuçlarıyla entegre çift önemlilik değerlendirmesi.
+
+    1. EU Taksonomi motorunu çalıştırıp uyum skorunu alır.
+    2. Skoru çift önemlilik motoruna besleyerek finansal önemliliği ayarlar.
+    3. Nihai çift önemlilik matrisini döndürür.
+    """
+    try:
+        taxonomy_result = calculate_full_taxonomy(taxonomy_request)
+        return calculate_double_materiality(
+            company_id=taxonomy_request.company_id,
+            year=taxonomy_request.year,
+            taxonomy_result=taxonomy_result,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Hesaplama hatası: {str(e)}")
 
 
 def _serialize(matrix) -> dict:
