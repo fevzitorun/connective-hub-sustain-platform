@@ -140,7 +140,7 @@ function NavDropdown({ label, items }: { label: string; items: DropdownItem[] })
   return (
     <div ref={ref} className="relative">
       <button onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors py-2">
+        className="flex items-center gap-1 text-sm font-semibold text-[#3B4A43] hover:text-[#16241D] transition-colors py-2">
         {label} <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
@@ -151,7 +151,7 @@ function NavDropdown({ label, items }: { label: string; items: DropdownItem[] })
               className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
               <span className="text-xl shrink-0 mt-0.5">{item.icon}</span>
               <div>
-                <div className="font-semibold text-sm text-slate-900 group-hover:text-emerald-700">{item.label}</div>
+                <div className="font-semibold text-sm text-[#16241D] group-hover:text-[#2E7D32]">{item.label}</div>
                 <div className="text-xs text-slate-400 mt-0.5">{item.desc}</div>
               </div>
             </Link>
@@ -209,39 +209,39 @@ export default function HomePage() {
   const [videoOpen, setVideoOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen bg-[#F7F6F1] text-[#16241D] font-sans">
 
       {/* REGULATORY BANNER */}
-      <div className="bg-slate-900 text-white text-xs text-center py-2.5 px-4 font-medium">
+      <div className="bg-[#16241D] text-white text-xs text-center py-2.5 px-4 font-medium">
         🇹🇷 TSRS mandatory for BIST-100: Mar 2025 ·&nbsp;
         Banks (BDDK): Jun 2025 ·&nbsp;
         Large Corporates: Mar 2027 ·&nbsp;
-        <Link href="/request-demo" className="underline hover:text-emerald-400">Check your readiness →</Link>
+        <Link href="/request-demo" className="underline hover:text-[#8FD19E]">Check your readiness →</Link>
       </div>
 
       {/* NAVIGATION */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100">
+      <nav className="sticky top-0 z-50 bg-[#F7F6F1]/90 backdrop-blur-md border-b border-[#E4E1D6]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-emerald-50 shadow-md shadow-emerald-500/25">
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-[#E7F0E8] shadow-md shadow-[#2E7D32]/25">
               <img src="/logo.png" alt="SustainHub" className="w-7 h-7 object-contain" />
             </div>
-            <span className="font-black text-xl text-slate-900">SustainHub</span>
+            <span className="font-black text-xl text-[#16241D]">SustainHub</span>
           </Link>
           <div className="hidden lg:flex items-center gap-6">
             <NavDropdown label="Platform" items={PLATFORM_ITEMS} />
             <NavDropdown label="Solutions" items={SOLUTIONS_ITEMS} />
-            <Link href="/investors" className="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">Investors</Link>
-            <Link href="/products" className="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">Pricing</Link>
+            <Link href="/investors" className="text-sm font-semibold text-[#3B4A43] hover:text-[#16241D] transition-colors">Investors</Link>
+            <Link href="/products" className="text-sm font-semibold text-[#3B4A43] hover:text-[#16241D] transition-colors">Pricing</Link>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="hidden md:block text-sm font-semibold text-slate-600 hover:text-slate-900 px-4 py-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-all">
+            <Link href="/login" className="hidden md:block text-sm font-semibold text-[#3B4A43] hover:text-[#16241D] px-4 py-2 rounded-lg border border-[#D9D5C8] hover:border-[#C3BFB0] transition-all">
               Sign In
             </Link>
-            <Link href="/register" className="hidden md:block text-sm font-semibold text-white px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 transition-all">
+            <Link href="/register" className="hidden md:block text-sm font-semibold text-white px-4 py-2 rounded-lg bg-[#0F3D52] hover:bg-[#0B2E3E] transition-all">
               Start Free →
             </Link>
-            <Link href="/request-demo" className="text-sm font-bold text-white px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+            <Link href="/request-demo" className="text-sm font-bold text-white px-5 py-2.5 rounded-lg bg-[#2E7D32] hover:bg-[#256528] transition-all shadow-lg shadow-[#2E7D32]/20 flex items-center gap-2">
               Book Demo <ArrowRight size={14} />
             </Link>
           </div>
@@ -251,50 +251,50 @@ export default function HomePage() {
       {/* HERO */}
       <section className="relative pt-20 pb-20 px-6 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/8 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/6 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#2E7D32]/8 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#0F3D52]/6 rounded-full blur-3xl" />
         </div>
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center relative">
           <div className="md:col-span-7 text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 mb-7">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#EFEDE4] border border-[#E0DCCF] text-xs font-bold text-[#4A5A52] mb-7">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse" />
               Sprint 50 · Pre-Launch · July 2026
             </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-[1.05] text-slate-900 mb-7">
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-[1.05] text-[#16241D] mb-7">
               The Intelligence Layer<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">
+              <span className="text-[#2E7D32]">
                 for Sustainable Finance.
               </span>
             </h1>
-            <p className="text-lg text-slate-500 leading-relaxed mb-10">
+            <p className="text-lg text-[#5A6B62] leading-relaxed mb-10">
               43 modules. AI + satellite data. TSRS · ISSB · GRI · CBAM · EUDR · CDP.
               From Turkey's BIST-100 to London's green finance desks — one platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/request-demo"
-                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white font-black text-base hover:bg-slate-800 transition-all shadow-xl">
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-lg bg-[#2E7D32] text-white font-black text-base hover:bg-[#256528] transition-all shadow-xl shadow-[#2E7D32]/20">
                 Book a Demo <ArrowRight size={20} />
               </Link>
               <Link href="/register"
-                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-emerald-500 text-white font-black text-base hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20">
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-lg bg-[#0F3D52] text-white font-black text-base hover:bg-[#0B2E3E] transition-all shadow-xl">
                 Start Free →
               </Link>
               <button onClick={() => setVideoOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border-2 border-slate-200 text-slate-700 font-bold text-sm hover:border-slate-300 transition-all">
+                className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-lg border-2 border-[#D9D5C8] text-[#3B4A43] font-bold text-sm hover:border-[#0F3D52] hover:text-[#0F3D52] transition-all">
                 <Play size={14} fill="currentColor" /> Watch 90-second demo
               </button>
             </div>
-            <p className="text-xs text-slate-400 mt-4">No credit card · 14-day free trial · Cancel anytime</p>
+            <p className="text-xs text-[#8A968E] mt-4">No credit card · 14-day free trial · Cancel anytime</p>
           </div>
           <div className="md:col-span-5 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-100 bg-white p-2">
+            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-[#E4E1D6] bg-white p-2">
               <img
                 src="/images/hero-earth.jpg"
                 alt="SustainHub — Sürdürülebilirlik Platformu"
-                className="rounded-2xl w-full h-[350px] object-cover"
+                className="rounded-lg w-full h-[350px] object-cover"
               />
-              <div className="absolute bottom-6 left-6 right-6 bg-slate-900/90 backdrop-blur-md rounded-2xl p-4 text-white border border-white/10">
-                <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider mb-1">Earth Intelligence</div>
+              <div className="absolute bottom-6 left-6 right-6 bg-[#16241D]/90 backdrop-blur-md rounded-lg p-4 text-white border border-white/10">
+                <div className="text-xs text-[#8FD19E] font-bold uppercase tracking-wider mb-1">Earth Intelligence</div>
                 <div className="text-sm font-bold">Copernicus Sentinel-2 Live NDVI Vegetation Analysis</div>
               </div>
             </div>
@@ -321,7 +321,7 @@ export default function HomePage() {
       )}
 
       {/* STATS */}
-      <section className="py-16 px-6 border-y border-slate-100 bg-slate-50">
+      <section className="py-16 px-6 border-y border-[#E4E1D6] bg-[#EFEDE4]">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
             { n: 43, s: '+', label: 'Modules & Pages' },
@@ -330,10 +330,10 @@ export default function HomePage() {
             { n: 3, s: '', label: 'Jurisdictions (TR · UK · KKTC)' },
           ].map(stat => (
             <div key={stat.label}>
-              <div className="text-4xl font-black text-slate-900 mb-1">
+              <div className="text-4xl font-black text-[#16241D] mb-1">
                 <AnimNum end={stat.n} suffix={stat.s} />
               </div>
-              <div className="text-sm text-slate-500">{stat.label}</div>
+              <div className="text-sm text-[#5A6B62]">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -355,7 +355,7 @@ export default function HomePage() {
       </section>
 
       {/* FOUR WORLDS */}
-      <section className="py-20 px-6 bg-slate-900 text-white">
+      <section className="py-20 px-6 bg-[#1B4332] text-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-black mb-4">One Platform. Four Worlds.</h2>
