@@ -127,11 +127,12 @@ from .routes import autopilot
 app.include_router(autopilot.router)
 
 # Sprint 33 — CDP + EU Taxonomy
-from .routes import cdp, eu_taxonomy, taxonomy, gar
+from .routes import cdp, eu_taxonomy, taxonomy, gar, municipality
 app.include_router(cdp.router)
 app.include_router(eu_taxonomy.router)
 app.include_router(taxonomy.router)
 app.include_router(gar.router)
+app.include_router(municipality.router)
 
 # Sprint 34 — GRI 2021 + TNFD
 from .routes import gri, tnfd

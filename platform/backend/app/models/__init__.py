@@ -10,6 +10,7 @@ from .cbam import CBAMDeclaration, CBAMProduct
 from .supply_chain import SupplyChainEntry, SupplyChainAlert
 from .credit_score import CreditScore
 from .integration import IntegrationConnection, IntegrationLog
+from .municipality import Municipality, MunicipalityIndexScore
 
 __all__ = [
     "Company", "User", "EmissionRecord", "Report", "ReportDraft", "ShareLink",
@@ -17,4 +18,5 @@ __all__ = [
     "MaterialityAssessment", "CBAMDeclaration", "CBAMProduct",
     "SupplyChainEntry", "SupplyChainAlert", "CreditScore",
     "IntegrationConnection", "IntegrationLog",
+    "Municipality", "MunicipalityIndexScore",
 ]

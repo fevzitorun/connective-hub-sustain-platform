@@ -245,6 +245,54 @@ BUILTIN_TEMPLATES = [
         ),
         "is_active": True,
     },
+    {
+        "id": "gpc-municipality-metropolitan-v1",
+        "name": "Büyükşehir Belediyesi Sürdürülebilirlik Raporu (GPC)",
+        "standard": "gpc_municipality",
+        "language": "tr",
+        "description": "GPC (Global Protocol for Community-Scale GHG Inventories) kent ölçeği "
+                       "envanterine dayalı büyükşehir belediyesi tam sürdürülebilirlik raporu. "
+                       "İzmir B.B. 2024 formatı referans alınır.",
+        "required_sections": [
+            "Kurumsal Profil",
+            "Yönetişim",
+            "GPC Sera Gazı Envanteri",
+            "Sosyal Performans",
+            "Ekonomik Performans",
+            "Hedefler ve Taahhütler",
+            "Performans Göstergeleri Tablosu",
+        ],
+        "regulatory_refs": ["GPC (WRI/C40/ICLEI)", "CDP-ICLEI Unified Reporting", "Global Covenant of Mayors"],
+        "prompt_suffix": (
+            "Bu bir BÜYÜKŞEHİR BELEDİYESİ sürdürülebilirlik raporu, dili TÜRKÇE. "
+            "GPC standardına göre kent ölçeği sera gazı envanterini (Sabit Enerji, Ulaşım, Atık; "
+            "opsiyonel IPPU/AFOLU) sektör kırılımıyla sun. Belediye Sürdürülebilirlik Endeksi "
+            "skorunu (Ekonomik/Sosyal/Çevresel, 0-4 ölçek) ve harf notunu yorumla."
+        ),
+        "is_active": True,
+    },
+    {
+        "id": "gpc-municipality-district-v1",
+        "name": "İlçe Belediyesi Durum Analiz Raporu",
+        "standard": "gpc_municipality_light",
+        "language": "tr",
+        "description": "İlçe/küçük belediyeler için hafif durum analizi (gap analysis) formatı. "
+                       "Karşıyaka Belediyesi 2022 'Kimseyi geride bırakma' formatı referans alınır.",
+        "required_sections": [
+            "Kurum Tanıtımı",
+            "Rapor Kapsamı",
+            "Mevcut Durum Analizi",
+            "Öncelikli Alanlar",
+            "Yol Haritası",
+        ],
+        "regulatory_refs": ["GPC (WRI/C40/ICLEI)", "SDG Yerelleştirme"],
+        "prompt_suffix": (
+            "Bu bir İLÇE BELEDİYESİ durum analiz raporu, dili TÜRKÇE. Tam GPC envanteri yerine "
+            "mevcut durum analizi (gap analysis) yaklaşımı kullan. Öncelikli gelişim alanlarını ve "
+            "somut bir yol haritasını vurgula. Küçük belediyeler için erişilebilir, sade bir dil kullan."
+        ),
+        "is_active": True,
+    },
 ]
 
 

@@ -352,3 +352,58 @@ def calculate_tsrs_compliance(report_data: dict) -> dict:
         "missing": [k for k, v in checks.items() if not v],
         "grade": grade,
     }
+
+
+# ── GPC Kent Ölçeği Sera Gazı Envanteri ───────────────────────────────────────
+# Global Protocol for Community-Scale GHG Inventories (C40 / ICLEI / CDP-ICLEI)
+# municipality_library.md Bölüm 1. Belediye modülü için kent envanteri toplaması.
+GPC_BASIC_SECTORS = ("stationary_energy", "transportation", "waste")
+GPC_BASIC_PLUS_SECTORS = ("ippu", "afolu")
+GPC_SECTOR_LABELS = {
+    "stationary_energy": "Sabit Enerji",
+    "transportation": "Ulaşım",
+    "waste": "Atık",
+    "ippu": "Endüstriyel Süreçler (IPPU)",
+    "afolu": "Tarım/Orman/Arazi (AFOLU)",
+}
+
+
+def calculate_gpc_inventory(
+    sectors_tco2e: dict[str, float],
+    reporting_level: str = "basic",
+) -> dict:
+    """
+    Kent ölçeğinde GPC envanteri toplaması.
+
+    sectors_tco2e: {sector_key: ton CO₂e} — GPC_SECTOR_LABELS anahtarları.
+    reporting_level: "basic" (Sabit Enerji + Ulaşım + Atık) veya
+                     "basic_plus" (BASIC + IPPU + AFOLU).
+
+    Dönüş: sektör kırılımı + toplam + kapsam seviyesi. Sahte veri üretmez;
+    yalnızca verilen değerleri toplar (eksik sektör 0 sayılır).
+    """
+    active = list(GPC_BASIC_SECTORS)
+    if reporting_level == "basic_plus":
+        active += list(GPC_BASIC_PLUS_SECTORS)
+
+    breakdown = []
+    total = 0.0
+    for key in active:
+        val = float(sectors_tco2e.get(key) or 0.0)
+        total += val
+        breakdown.append({
+            "sector": key,
+            "label": GPC_SECTOR_LABELS[key],
+            "tco2e": round(val, 2),
+        })
+
+    for item in breakdown:
+        item["share_pct"] = round(item["tco2e"] / total * 100, 1) if total > 0 else 0.0
+
+    return {
+        "reporting_level": reporting_level,
+        "reporting_level_label": "BASIC+" if reporting_level == "basic_plus" else "BASIC",
+        "sectors": breakdown,
+        "total_tco2e": round(total, 2),
+        "standard": "GPC (Global Protocol for Community-Scale GHG Inventories)",
+    }

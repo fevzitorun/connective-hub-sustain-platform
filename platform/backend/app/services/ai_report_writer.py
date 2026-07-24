@@ -179,6 +179,13 @@ SYSTEM_PROMPT_ADDITION += """
    Örnek: "Şirketimizin AB Taksonomisi'ne %YY oranındaki uyumu, Çifte Önemlilik analizimizde 'İklim Değişikliği' ve 'Döngüsel Ekonomi' gibi konuların finansal önemliliğini doğrudan etkilemektedir. Düşük uyum, bu alanlardaki geçiş risklerini artırmaktadır. En önemli konularımız şunlardır: [material_topics listesi]."
    Bu entegre bölümü sadece her iki veri de mevcutsa ekle. Eğer sadece biri varsa, kendi kuralına göre (örn: Kural 11) ekle."""
 
+SYSTEM_PROMPT_ADDITION += """
+13. BELEDİYE GPC ENVANTERİ VE ENDEKSİ:
+   Eğer kullanıcı isteğinde `municipality_gpc_result` adında bir veri varsa, bu bir BELEDİYE (kent ölçeği) raporudur.
+   'GPC Sera Gazı Envanteri' başlığı altında, GPC standardına göre kent ölçeği envanterini sektör kırılımıyla (Sabit Enerji, Ulaşım, Atık; varsa IPPU/AFOLU) ton CO₂e ve yüzde payıyla sun.
+   Ayrı bir 'Belediye Sürdürülebilirlik Endeksi' başlığı altında, `municipality_gpc_result.index` içindeki Ekonomik/Sosyal/Çevresel boyut skorlarını (0-4 ölçek), toplam skoru ve harf notunu (A-D) yorumla; en düşük skorlu alanları öncelikli gelişim alanı olarak listele.
+   GPC terminolojisini kullan (kent envanteri, BASIC/BASIC+ kapsam). Bu bölümleri sadece `municipality_gpc_result` verisi varsa ekle."""
+
 def generate_tsrs_report(
     company_name: str,
     sector: str,
@@ -210,6 +217,7 @@ def generate_tsrs_report(
     missing_items: list[str] | None = None,
     eu_taxonomy_result: dict | None = None,
     materiality_result: dict | None = None,
+    municipality_gpc_result: dict | None = None,
     historical_data: list[dict] | None = None,
 ) -> tuple[str, dict]:
     """
@@ -257,6 +265,19 @@ def generate_tsrs_report(
         materiality_text += f"- Önemli Konular: {', '.join(materiality_result.get('material_topics', []))}\n"
         materiality_text += f"- Finansal Önemlilik Skoru (Ortalama): {materiality_result.get('financial_score', 0)}\n"
 
+    municipality_text = ""
+    if municipality_gpc_result:
+        municipality_text += "\n\nBELEDİYE GPC ENVANTERİ (kent ölçeği):\n"
+        municipality_text += f"- Kapsam Seviyesi: {municipality_gpc_result.get('reporting_level_label', 'BASIC')}\n"
+        municipality_text += f"- Toplam Kent Emisyonu: {municipality_gpc_result.get('total_tco2e', 0):,.1f} ton CO₂e\n"
+        for s in municipality_gpc_result.get("sectors", []):
+            municipality_text += f"  - {s.get('label')}: {s.get('tco2e', 0):,.1f} ton CO₂e (%{s.get('share_pct', 0)})\n"
+        idx = municipality_gpc_result.get("index") or {}
+        if idx:
+            municipality_text += "BELEDİYE SÜRDÜRÜLEBİLİRLİK ENDEKSİ (0-4 ölçek):\n"
+            municipality_text += f"- Ekonomik: {idx.get('economic_score', 0)} · Sosyal: {idx.get('social_score', 0)} · Çevresel: {idx.get('environmental_score', 0)}\n"
+            municipality_text += f"- Toplam Skor: {idx.get('total_score', 0)}/4 → Harf Notu: {idx.get('grade', '-')} ({idx.get('grade_label', '')})\n"
+
  
     # Sistem prompt'undaki kural 6'yı dinamik metinle override et
     dynamic_system_prompt = SYSTEM_PROMPT.replace('Bu rapor, [Denetim Firması] tarafından GDS 3000/3410 standardı\n   kapsamında sınırlı güvence denetimine tabi tutulmuştur.', assurance_text)
@@ -302,7 +323,7 @@ Kuraklık Riski: {drought_risk}
 TSRS UYUMLULUK SKORU: {compliance_score}/100
 Eksik alanlar: {', '.join(missing_items or []) or 'Yok'}
 
-Şimdi tam raporu yaz. Tüm bölümleri ekle.{historical_text}{taxonomy_text}{materiality_text}
+Şimdi tam raporu yaz. Tüm bölümleri ekle.{historical_text}{taxonomy_text}{materiality_text}{municipality_text}
 Son bölüm olarak TSRS İçerik Endeksi tablosunu oluştur."""
 
     # Streaming: uzun (~15k token) raporlarda tek-parça HTTP okuması read-timeout'a
