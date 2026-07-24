@@ -15,20 +15,21 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, unit, trend, trendDown = true, icon, accentColor, loading }: KpiCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-xl bg-white border p-5 shadow-sm"
-      style={{ borderColor: 'var(--border)' }}>
-      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ background: accentColor }} />
-      <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--muted-foreground)' }}>
-        {label}
-      </div>
+    <div className="ds-card elev-sm relative overflow-hidden"
+      style={{ background: 'var(--ds-color-surface)', borderRadius: 'var(--ds-radius-md)' }}>
+      <div className="absolute top-0 left-0 right-0 h-1" style={{ background: accentColor }} />
+      {/* kicker — petrol/trust aksanı (ds card-kicker) */}
+      <div className="card-kicker">{label}</div>
       {loading ? (
         <div className="h-8 w-24 bg-gray-100 rounded animate-pulse" />
       ) : (
-        <div className="text-3xl font-black leading-none" style={{ color: 'var(--foreground)' }}>{value}</div>
+        <div className="text-3xl font-black leading-none" style={{ color: 'var(--ds-color-text)' }}>{value}</div>
       )}
-      <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>{unit}</div>
-      <div className="flex items-center gap-1 mt-3 text-xs font-medium" style={{ color: trendDown ? 'var(--green-600)' : '#F57F17' }}>
-        {trendDown ? '▼' : '▲'} {trend}
+      <div className="text-xs" style={{ color: 'color-mix(in srgb, var(--ds-color-text) 55%, transparent)' }}>{unit}</div>
+      <div className="mt-2">
+        <span className={trendDown ? 'tag tag-success' : 'tag tag-warning'}>
+          {trendDown ? '▼' : '▲'} {trend}
+        </span>
       </div>
       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-4xl opacity-10 select-none">{icon}</div>
     </div>
