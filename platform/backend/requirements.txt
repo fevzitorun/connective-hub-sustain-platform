@@ -29,4 +29,6 @@ stripe==11.3.0
 # Sprint 5 — Production deploy
 gunicorn==23.0.0
 psycopg2-binary==2.9.10
+# DPP — QR üretimi (pure python, no deps)
+segno==1.6.1
 

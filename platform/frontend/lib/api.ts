@@ -632,4 +632,171 @@ export const api = {
         { method: 'POST', body: JSON.stringify({ config }) },
       ),
   },
+
+  // ─────────────────── DPP (Dijital Ürün Pasaportu) ───────────────────
+  dpp: {
+    // Products
+    createProduct: (data: Record<string, unknown>) =>
+      request<{ id: string; sku: string }>('/dpp/products', {
+        method: 'POST', body: JSON.stringify(data),
+      }),
+    updateProduct: (id: string, data: Record<string, unknown>) =>
+      request<{ id: string }>(`/dpp/products/${id}`, {
+        method: 'PATCH', body: JSON.stringify(data),
+      }),
+    listProducts: () =>
+      request<{
+        count: number
+        products: Array<{
+          id: string; sku: string; gtin: string | null; name_tr: string
+          category: string; subcategory: string | null
+          manufactured_at: string | null
+          passport_count: number
+          latest_passport_status: string | null
+        }>
+      }>('/dpp/products'),
+    getProduct: (id: string) =>
+      request<{
+        id: string; sku: string; gtin: string | null
+        name_tr: string; name_en: string | null
+        category: string; subcategory: string | null
+        manufacturing_site: string | null
+        manufacturing_country: string | null
+        manufactured_at: string | null
+        passports: Array<{ id: string; version: number; status: string; issued_at: string | null }>
+      }>(`/dpp/products/${id}`),
+
+    bulkTemplateUrl: () => `${API_URL}/dpp/products/bulk-template`,
+    bulkImport: (file: File) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      const token = typeof window !== 'undefined' ? localStorage.getItem('sustain_token') : null
+      return fetch(`${API_URL}/dpp/products/bulk-import`, {
+        method: 'POST',
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: fd,
+      }).then(r => r.json())
+    },
+
+    // Passports
+    createPassport: (productId: string, data: Record<string, unknown>) =>
+      request<{ id: string; version: number; status: string }>(
+        `/dpp/products/${productId}/passport`,
+        { method: 'POST', body: JSON.stringify(data) },
+      ),
+    patchPassport: (passportId: string, data: Record<string, unknown>) =>
+      request<{ id: string; status: string }>(
+        `/dpp/passports/${passportId}`,
+        { method: 'PATCH', body: JSON.stringify(data) },
+      ),
+    getPassport: (passportId: string) =>
+      request<{
+        id: string; version: number; status: string
+        product: { id: string; sku: string; name_tr: string }
+        carbon_footprint_kgco2e: number | null
+        recycled_content_pct: number | null
+        repairability_score: number | null
+        gs1_digital_link: string | null
+        public_url: string
+        issued_at: string | null
+        materials: Array<{ id: string; material_name: string; percentage_by_weight: number | null; source_country: string | null; recycled_content_pct: number | null; is_hazardous: boolean }>
+        documents: Array<{ id: string; doc_type: string; title: string; file_url: string; issued_by: string | null; valid_until: string | null }>
+        events: Array<{ id: string; event_type: string; actor: string | null; timestamp: string }>
+      }>(`/dpp/passports/${passportId}`),
+    issuePassport: (passportId: string) =>
+      request<{ id: string; status: string; issued_at: string; public_url: string }>(
+        `/dpp/passports/${passportId}/issue`, { method: 'POST' },
+      ),
+    revokePassport: (passportId: string, reason: string) =>
+      request<{ id: string; status: string; revoked_at: string }>(
+        `/dpp/passports/${passportId}/revoke`,
+        { method: 'POST', body: JSON.stringify({ reason }) },
+      ),
+
+    // Nested add
+    addMaterial: (passportId: string, data: Record<string, unknown>) =>
+      request<{ id: string; material_name: string }>(
+        `/dpp/passports/${passportId}/materials`,
+        { method: 'POST', body: JSON.stringify(data) },
+      ),
+    addDocument: (passportId: string, data: Record<string, unknown>) =>
+      request<{ id: string; doc_type: string; title: string }>(
+        `/dpp/passports/${passportId}/documents`,
+        { method: 'POST', body: JSON.stringify(data) },
+      ),
+    addSupplier: (passportId: string, data: Record<string, unknown>) =>
+      request<{ id: string; name: string; tier: number }>(
+        `/dpp/passports/${passportId}/suppliers`,
+        { method: 'POST', body: JSON.stringify(data) },
+      ),
+
+    // Scoring, validation, AI
+    computeScore: (passportId: string) =>
+      request<{
+        passport_id: string; green_score: number; grade: string
+        breakdown: Record<string, { points: number; max: number; note: string }>
+      }>(`/dpp/passports/${passportId}/score`, { method: 'POST' }),
+    validate: (passportId: string) =>
+      request<{
+        completeness_pct: number
+        template_category: string
+        required_ok: boolean
+        missing_required: string[]
+        missing_recommended: string[]
+        documents_ok: boolean
+        materials_ok: boolean
+        suppliers_ok: boolean
+        ready_to_issue: boolean
+        recommendations: string[]
+      }>(`/dpp/passports/${passportId}/validate`),
+    ask: (passportId: string, question: string) =>
+      request<{ answer: string; source: 'claude' | 'cache' | 'fallback' }>(
+        `/dpp/passports/${passportId}/ask`,
+        { method: 'POST', body: JSON.stringify({ question }) },
+      ),
+    getTemplate: (category: string) =>
+      request<{
+        category: string
+        required_fields: string[]
+        recommended_fields: string[]
+        required_documents: string[]
+        alt_documents: string[]
+        min_materials: number
+        min_suppliers_tier1: number
+        green_weights: Record<string, number>
+      }>(`/dpp/templates/${category}`),
+
+    // URLs
+    qrUrl: (passportId: string) => `${API_URL}/dpp/passports/${passportId}/qr`,
+    publicQrUrl: (passportId: string) => `${API_URL}/public/passport/${passportId}/qr`,
+    pdfUrl: (passportId: string) => `${API_URL}/dpp/passports/${passportId}/pdf`,
+
+    // Analytics
+    analytics: () =>
+      request<{
+        products: number
+        passports_by_status: Record<string, number>
+        avg_green_score: number | null
+        total_scans: number
+        total_ai_queries: number
+        total_return_requests: number
+        top_scanned: Array<{ passport_id: string; scans: number; green_score: number | null }>
+      }>('/dpp/analytics'),
+
+    // Public (no auth)
+    publicView: (passportId: string, lang: 'tr' | 'en' | 'de' | 'fr' = 'tr') =>
+      fetch(`${API_URL}/public/passport/${passportId}?lang=${lang}`).then(r => r.json()),
+    publicAsk: (passportId: string, question: string) =>
+      fetch(`${API_URL}/public/passport/${passportId}/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      }).then(r => r.json()),
+    publicReturn: (passportId: string, data: Record<string, unknown>) =>
+      fetch(`${API_URL}/public/passport/${passportId}/return-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).then(r => r.json()),
+  },
 }

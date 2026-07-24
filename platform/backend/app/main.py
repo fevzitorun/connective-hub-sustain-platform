@@ -184,6 +184,11 @@ app.include_router(nhs.router)
 from .routes import grid
 app.include_router(grid.router)
 
+# DPP — Dijital Ürün Pasaportu (AB ESPR 2024/1781)
+from .routes import dpp
+app.include_router(dpp.router)
+app.include_router(dpp.public_router)
+
 
 @app.on_event("startup")
 async def startup():

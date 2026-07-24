@@ -11,6 +11,11 @@ from .supply_chain import SupplyChainEntry, SupplyChainAlert
 from .credit_score import CreditScore
 from .integration import IntegrationConnection, IntegrationLog
 from .municipality import Municipality, MunicipalityIndexScore
+from .product import Product
+from .product_passport import (
+    ProductPassport, PassportMaterial, PassportDocument, PassportEvent,
+    PassportSupplier,
+)
 
 __all__ = [
     "Company", "User", "EmissionRecord", "Report", "ReportDraft", "ShareLink",
@@ -19,4 +24,6 @@ __all__ = [
     "SupplyChainEntry", "SupplyChainAlert", "CreditScore",
     "IntegrationConnection", "IntegrationLog",
     "Municipality", "MunicipalityIndexScore",
+    "Product", "ProductPassport", "PassportMaterial",
+    "PassportDocument", "PassportEvent", "PassportSupplier",
 ]
