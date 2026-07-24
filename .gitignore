@@ -49,9 +49,11 @@ platform/frontend/public/test.txt
 ENES-DEVIR-RAPORU.md
 SUSTAINHUB-DURUM-RAPORU.md
 IS-PLANI-2026.md
+TEKNOKENT-ARGE-BASVURU-SUSTAINHUB.md
 platform/backend/app/data/demo_requests.json
 analiz/
 sabancı_koc/
+/belediye/
 grok_logs.csv
 *.af
 PAZARLAMA-PLANI.md
