@@ -191,15 +191,10 @@ export function Sidebar() {
       className="fixed left-0 top-0 h-screen flex flex-col z-50 bg-slate-900 text-white"
       style={{ width: 'var(--sidebar-width, 240px)' }}
     >
-      {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-emerald-500/20">
-          <img src="/logo.png" alt="SustainHub" className="w-8 h-8 object-contain" />
-        </div>
-        <div>
-          <div className="text-sm font-bold text-white">SustainHub</div>
-          <div className="text-xs text-emerald-400">sustainhub.ai · v2.0</div>
-        </div>
+      {/* Brand — reversed lockup (koyu zemin için) */}
+      <div className="px-5 py-5 border-b border-white/10">
+        <img src="/logo-reversed.svg" alt="SustainHub" className="h-8 w-auto max-w-full" />
+        <div className="text-xs text-emerald-400 mt-1.5">sustainhub.online</div>
       </div>
 
       {/* Company switcher */}

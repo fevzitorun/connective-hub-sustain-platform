@@ -109,6 +109,21 @@ export default function PublicReportPage() {
         )}
 
         {!loading && report && (
+          <>
+          {/* Doğrulama şeridi — platform KAYNAĞINI onaylar (rapor doğruluğunu değil) */}
+          <div className="flex items-center gap-4 mb-5 rounded-2xl px-5 py-4"
+            style={{ background: 'var(--ds-accent-2-100)', border: '1px solid var(--ds-color-divider)' }}>
+            <img src="/verification-seal.svg" alt="SustainHub Verification Seal"
+              width={56} height={56} style={{ flex: 'none' }} />
+            <div>
+              <div className="text-sm font-bold" style={{ color: 'var(--ds-accent-2-800)' }}>
+                AI-generated draft — Verified by SustainHub
+              </div>
+              <div className="text-xs mt-0.5" style={{ color: 'var(--ds-accent-2-700)' }}>
+                Token {token} · Generated {new Date(report.created_at).toLocaleDateString('tr-TR')} · Framework: TSRS 1 &amp; 2
+              </div>
+            </div>
+          </div>
           <article className="bg-white rounded-2xl border border-slate-200 p-8">
             {report.compliance_score != null && (
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
@@ -123,6 +138,7 @@ export default function PublicReportPage() {
             )}
             <div>{renderContent(report.content_text || '')}</div>
           </article>
+          </>
         )}
       </main>
     </div>

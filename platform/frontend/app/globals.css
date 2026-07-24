@@ -139,3 +139,100 @@
     @apply font-sans;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SustainHub Kurumsal Tasarım Sistemi (nocturne) — retheme katmanı.
+   Token'lar --ds-* ile namespace'lendi (Tailwind/shadcn --color-accent,
+   --radius-* ile çakışmayı önlemek için). Bileşen sınıfları opt-in: mevcut
+   sayfaları etkilemez, sadece bu sınıfları KULLANAN öğeler yeni kimliği alır.
+   Palet mevcut yeşille zaten hizalı (accent #2E7D32 = --primary).
+   ══════════════════════════════════════════════════════════════════════ */
+:root {
+  --ds-color-bg: #F7F6F1;
+  --ds-color-surface: #FFFFFF;
+  --ds-color-surface-2: #EFECE3;
+  --ds-color-text: #16241D;
+  --ds-color-accent: #2E7D32;      /* interactive green — primary actions, brand hue */
+  --ds-color-accent-2: #0F3D52;    /* petrol/navy — trust accent: secondary, data, verification */
+  --ds-color-divider: color-mix(in srgb, var(--ds-color-text) 14%, transparent);
+
+  --ds-neutral-100: #F5F4EF; --ds-neutral-200: #E7E4DA; --ds-neutral-300: #D2CEC0;
+  --ds-neutral-400: #B3AE9C; --ds-neutral-500: #928C77; --ds-neutral-600: #726C58;
+  --ds-neutral-700: #574F3F; --ds-neutral-800: #3B352A; --ds-neutral-900: #201C15;
+
+  --ds-accent-100: #EAF3EA; --ds-accent-200: #CFE3D1; --ds-accent-300: #A7CBAB;
+  --ds-accent-400: #74AC7B; --ds-accent-500: #48963F; --ds-accent-600: #2E7D32;
+  --ds-accent-700: #1F5E24; --ds-accent-800: #1B4332; --ds-accent-900: #0E2711;
+
+  --ds-accent-2-100: #E7EEF0; --ds-accent-2-200: #C7D8DC; --ds-accent-2-300: #9BB9C1;
+  --ds-accent-2-400: #66929C; --ds-accent-2-500: #396A75; --ds-accent-2-600: #0F3D52;
+  --ds-accent-2-700: #0B2E3F; --ds-accent-2-800: #082230; --ds-accent-2-900: #04141C;
+
+  --ds-success: #2E7D32; --ds-success-800: #163F19; --ds-success-100: #E6F2E7;
+  --ds-warning: #B7791F; --ds-warning-800: #5C3B0C; --ds-warning-100: #FBF0DE;
+  --ds-danger: #A6423A; --ds-danger-800: #55201B; --ds-danger-100: #F7E7E5;
+
+  --ds-color-section: #163B2C;
+
+  /* Uygulama Geist'i yüklü; heading/body onu kullanır, Inter'e düşer. */
+  --ds-font-heading: var(--font-sans, "Inter", system-ui, sans-serif);
+  --ds-font-body: var(--font-sans, "Inter", system-ui, sans-serif);
+  --ds-font-heading-weight: 600;
+
+  --ds-space-1: 4px; --ds-space-2: 8px; --ds-space-3: 12px;
+  --ds-space-4: 16px; --ds-space-6: 24px; --ds-space-8: 32px;
+
+  --ds-radius-sm: 4px; --ds-radius-md: 8px; --ds-radius-lg: 14px;
+
+  --ds-shadow-sm: 0 1px 2px rgba(22,36,29,0.07), 0 0 0 1px rgba(22,36,29,0.05);
+  --ds-shadow-md: 0 6px 18px rgba(22,36,29,0.10), 0 0 0 1px rgba(22,36,29,0.06);
+  --ds-shadow-lg: 0 20px 48px rgba(22,36,29,0.16), 0 0 0 1px rgba(22,36,29,0.07);
+}
+
+/* — buttons — */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--ds-font-body); font-size: 14px; font-weight: 500; line-height: 1;
+  padding: 10px 16px; border: 1px solid transparent; border-radius: var(--ds-radius-md);
+  cursor: pointer; text-decoration: none; transition: background .15s, border-color .15s, color .15s; }
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--ds-accent-600); color: #fff; border-color: var(--ds-accent-600); }
+.btn-primary:hover { background: var(--ds-accent-700); border-color: var(--ds-accent-700); }
+.btn-primary:active { background: var(--ds-accent-800); border-color: var(--ds-accent-800); }
+.btn-secondary { border-color: var(--ds-color-divider); color: var(--ds-color-text); background: transparent; }
+.btn-secondary:hover { background: color-mix(in srgb, var(--ds-color-text) 6%, transparent); }
+.btn-ghost { color: var(--ds-accent-2-600); background: transparent; padding-inline: var(--ds-space-1); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--ds-accent-2-600) 10%, transparent); }
+.btn-icon { width: 36px; height: 36px; padding: 0; }
+.btn-block { width: 100%; margin-top: var(--ds-space-2); }
+
+/* — cards — */
+.ds-card { display: flex; flex-direction: column; gap: var(--ds-space-2); padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-md); background: var(--ds-color-surface); }
+.card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ds-accent-2-600); }
+.card-title { font-family: var(--ds-font-heading); font-weight: var(--ds-font-heading-weight); font-size: 17px; line-height: 1.2; }
+.card-body { margin: 0; font-size: 13px; opacity: 0.75; flex: 1; }
+.card-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: color-mix(in srgb, var(--ds-color-text) 50%, transparent); }
+.elev-sm { box-shadow: var(--ds-shadow-sm); }
+.elev-md { box-shadow: var(--ds-shadow-md); }
+.elev-lg { box-shadow: var(--ds-shadow-lg); }
+
+/* — tags / status (success/warning/danger SADECE uyum durumu için) — */
+.tag { display: inline-flex; align-items: center; font-size: 11px; letter-spacing: 0.02em; font-weight: 500; padding: 3px 10px; border-radius: calc(var(--ds-radius-md) * 0.75); }
+.tag-accent { background: var(--ds-accent-100); color: var(--ds-accent-800); }
+.tag-accent-2 { background: var(--ds-accent-2-100); color: var(--ds-accent-2-800); }
+.tag-neutral { background: var(--ds-neutral-200); color: var(--ds-neutral-800); }
+.tag-outline { border: 1px solid var(--ds-accent-600); color: var(--ds-accent-700); }
+.tag-success { background: var(--ds-success-100); color: var(--ds-success-800); }
+.tag-warning { background: var(--ds-warning-100); color: var(--ds-warning-800); }
+.tag-danger { background: var(--ds-danger-100); color: var(--ds-danger-800); }
+
+/* — data table — */
+.ds-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ds-table th { text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--ds-color-text) 55%, transparent); padding: var(--ds-space-2); border-bottom: 1px solid var(--ds-color-divider); }
+.ds-table td { padding: var(--ds-space-2); border-bottom: 1px solid var(--ds-color-divider); }
+.ds-table tbody tr:hover { background: color-mix(in srgb, var(--ds-accent-600) 4%, transparent); }
+
+/* — photo frame — */
+.photo-frame { border-radius: var(--ds-radius-md); overflow: hidden; border: 1px solid var(--ds-color-divider); }
+.photo-frame img { width: 100%; display: block; }
