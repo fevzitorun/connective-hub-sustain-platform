@@ -13,7 +13,7 @@ const PRODUCTS = [
     desc: 'A comprehensive carbon calculation and ESG reporting engine supporting the GHG Protocol, TSRS 1&2, CSRD/ESRS, GRI, and ISSB S2.',
     features: ['Scope 1/2/3 calculation', 'AI Report Generator (PDF/Word)', 'Multi-framework (TSRS, GRI, ISSB)', 'Magic Import (Excel/OCR)', 'XBRL digital filings'],
     target: 'All sectors · 200+ Enterprises · 70,000+ SMEs',
-    price: 'From ₺180.000 / year',
+    price: 'Custom quote',
     cta: '/register',
     ctaText: 'Start Demo',
   },
@@ -55,7 +55,7 @@ const PRODUCTS = [
     desc: 'Climate-adjusted financial impact matrices designed for CFOs. Calculate CapEx, OpEx, and climate-adjusted asset values. Model transition and physical risks under IEA and NGFS scenarios.',
     features: ['TCFD 4-pillar reporting', 'CFO Financial Impact Matrix', 'IEA NZE 2050 / NGFS scenarios', 'Scope 3 Cat. 15 bridge', 'IFRS S2 / UK SRS output'],
     target: 'CFOs · Boards of Directors · Auditors',
-    price: 'Included in Professional plan',
+    price: 'Included in platform',
     cta: '/tcfd',
     ctaText: 'TCFD Module',
   },
@@ -190,8 +190,8 @@ export default function ProductsPage() {
           <h2 className="text-3xl font-black text-white mb-4">Which plan is right for you?</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 text-sm">
             {[
-              { plan: 'Starter', price: 'From ₺180.000 / year', for: 'SME & Early Adopter', color: '#64748b' },
-              { plan: 'Professional', price: '₺600.000 / year', for: 'Mid-size Company', color: '#10b981' },
+              { plan: 'Starter', price: 'Custom quote', for: 'SME & Early Adopter', color: '#64748b' },
+              { plan: 'Professional', price: 'Custom quote', for: 'Mid-size Company', color: '#10b981' },
               { plan: 'Enterprise', price: 'Contact sales', for: 'Large Corp & Holding', color: '#3b82f6' },
               { plan: 'Bank / Financial', price: 'Contact sales', for: '34 BDDK Banks', color: '#f59e0b' },
             ].map(t => (

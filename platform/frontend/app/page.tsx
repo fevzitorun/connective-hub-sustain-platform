@@ -484,35 +484,31 @@ export default function HomePage() {
       <section id="pricing" className="py-20 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-4xl font-black text-slate-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-slate-500">Annual subscription · All prices exclude VAT</p>
+            <h2 className="text-4xl font-black text-slate-900 mb-4">Pricing Tailored to Your Organisation</h2>
+            <p className="text-slate-500">Every plan is scoped to your compliance obligations, sector and data sources — request a custom quote.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
                 name: 'Starter',
-                price_try: '₺30,000', price_eur: '€800',
                 for: 'SMEs & early adopters',
                 highlight: false,
                 features: ['Carbon tracking', 'Basic reporting', '1 user', 'GRI Core'],
               },
               {
                 name: 'Professional',
-                price_try: '₺72,000', price_eur: '€2,000',
                 for: 'Mid-size corporations',
                 highlight: true,
                 features: ['All frameworks', 'TSRS report', '5 users', 'AI Copilot', 'XBRL export'],
               },
               {
                 name: 'Enterprise',
-                price_try: '₺180,000+', price_eur: '€5,000+',
                 for: 'Large corporates & holdings',
                 highlight: false,
                 features: ['Full platform', 'Bank GAR', 'API access', 'Unlimited users', 'SLA support'],
               },
               {
                 name: 'KSRU Partner',
-                price_try: '₺120,000', price_eur: '€3,300',
                 for: 'Ministry Sorumlu® programme',
                 highlight: false,
                 features: ['Sorumlu® score', 'SME portal', 'Subsidy calculator', 'BDDK integration'],
@@ -530,8 +526,8 @@ export default function HomePage() {
                   <p className="text-xs text-slate-500 mt-0.5">{p.for}</p>
                 </div>
                 <div className="mb-5">
-                  <div className="text-2xl font-black text-slate-900">{p.price_try}</div>
-                  <div className="text-xs text-slate-400">{p.price_eur} / year</div>
+                  <div className="text-2xl font-black text-slate-900">Custom quote</div>
+                  <div className="text-xs text-slate-400">Scoped to your needs</div>
                 </div>
                 <ul className="space-y-2 mb-6 flex-1">
                   {p.features.map(f => (
@@ -544,14 +540,14 @@ export default function HomePage() {
                   className={`block text-center py-2.5 rounded-xl font-bold text-sm transition-all ${
                     p.highlight ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'border border-slate-300 hover:border-slate-400 text-slate-700'
                   }`}>
-                  Get Started
+                  Request a Quote
                 </Link>
               </div>
             ))}
           </div>
           <p className="text-center text-slate-400 text-xs mt-6">
-            All plans include 14-day free trial ·{' '}
-            <Link href="/abonelik" className="text-emerald-600 hover:underline">Full comparison →</Link>
+            Not sure which tier fits? ·{' '}
+            <Link href="/request-demo" className="text-emerald-600 hover:underline">Talk to our team →</Link>
           </p>
         </div>
       </section>
