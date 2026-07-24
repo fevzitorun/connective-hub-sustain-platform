@@ -24,8 +24,16 @@ TestSession = async_sessionmaker(engine_test, expire_on_commit=False)
 
 
 async def override_get_db():
+    # Prod'daki get_db gibi davran: istek başarıyla bitince commit et.
+    # Aksi halde sadece flush() yapan endpoint'ler (ör. DPP create_product)
+    # kalıcı olmaz ve sonraki istekte 404 döner.
     async with TestSession() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
 
 
 app.dependency_overrides[get_db] = override_get_db
