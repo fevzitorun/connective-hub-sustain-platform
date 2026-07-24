@@ -1,57 +1,103 @@
-# SustainHub — Belediye (Municipality) Modülü: Mühendislik Brifi
+# SustainHub — Belediye (Municipality) Modülü Brifi
 
 > **Hedef ajan:** Google Antigravity (paralel geliştirme).
-> **Referans kütüphane:** [`platform/backend/app/data/municipality_library.md`](platform/backend/app/data/municipality_library.md) — GPC standardı, akademik puanlama metodolojisi, rapor yapısı damıtımı.
-> **Durum:** Taksonomi/GAR/materiality düzeltmesi tamamlandı; blocker kalktı. Başlayabilirsin.
+
+## 0. BAŞLAMADAN ÖNCE — ZORUNLU (durum güncellemesi)
+
+**Taksonomi/GAR/materiality düzeltmesi TAMAMLANDI ve `origin/main`'de** (commit `6514fe9`). Bu iş bitti — aşağıdaki "önce taksonomiyi düzelt" notu artık geçersiz.
+
+1. **`git pull --rebase origin main` yap.** Yerelinde eski kırık `materiality.py`/`taxonomy.py` olabilir; güncel yapı main'de.
+2. Bu dosyalara dokunan commit'lenmemiş işin varsa **önce stash'le** — yapı değişti, çakışır.
+3. Yeni yapıyı BOZMA:
+   - Pydantic şemalar: `app/models/taxonomy_schema.py`.
+   - Motorlar `app/models/`'da: `taxonomy_engine.py`, `materiality_engine.py`, `gar_engine.py`.
+   - Router'lar `app/routes/`'ta: `taxonomy.py`, `gar.py`, `materiality.py` (hepsi `main.py`'de kayıtlı).
+   - `app/models/materiality.py` = SQLAlchemy `MaterialityAssessment` **modeli** — bunu bir router ile **ASLA** ezme (önceki hata buydu).
+   - **Sahte veri yasak:** GAR motoru gerçek veri yokken `IntegrationNotConfigured` fırlatıyor. Belediye modülü de aynı kurala uyar — mock envanter/mock skor yok.
 
 ---
 
-## 0. BAŞLAMADAN ÖNCE — ZORUNLU
+## Bağlam
 
-Taksonomi/GAR/materiality düzeltmesi **tamamlandı ve `origin/main`'de** (commit `6514fe9`).
+`belediye/` klasöründe (gitignore'da, dahili) 4 gerçek referans belge incelendi ve **`platform/backend/app/data/municipality_library.md`** dosyasına damıtıldı — **o dosyayı önce oku, tüm metodoloji ve kaynak orada.** Bu, `policy_library.md` (Koç/Sabancı) ile aynı desen: gerçek belgelerden çıkarılmış, savunulabilir metodoloji.
 
-1. **`git pull --rebase origin main` yap.**
-2. Yerelinde bu dosyalara dokunan commit'lenmemiş iş varsa **önce stash'le** — yapı değişti, çakışacak.
-3. Aşağıdaki yeni yapıyı BOZMA, üzerine yeniden yazma.
+Yeni müşteri segmenti: belediyeler (30 büyükşehir + il/ilçe belediyeleri). Mevcut şirket/banka odaklı üründen farklı olarak yasal zorunluluk yok ama CDP-ICLEI, Global Covenant of Mayors ve AB fonlama başvuruları için artan teşvik var.
 
 ---
 
-## 1. Yeni backend yapısı (dokunma / yeniden yazma)
+## Yapılacaklar
 
-| Öğe | Konum | Not |
-|---|---|---|
-| Pydantic şemalar | `app/models/taxonomy_schema.py` | `TaxonomyCalculationRequest`, `TaxonomyResult` — şemaları BURADAN import et |
-| Motorlar | `app/models/taxonomy_engine.py`, `materiality_engine.py`, `gar_engine.py` | Hesaplama motorları burada |
-| Router'lar | `app/routes/taxonomy.py`, `gar.py`, `materiality.py` | Hepsi `main.py`'de kayıtlı |
-| Materiality **modeli** | `app/models/materiality.py` | SQLAlchemy `MaterialityAssessment`. **Bunu router ile ASLA ezme** — önceki hata buydu, `__init__` import'u çöküyordu |
-| NACE verisi | `app/data/nace_taxonomy.json` | |
+### 1. Veri modeli — `app/models/municipality.py`
 
-**Sahte veri yasak:** GAR motoru gerçek veri yokken `IntegrationNotConfigured` fırlatıyor (mock kaldırıldı). **Belediye modülü de aynı kurala uyacak** — mock envanter / mock skor yok; veri yoksa `IntegrationNotConfigured` fırlat.
+```python
+class Municipality(Base):
+    __tablename__ = "municipalities"
+    id, name, type (büyükşehir/il/ilçe), population, region
+    # GPC envanteri alanları — Kocaeli planı formatı
+    stationary_energy_tco2e, transportation_tco2e, waste_tco2e
+    ippu_tco2e, afolu_tco2e  # BASIC+ opsiyonel
+    reporting_level (basic/basic_plus)
+    year
+
+class MunicipalityIndexScore(Base):
+    __tablename__ = "municipality_index_scores"
+    municipality_id, year
+    economic_score, social_score, environmental_score, total_score  # 0-4 ölçek, municipality_library.md Bölüm 2
+    grade  # A-D, kobi_credit_score_engine.py deseniyle tutarlı
+```
+
+> **Sadece model, router değil.** Router `app/routes/municipality.py`'ye yazılır.
+
+### 2. Hesaplama motoru — `app/services/municipality_index_engine.py`
+
+`municipality_library.md` Bölüm 2'deki puanlama kriterlerini (Ekonomik/Sosyal/Çevresel, her biri SDG-eşleşmeli alt kriterlerle) kodla. `kobi_credit_score_engine.py`'nin yapısını referans al — aynı A-D notlandırma deseni.
+
+### 3. GPC envanteri hesaplayıcı — mevcut `calculation_engine.py`'ye ek
+
+Kent ölçeğinde GHG hesaplaması: Sabit Enerji + Ulaşım + Atık (BASIC), opsiyonel IPPU + AFOLU (BASIC+). `municipality_library.md` Bölüm 1'deki sektör tanımlarını kullan.
+
+### 4. Rapor şablonu — `report_template.py`'ye ekle
+
+İki seviye (İzmir formatından büyükşehir tam envanter, Karşıyaka formatından ilçe/küçük belediye durum analizi — `municipality_library.md` Bölüm 3):
+
+```python
+{
+    "id": "gpc-municipality-metropolitan-v1",
+    "name": "Büyükşehir Belediyesi Sürdürülebilirlik Raporu (GPC)",
+    "standard": "gpc_municipality",
+    "required_sections": ["Kurumsal Profil", "Yönetişim", "GPC Sera Gazı Envanteri",
+        "Sosyal Performans", "Ekonomik Performans", "Hedefler ve Taahhütler",
+        "Performans Göstergeleri Tablosu"],
+    ...
+},
+{
+    "id": "gpc-municipality-district-v1",
+    "name": "İlçe Belediyesi Durum Analiz Raporu",
+    "standard": "gpc_municipality_light",
+    "required_sections": ["Kurum Tanıtımı", "Rapor Kapsamı", "Mevcut Durum Analizi",
+        "Öncelikli Alanlar", "Yol Haritası"],
+    ...
+}
+```
+
+### 5. `ai_report_writer.py`'ye entegrasyon
+
+`eu_taxonomy_result` / `materiality_result` deseniyle aynı şekilde `municipality_gpc_result` parametresi ekle, sistem promptuna GPC terminolojisiyle yazım kuralı ekle.
+
+### 6. Frontend — yeni sayfa `/belediye`
+
+Sayfayı `(platform)` grup route'unda oluştur: **`app/(platform)/belediye/page.tsx`**. Mevcut `app/(platform)/university/page.tsx` yapısını referans al (benzer B2G/kurumsal segment sayfası). İçerik: GPC envanteri özelliği, Belediye Endeksi tanıtımı, örnek rapor, "Pilot Belediye" başvuru formu — mevcut demo başvuru altyapısına bağla (`/request-demo` sayfası + `demo_request` router).
+
+### 7. Pazarlama fırsatı (ayrı iş, öncelik değil)
+
+"Türkiye Belediye Sürdürülebilirlik Endeksi" — 30 büyükşehir belediyesini karşılaştıran yıllık yayın, akademik kaynaklı metodoloji. COP31 içerik takvimiyle birleştirilebilir (bkz. `IS-PLANI-2026.md` Bölüm 6).
 
 ---
 
-## 2. Belediye modülü — inşa edilecekler
+## Doğrulama
 
-Referans: `app/data/municipality_library.md` (main'de, commit `48b8ad1`).
+Yerelde `uvicorn app.main:app` ile başlat (import + lifespan hatasız kalkmalı), yeni endpoint'leri (`/municipality/calculate`, `/municipality/index-score`) test et. Uçtan uca bir büyükşehir raporu üret: `municipality_library.md`'deki Kocaeli plan yapısını referans al — birebir sayısal 2021 envanteri gerekiyorsa `belediye/İklim Değişikliği Eylem Planı.pdf`'ten çek (kütüphane metodolojiyi/yapıyı damıtır, ham sayıları değil).
 
-- **`app/models/municipality.py`** — SQLAlchemy modeli. GPC envanteri sektörleri: Sabit Enerji / Ulaşım / Atık / IPPU / AFOLU + il/ilçe veri kalemleri (sıfır atık, atıksu arıtma, yeşil alan, su tüketimi, vb.). **Sadece model, router değil.**
-- **`app/services/municipality_index_engine.py`** — `kobi_credit_score_engine.py` desenini birebir izle: 0-4 puanlama ölçeği (UNEP/SustainAbility temelli), 3 boyut (Ekonomik / Sosyal / Çevresel), SDG-eşleşmeli kriterler, boyut ortalaması + toplam skor → A–D harf notu (mevcut AAA→D formatıyla tutarlı).
-- **`app/routes/municipality.py`** — router; `main.py`'ye `include_router` ile kaydet.
-- **Rapor:** `report_template.py`'ye yeni "GPC Belediye Raporu" girdisi + `ai_report_writer.py`'ye belediye promptu (aynı Claude tabanlı üretim, farklı prompt).
-- **Frontend:** `app/(platform)/belediye/page.tsx`.
+## Not
 
-**İki ürün seviyesi** (doğal olarak mevcut fiyat katmanlarıyla eşleşir):
-- **Büyükşehir** — tam GPC envanteri + puanlama (Professional/Enterprise).
-- **İlçe/küçük belediye** — durum/gap analizi, daha hafif giriş formatı (Starter).
-
----
-
-## 3. Bitince
-
-`uvicorn app.main:app` ile gerçekten ayağa kalktığını doğrula (import + lifespan hatasız), sonra commit et.
-
----
-
-## 4. Stratejik not (yol haritası)
-
-Puanlama motoru aynı zamanda pazarlama varlığı: **"Türkiye Belediye Sürdürülebilirlik Endeksi"** — akademik kaynağı olan (Akan & Şendurur 2016, 30 büyükşehir), yıllık yayınlanabilir karşılaştırma. COP31 "Turkey Sustainability Index" fikriyle aynı aile; basın/lead-magnet değeri yüksek.
+Önceki brifteki "taksonomi/GAR düzeltmesi önce tamamlanmalı" şartı **karşılandı** — düzeltme main'de (`6514fe9`). §0'daki `git pull --rebase` adımını atlamadan başla.
